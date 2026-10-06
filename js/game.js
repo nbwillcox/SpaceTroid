@@ -3,11 +3,11 @@
   'use strict';
   const RM = G.room, PH = G.phys, P = G.player, Game = {};
   G.game = Game;
-  Game.abilAll = function () { return { morph: true, bombs: true, missiles: true, supers: true, spacejump: true, dash: true, charge: true, beams: { ice: false, wave: false, plasma: false }, hasIce: true, hasWave: true, hasPlasma: true }; };
+  Game.abilAll = function () { return { morph: true, bombs: true, missiles: true, supers: true, spacejump: true, dash: true, charge: false, beams: { ice: false, wave: false, plasma: false }, hasIce: true, hasWave: true, hasPlasma: true }; };
   Game.new = function (abil) {
     Game.abil = abil || Game.abilAll();
     Game.P = P.create(0, 0); Game.cam = { x: 0, y: 0 }; Game.shake = 0; Game.hitStop = 0; Game.time = 0;
-    Game.P.tanks = 2; Game.P.en = P.enMax(Game.P); Game.P.superMax = 5; Game.P.supers = 3; Game.P.missileMax = 20; Game.P.missiles = 10;
+    Game.P.tanks = 2; Game.P.en = P.enMax(Game.P); Game.P.superMax = 5; Game.P.supers = 3; Game.P.missileMax = 20; Game.P.missiles = 10; Game.P.bombMax = 10; Game.P.bombs = 6;
   };
   Game.load = function (id, sx, sy) {
     const def = G.rooms[id], room = RM.build(def), p = Game.P;
@@ -24,7 +24,7 @@
     Game.roomId = id; Game.startPos = { x: p.x, y: p.y };
     G.render.bake(room); G.render.camera(Game, true);
   };
-  Game.respawn = function () { const p = Game.P; p.en = P.enMax(p); p.missiles = p.missileMax; Game.load(Game.roomId, Game.startPos.x, Game.startPos.y); };
+  Game.respawn = function () { const p = Game.P; p.en = P.enMax(p); p.missiles = p.missileMax; p.bombs = p.bombMax; Game.load(Game.roomId, Game.startPos.x, Game.startPos.y); };
   Game.step = function () {
     if (Game.hitStop > 0) { Game.hitStop--; return; }
     const p = Game.P, room = Game.room;

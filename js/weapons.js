@@ -22,16 +22,20 @@
     p.fireCd = 10; G.audio.sfx(sup ? 'super' : 'missile');
   }
   function bomb(g, p) {
-    if (g.bombs.length >= 3) return;
+    if (g.bombs.length >= 3 || p.bombs <= 0) { p.bombCd = 10; G.audio.sfx('hit'); return; }
+    p.bombs--;
     g.bombs.push({ x: p.x, y: p.y - 7, t: 0, fuse: 48 }); p.bombCd = 12; G.audio.sfx('bomb');
   }
   W.playerFire = function (g, p, I, D) {
     const A = g.abil;
     if (p.hurt > 0 || p.dead) { p.charge = 0; p.held = 0; return; }
     if (p.mode === 'ball') { if (D.fire && A.bombs && p.bombCd === 0) bomb(g, p); p.charge = 0; return; }
+    if (!A.charge) { if (I.fire && p.fireCd === 0) { shoot(g, p, false); p.fireCd = 9; } p.charge = 0; }
+    else {
     if (D.fire && p.fireCd === 0) { shoot(g, p, false); p.fireCd = 8; p.held = 0; }
     if (I.fire) { p.held++; if (A.charge && p.held > 14) { p.charge = Math.min(60, p.held - 14); if (p.charge === 1) G.audio.sfx('chargeStart'); } }
     else { if (p.charge >= 50 && A.charge) { shoot(g, p, true); p.fireCd = 14; } p.charge = 0; p.held = 0; }
+    }
     if (D.missile && p.fireCd === 0 && p.mode !== 'ball') missile(g, p);
     if (D.swap && A.supers) p.sel = 1 - p.sel;
     if (D.b1) A.beams.ice = !A.beams.ice && A.hasIce; if (D.b2) A.beams.wave = !A.beams.wave && A.hasWave; if (D.b3) A.beams.plasma = !A.beams.plasma && A.hasPlasma;

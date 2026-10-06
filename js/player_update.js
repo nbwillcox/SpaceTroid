@@ -5,7 +5,7 @@
   const approach = (v, t, r) => (v < t ? Math.min(t, v + r) : Math.max(t, v - r));
   function aimFrom(g, p, I) {
     const S = G.settings, M = G.input.mouse;
-    if (S.mouseAim && M.on && g.cam) {
+    if (S.mouseAim && M.on && g.cam && !I.u && !(I.aim && I.d) && (M.fire || performance.now() - M.t < 2500)) {
       const ox = M.x + g.cam.x - p.x, oy = M.y + g.cam.y - (p.y - 28), ang = Math.atan2(-oy, Math.abs(ox));
       if (Math.abs(ox) > 3) p.face = ox > 0 ? 1 : -1;
       return ang > 1.15 ? 'up' : ang > 0.4 ? 'diagUp' : ang < -0.4 ? 'diagDown' : 'fwd';

@@ -14,12 +14,13 @@ This is an original game inspired by classic exploration platformers. It uses no
 
 | Action | Keyboard | Gamepad |
 |---|---|---|
-| Move / aim | Arrows or WASD (Up aims up, Up + direction aims diagonally) | Stick / d-pad |
+| Move | Arrows or WASD | Stick / d-pad |
+| Aim | Mouse (while you use it), or Up / Up + direction | Up / Up + direction |
 | Jump (hold for height, again in air = space jump) | Space, Z or K | A |
-| Fire (hold to charge) | X or J | X / right trigger |
-| Missile / super missile (R swaps) | C or L | B / Y |
+| Fire (hold = auto-fire; infinite) | Left click, X or J | X / right trigger |
+| Missile / super missile (limited; R swaps) | Right click, C or L | B / Y |
 | Dash | Shift or V | right bumper |
 | Aim lock | E | left bumper |
-| Crouch, then Down again = morph ball (Fire lays a bomb) | S / Down | stick down |
+| Crouch, then Down again = morph ball (Fire lays a limited bomb) | S / Down | stick down |
 | Down + Jump on a ledge | drops through | |
 | Beam toggles | 1 / 2 / 3 | |

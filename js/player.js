@@ -8,7 +8,7 @@
   const K = { walk: 1.7, run: 2.5, acc: 0.22, dec: 0.38, airAcc: 0.16, airDec: 0.04, g: 0.3, fall: 6.6, jump: 6.1, cut: 2.2, airJump: 5.0, dash: 4.4, ball: 1.9 };
   P.K = K;
   P.create = function (x, y) {
-    return { x, y, w: 14, h: 42, vx: 0, vy: 0, ground: false, face: 1, mode: 'stand', anim: 0, aim: 'fwd', coyote: 0, jbuf: 0, airJumps: 1, dash: 0, dashCd: 0, dashAir: true, inv: 0, hurt: 0, en: 99, tanks: 0, missiles: 5, missileMax: 5, supers: 0, superMax: 0, sel: 0, charge: 0, fireCd: 0, held: 0, bombCd: 0, crouchT: 0, dead: 0, spin: 0, drop: false, landT: 0, suit: 'cobalt' };
+    return { x, y, w: 14, h: 42, vx: 0, vy: 0, ground: false, face: 1, mode: 'stand', anim: 0, aim: 'fwd', coyote: 0, jbuf: 0, airJumps: 1, dash: 0, dashCd: 0, dashAir: true, inv: 0, hurt: 0, en: 99, tanks: 0, missiles: 5, missileMax: 5, bombs: 0, bombMax: 0, supers: 0, superMax: 0, sel: 0, charge: 0, fireCd: 0, held: 0, bombCd: 0, crouchT: 0, dead: 0, spin: 0, drop: false, landT: 0, suit: 'cobalt' };
   };
   P.enMax = (p) => 99 + 100 * p.tanks;
   P.fits = (g, p, mode) => { const [w, h] = SZ[mode]; return !PH.boxSolid(g.room, p.x - w / 2, p.y - h, p.x + w / 2, p.y - E); };

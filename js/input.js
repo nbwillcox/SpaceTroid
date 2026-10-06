@@ -14,9 +14,15 @@
   window.addEventListener('keyup', (e) => { const a = MAP[e.code]; if (a) I.k[a] = false; });
   window.addEventListener('blur', () => { I.k = {}; });
   const cv = () => document.getElementById('game');
-  window.addEventListener('pointermove', (e) => { const c = cv(); if (!c || e.target !== c) return; const r = c.getBoundingClientRect(); I.mouse.on = true; I.mouse.x = (e.clientX - r.left) / r.width * 480; I.mouse.y = (e.clientY - r.top) / r.height * 270; });
-  window.addEventListener('pointerdown', (e) => { if (e.button === 0 && e.target === cv() && G.settings.mouseAim) { if (!I.k.fire) I.lt.fire = true; I.k.fire = true; I.mouse.fire = true; I.any = true; } });
-  window.addEventListener('pointerup', (e) => { if (e.button === 0 && I.mouse.fire) { I.k.fire = false; I.mouse.fire = false; } });
+  window.addEventListener('pointermove', (e) => { const c = cv(); if (!c || e.target !== c) return; const r = c.getBoundingClientRect(); I.mouse.on = true; I.mouse.t = performance.now(); I.mouse.x = (e.clientX - r.left) / r.width * 480; I.mouse.y = (e.clientY - r.top) / r.height * 270; });
+  window.addEventListener('pointerdown', (e) => {
+    if (e.target !== cv()) return;
+    const c = cv(), r = c.getBoundingClientRect(); I.mouse.on = true; I.mouse.t = performance.now(); I.mouse.x = (e.clientX - r.left) / r.width * 480; I.mouse.y = (e.clientY - r.top) / r.height * 270;
+    if (e.button === 0) { if (!I.k.fire) I.lt.fire = true; I.k.fire = true; I.mouse.fire = true; I.any = true; }
+    else if (e.button === 2) { if (!I.k.missile) I.lt.missile = true; I.k.missile = true; I.mouse.missile = true; }
+  });
+  window.addEventListener('contextmenu', (e) => { if (e.target === cv()) e.preventDefault(); });
+  window.addEventListener('pointerup', (e) => { if (e.button === 0 && I.mouse.fire) { I.k.fire = false; I.mouse.fire = false; } if (e.button === 2 && I.mouse.missile) { I.k.missile = false; I.mouse.missile = false; } });
   /* sample once per fixed step: I.held[a] = held now, I.down[a] = pressed this step */
   I.poll = function () {
     const pad = {};
