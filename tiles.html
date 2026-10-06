@@ -1,0 +1,32 @@
+<!DOCTYPE html><html><body style="margin:0;background:#0a0e2c;color:#9fb;font:12px monospace"><p style="margin:8px">SpaceTroid zone 1 tiles (work in progress): autotile set and a sample room.</p><canvas id="c" width="1300" height="1800"></canvas>
+<script src="js/util.js"></script><script src="js/px.js"></script><script src="js/palette.js"></script><script src="js/art.js"></script><script src="js/art/zone1.js"></script><script src="js/art/zone1deco.js"></script><script src="js/art/zone1bg.js"></script><script src="js/art/zone1foes.js"></script>
+<script>
+const G=SGS, ctx=document.getElementById('c').getContext('2d'); ctx.imageSmoothingEnabled=false;
+const Z=G.art.zone1, mk=(r,n)=>G.art.make(r,'world',n).c;
+let x=10,y=30; ctx.fillStyle='#9fb'; ctx.fillText('edge masks x 3 variants (x3 scale)',10,20);
+for(let m=0;m<16;m++){ for(let v=0;v<3;v++){ ctx.drawImage(mk(Z.edge[m][v],'e'+m),x,y,48,48); x+=52; } x+=8; if(m%5===4){x=10;y+=56;} }
+y+=24; ctx.fillStyle='#9fb'; ctx.fillText('sample room (x3)',10,y); y+=10; const roomY=y;
+const room=[
+'####################',
+'#..................#',
+'#..................#',
+'#.....###..........#',
+'#.....###......##..#',
+'#..................#',
+'#...##........###..#',
+'#...##.............#',
+'#.....###.....######',
+'####################'];
+const H=room.length,Wd=room[0].length, at=(i,j)=>(j<0||i<0||i>=H||j>=Wd)?1:room[i][j]==='#';
+for(let i=0;i<H;i++)for(let j=0;j<Wd;j++){ if(!at(i,j))continue; const m=(!at(i-1,j)?1:0)|(!at(i,j+1)?2:0)|(!at(i+1,j)?4:0)|(!at(i,j-1)?8:0); let g; if(m) g=Z.edge[m][(i*7+j*3)%3]; else { const d=(!at(i-1,j-1)?1:0)|(!at(i-1,j+1)?2:0)|(!at(i+1,j+1)?4:0)|(!at(i+1,j-1)?8:0); g=d?Z.diag[d]:Z.edge[0][(i*5+j*11)%3]; } ctx.drawImage(mk(g,'r'),10+j*48,y+i*48,48,48); }
+
+const D=G.art.zone1deco; let dy=roomY+room.length*48+30; ctx.fillStyle='#9fb'; ctx.fillText('backdrop wall x4, ledge, runes (2 frames), decor (x4)',10,dy); dy+=8; let dx=10;
+const put=(rows,sc)=>{ const c=mk(rows,'d'); ctx.fillStyle='#14182c'; ctx.fillRect(dx,dy,c.width*sc,c.height*sc); ctx.drawImage(c,dx,dy,c.width*sc,c.height*sc); dx+=c.width*sc+10; return c.height*sc; };
+let hh=0; D.bgWall.forEach(r=>hh=Math.max(hh,put(r,4))); hh=Math.max(hh,put(D.ledge,4)); D.rune.forEach(r=>hh=Math.max(hh,put(r,4))); D.vine.forEach(r=>hh=Math.max(hh,put(r,4))); hh=Math.max(hh,put(D.tuft,4),put(D.fern,4),put(D.rubble,4),put(D.pillar,4));
+dy+=hh+24; ctx.fillStyle='#9fb'; ctx.fillText('parallax far / mid (x2)',10,dy); dy+=8;
+const bg=G.art.buildZone1Bg(); ctx.drawImage(bg.far,10,dy,960,540); ctx.drawImage(bg.mid,10,dy,960,540); 
+
+dy+=540+24; ctx.fillStyle='#9fb'; ctx.fillText('zone 1 enemies (x6): crawler 4f, glow-moth 4f, spore pod 2f',10,dy); dy+=8; dx=10; const FO=G.art.zone1foes;
+const pf=(rows,arm)=>{ const c=G.art.make(rows,arm,'f').c; ctx.fillStyle='#14182c'; ctx.fillRect(dx,dy,c.width*6,c.height*6); ctx.drawImage(c,dx,dy,c.width*6,c.height*6); dx+=c.width*6+10; };
+FO.crawler.forEach(r=>pf(r,'crimson')); FO.moth.forEach(r=>pf(r,'crimson')); FO.pod.forEach(r=>pf(r,'crimson'));
+</script></body></html>

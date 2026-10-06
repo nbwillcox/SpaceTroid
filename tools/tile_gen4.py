@@ -1,0 +1,148 @@
+"""Zone 1 backdrop wall, one-way ledge, rune panels and decor sprites -> js/art/zone1deco.js"""
+import json, os
+from tile_gen1 import W, grid, put, block
+
+def bg_wall(v):
+    """recessed back-wall masonry: darker, lower contrast than the solid tiles, so the playfield reads in front of it"""
+    g = grid('0')
+    lay = {0: [(0, 0, 10, 8), (10, 0, 6, 8), (5, 8, 8, 8), (13, 8, 8, 8)],
+           1: [(0, 0, 6, 8), (6, 0, 10, 8), (3, 8, 8, 8), (11, 8, 8, 8)],
+           2: [(0, 0, 16, 8), (8, 8, 8, 8), (0, 8, 8, 8)]}[v]
+    for (x0, y0, w, h) in lay:
+        for yy in range(h):
+            for xx in range(w):
+                x, y = (x0 + xx) % W, y0 + yy
+                if y >= W: continue
+                fw, fh = w - 1, h - 1
+                c = '0' if (xx == fw or yy == fh) else '2' if (yy == 0 or xx == 0) else '1'
+                g[y][x] = c
+    spk = {0: [(3, 3), (8, 2), (13, 5), (4, 12), (10, 11), (14, 14)], 1: [(2, 5), (9, 4), (12, 2), (6, 11), (13, 10)], 2: [(5, 4), (11, 5), (3, 11), (9, 13)]}[v]
+    for (x, y) in spk:
+        if g[y][x] == '1': g[y][x] = '2'
+    return [''.join(r) for r in g]
+
+def bg_wall_moss():
+    g = [list(r) for r in bg_wall(0)]
+    for (x, y, c) in [(0, 0, 'B'), (1, 0, 'A'), (2, 0, 'A'), (3, 0, 'B'), (1, 1, 'A'), (2, 1, 'B'), (2, 2, 'A'), (9, 6, 'A'), (10, 6, 'B'), (10, 7, 'A'), (11, 7, 'A'), (6, 14, 'A'), (7, 14, 'B'), (7, 15, 'A')]:
+        g[y][x] = c
+    return [''.join(r) for r in g]
+
+LEDGE = [  # one-way grate ledge, 16 x 6, lit from upper-left
+    "lLLLLLLLLLLLLLLm",
+    "mlllllllllllllmM",
+    "MmmMmmMmmMmmMmmM",
+    ".M.z..M..z..M.z.",
+    ".z....z.....z...",
+    "................",
+]
+def rune(frame):
+    """glowing rune panel, 16x16; frame 1 brightens the glyph"""
+    core = 'E' if frame else 'e'
+    rim = 'h' if frame else 'E'
+    glyph = ["........", "g..ee..g", ".g.ee.g.", "g.eeee.g", "..e..e..", "g.eeee.g", ".g.ee.g.", "g..ee..g"]
+    rows = ["zMMMMMMMMMMMMMMz", "MlLLLLLLLLLLLLlM", "Mlmmmmmmmmmmmm1M", "Mlmzzzzzzzzzzm1M"]
+    for r in glyph:
+        r = r.replace('e', core).replace('.', 'z')
+        if frame and 'E' in r:
+            r = r.replace('g', 'e')
+        rows.append("Mlmz" + r + "zm1M")
+    rows += ["Mlmzzzzzzzzzzm1M", "Mlmmmmmmmmmmmm1M", "M1111111111111MM", "zMMMMMMMMMMMMMMz"]
+    return rows
+
+def vine(n, seed):
+    """hanging vine strand, 8 wide x n tall: swaying stem with alternating leaves, lit from the upper left"""
+    g = [['.'] * 8 for _ in range(n)]
+    sway = [3, 3, 4, 4, 4, 3, 3, 2, 2, 2, 3]
+    for y in range(n):
+        x = sway[(y + seed) % len(sway)]
+        g[y][x] = 'B' if y % 2 else 'C'
+        if y % 4 == 1:
+            side = -1 if (y // 4 + seed) % 2 else 1
+            for k in (1, 2):
+                xx = x + side * k
+                if 0 <= xx < 8: g[y][xx] = 'D' if k == 1 else 'C'
+            xx = x + side * 2
+            if 0 <= xx < 8 and y + 1 < n: g[y + 1][xx] = 'B'
+            if 0 <= x + side < 8 and y - 1 >= 0: g[y - 1][x + side] = 'E'
+    g[n - 1][sway[(n - 1 + seed) % len(sway)]] = 'E'
+    return [''.join(r) for r in g]
+
+TUFT = [
+    "..........",
+    ".....E....",
+    "..E..E.E..",
+    "..DE.DE.D.",
+    ".ED.DD.DD.",
+    ".CD.CD.CC.",
+    "BCCBCCCBCB",
+    "1BBB1BB1B1",
+]
+FERN = [
+    "................",
+    "......E.........",
+    ".....EDE....E...",
+    "..E.EDCD...ED...",
+    ".ED.DCCB..EDC...",
+    ".DCDCB.BE.DCB.E.",
+    "..CBB..DCDCB.ED.",
+    "...B...CBCB..DC.",
+    "....B..BC.B..CB.",
+    ".....BB.B..BBB..",
+    "......BBB.BB....",
+    ".......1B1B.....",
+]
+RUBBLE = [
+    "................",
+    "......454.......",
+    ".....43332..45..",
+    "....433332.4332.",
+    "..5.4333221433B.",
+    ".432433322233C21",
+    "4333223322B22BC1",
+    "3322221222112111",
+]
+PILLAR = [  # broken fluted pillar, 16 x 32, base at the bottom
+    "....4444444.....",
+    "...433333321....",
+    "..43333332221...",
+    "..4333333222210.",
+    "..4343333222210.",
+    "...433333322210.",
+    "...43233332210..",
+    "...4333333221...",
+    "...4323333221...",
+    "...4333333221...",
+    "...4333323221...",
+    "...4333333221...",
+    "...433B333221...",
+    "...43BC333221...",
+    "...4333333221...",
+    "...4333323221...",
+    "...4333333221...",
+    "...4333333221...",
+    "...4323333221...",
+    "...43333332210..",
+    "...43333332210..",
+    "..433333333221..",
+    "..433333333221..",
+    ".4455555444221..",
+    ".45333333333221.",
+    ".433333333332210",
+    ".432333333333210",
+    ".433333333332210",
+    ".422222222222210",
+    ".111111111111110",
+    ".000000000000000",
+    "................",
+]
+
+if __name__ == '__main__':
+    out = {
+        'bgWall': [bg_wall(0), bg_wall(1), bg_wall(2), bg_wall_moss()],
+        'ledge': LEDGE, 'rune': [rune(0), rune(1)],
+        'vine': [vine(12, 0), vine(20, 3), vine(28, 6)], 'tuft': TUFT, 'fern': FERN, 'rubble': RUBBLE, 'pillar': PILLAR,
+    }
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'js', 'art', 'zone1deco.js')
+    src = "/* GENERATED by tools/tile_gen4.py: zone 1 backdrop wall, ledge, rune panels and decor grids. */\n(function (G) {\n  G.art = G.art || {};\n  G.art.zone1deco = " + json.dumps(out, separators=(',', ':')) + ";\n})((window.SGS = window.SGS || {}));\n"
+    open(path, 'w', encoding='utf-8').write(src)
+    print('wrote', len(src))
