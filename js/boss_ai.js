@@ -33,7 +33,7 @@
       g.shake = 5; if (b.t === 140) B.finish(g, b);
     }
     if (!g.boss) { B.updateRocks(g); return; }
-    if (!p.dead && b.state !== 'wait' && !b.dead && Math.abs(p.x - b.x) < (p.w + b.w) / 2 - 4 && p.y > b.y - b.h + 4 && p.y - p.h < b.y - 4) { if (G.player.hurt(g, p, b.state === 'charge' ? 24 : 15, b.x)) G.audio.sfx('hurt'); }
+    if (!p.dead && b.state !== 'wait' && !b.dead && Math.abs(p.x - b.x) < (p.w + b.w) / 2 - 4 && p.y > b.y - b.h + 12 && p.y - p.h < b.y - 4) { if (G.player.hurt(g, p, b.state === 'charge' ? 24 : 15, b.x)) G.audio.sfx('hurt'); }
     if (!b.dead) for (const s of g.shots) {
       if (s.dead) continue;
       const near = Math.abs(s.x - b.x) < b.w / 2 + 4 && s.y > b.y - b.h - 20 && s.y < b.y;

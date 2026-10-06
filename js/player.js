@@ -31,6 +31,7 @@
     return { x: p.x + 17 * f, y: p.y - (c ? 15 : 26) };
   };
   P.aimVec = function (p) {
+    if (p.aimAng !== null && p.aimAng !== undefined) return { x: Math.cos(p.aimAng), y: Math.sin(p.aimAng) };
     const f = p.face, r = Math.SQRT1_2;
     return p.aim === 'up' ? { x: 0, y: -1 } : p.aim === 'diagUp' ? { x: f * r, y: -r } : p.aim === 'diagDown' ? { x: f * r, y: r } : { x: f, y: 0 };
   };

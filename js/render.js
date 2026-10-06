@@ -31,7 +31,7 @@
         if ((m & 4) && !(m & 8) && !(m & 2) && h % 7 === 0) { const [im, ox] = tile.hang[h % tile.hang.length]; x.drawImage(im, px + ox, py + 16); }
       } else if (k === 3) x.drawImage(tile.slopeR, px, py);
       else if (k === 4) x.drawImage(tile.slopeL, px, py);
-      else if (k === 2) x.drawImage(tile.ledge, px, py);
+      else if (k === 2) { x.drawImage(tile.wall[(tx + ty * 2) % 3], px, py); x.drawImage(tile.ledge, px, py); }
       else if (k === 5) x.drawImage(tile.shot, px, py);
       else if (k === 6) x.drawImage(tile.bomb, px, py);
       else if (k === 7) x.drawImage(tile.missile, px, py);
@@ -105,12 +105,9 @@
   R.shot = function (ctx, s, time) {
     const x = Math.round(s.x), y = Math.round(s.y);
     if (s.kind === 'beam') {
-      const a = Math.abs(s.vx) >= Math.abs(s.vy) * 1.5 ? 'h' : Math.abs(s.vy) >= Math.abs(s.vx) * 1.5 ? 'v' : 'd';
       if (s.big) { ctx.fillStyle = s.col[0]; ctx.fillRect(x - 5, y - 3, 10, 6); ctx.fillRect(x - 3, y - 5, 6, 10); ctx.fillStyle = s.col[1]; ctx.fillRect(x - 3, y - 2, 6, 4); ctx.fillRect(x - 2, y - 3, 4, 6); return; }
-      ctx.fillStyle = s.col[0];
-      if (a === 'h') { ctx.fillRect(x - 4, y - 1, 8, 3); ctx.fillStyle = s.col[1]; ctx.fillRect(x - 3, y, 6, 1); }
-      else if (a === 'v') { ctx.fillRect(x - 1, y - 4, 3, 8); ctx.fillStyle = s.col[1]; ctx.fillRect(x, y - 3, 1, 6); }
-      else { ctx.fillRect(x - 2, y - 2, 4, 4); ctx.fillStyle = s.col[1]; ctx.fillRect(x - 1, y - 1, 2, 2); }
+      const sp = Math.hypot(s.vx, s.vy) || 1, ux = s.vx / sp, uy = s.vy / sp;      /* a short streak along the true direction of travel */
+      for (let i = 5; i >= 0; i--) { const px = Math.round(s.x - ux * i * 1.8), py = Math.round(s.y - uy * i * 1.8); ctx.fillStyle = i === 0 ? s.col[1] : i < 3 ? s.col[0] : s.col[0]; ctx.globalAlpha = i > 3 ? 0.55 : 1; ctx.fillRect(px - 1, py - 1, i === 0 ? 3 : 2, i === 0 ? 3 : 2); } ctx.globalAlpha = 1;
     } else {
       const sup = s.kind === 'super', dx = s.dx, dy = s.dy;
       ctx.fillStyle = sup ? '#6cf08a' : '#e8ecf8';

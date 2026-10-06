@@ -193,7 +193,7 @@ ROOMS.append(approach())
 def arena():
     r = Room('arena', 'Warden Chamber', 40, 17, 13, 1, wall_all=True)
     r.door('w', 'L', 12, 'blue', 'approach', 'e'); r.door('e', 'R', 12, 'boss', 'lift', 'w')
-    r.plat(5, 9, 11); r.plat(30, 34, 11)
+    r.plat(5, 9, 12); r.plat(30, 34, 12)
     r.spawn('K', 30, 14)
     return r
 ROOMS.append(arena())

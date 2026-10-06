@@ -10,7 +10,7 @@
   };
   function shoot(g, p, charged) {
     const m = P.muzzle(p), v = P.aimVec(p), B = W.beam(g.abil), sp = charged ? 7 : 6;
-    g.shots.push({ kind: 'beam', x: m.x, y: m.y, vx: v.x * sp, vy: v.y * sp, life: charged ? 46 : 36, dmg: B.dmg * (charged ? 4 : 1), r: charged ? 5 : 2, ice: B.ice, wave: B.wave, pierce: B.pierce || charged, col: B.col, big: charged, t: 0, hit: new Set() });
+    g.shots.push({ kind: 'beam', x: m.x, y: m.y, vx: v.x * sp, vy: v.y * sp, life: charged ? 80 : 90, dmg: B.dmg * (charged ? 4 : 1), r: charged ? 5 : 2, ice: B.ice, wave: B.wave, pierce: B.pierce || charged, col: B.col, big: charged, t: 0, hit: new Set() });
     G.fx.flash(m.x, m.y, B.col[1], charged ? 6 : 3);
     G.audio.sfx(charged ? 'charged' : 'shot');
   }
@@ -18,7 +18,7 @@
     const sup = p.sel === 1 && g.abil.supers && p.supers > 0;
     if (sup) p.supers--; else if (p.missiles > 0 && g.abil.missiles) p.missiles--; else return;
     const m = P.muzzle(p), v = P.aimVec(p);
-    g.shots.push({ kind: sup ? 'super' : 'missile', x: m.x, y: m.y, vx: v.x * 2, vy: v.y * 2, dx: v.x, dy: v.y, spd: 2, life: 120, dmg: sup ? 24 : 8, r: 3, t: 0, hit: new Set() });
+    g.shots.push({ kind: sup ? 'super' : 'missile', x: m.x, y: m.y, vx: v.x * 2, vy: v.y * 2, dx: v.x, dy: v.y, spd: 2, life: 130, dmg: sup ? 24 : 8, r: 3, t: 0, hit: new Set() });
     p.fireCd = 10; G.audio.sfx(sup ? 'super' : 'missile');
   }
   function bomb(g, p) {

@@ -5,9 +5,17 @@
   const approach = (v, t, r) => (v < t ? Math.min(t, v + r) : Math.max(t, v - r));
   function aimFrom(g, p, I) {
     const S = G.settings, M = G.input.mouse;
+    p.aimTarget = null;
+    const st = G.input.stick;
+    if (st) {                                           /* right stick: free 360-degree aim */
+      p.aimTarget = { dx: st.x, dy: st.y }; if (Math.abs(st.x) > 0.2) p.face = st.x > 0 ? 1 : -1;
+      const ang = Math.atan2(-st.y, Math.abs(st.x));
+      return ang > 1.15 ? 'up' : ang > 0.4 ? 'diagUp' : ang < -0.4 ? 'diagDown' : 'fwd';
+    }
     if (S.mouseAim && M.on && g.cam && !I.u && !(I.aim && I.d) && (M.fire || performance.now() - M.t < 2500)) {
       const ox = M.x + g.cam.x - p.x, oy = M.y + g.cam.y - (p.y - 28), ang = Math.atan2(-oy, Math.abs(ox));
       if (Math.abs(ox) > 3) p.face = ox > 0 ? 1 : -1;
+      p.aimTarget = { wx: M.x + g.cam.x, wy: M.y + g.cam.y };
       return ang > 1.15 ? 'up' : ang > 0.4 ? 'diagUp' : ang < -0.4 ? 'diagDown' : 'fwd';
     }
     if (I.u) return (I.l || I.r) ? 'diagUp' : 'up';
@@ -35,6 +43,8 @@
     const ball = p.mode === 'ball';
     /* ---- aim + facing ---- */
     p.aim = ball ? 'fwd' : aimFrom(g, p, I);
+    p.aimAng = null;                                         /* exact aim angle (mouse / stick); the sprite snaps to the nearest pose */
+    if (!ball && p.aimTarget) { const m = P.muzzle(p), t = p.aimTarget; const dx = t.wx !== undefined ? t.wx - m.x : t.dx, dy = t.wy !== undefined ? t.wy - m.y : t.dy; if (Math.hypot(dx, dy) > 6) p.aimAng = Math.atan2(dy, dx); }
     if (dir && !(I.aim && !ball)) p.face = dir; else if (I.aim && !ball && (I.l || I.r)) p.face = I.r ? 1 : -1;
     /* ---- horizontal ---- */
     const moving = dir && !(I.aim && !ball);

@@ -30,11 +30,13 @@
       for (const g of navigator.getGamepads()) {
         if (!g || !g.connected) continue;
         const bt = (i) => !!(g.buttons[i] && g.buttons[i].pressed), ax = g.axes[0] || 0, ay = g.axes[1] || 0;
+        const rx = g.axes[2] || 0, ry = g.axes[3] || 0; pad.stick = Math.hypot(rx, ry) > 0.4 ? { x: rx, y: ry } : null;
         pad.l = ax < -0.4 || bt(14); pad.r = ax > 0.4 || bt(15); pad.u = ay < -0.5 || bt(12); pad.d = ay > 0.5 || bt(13);
         pad.jump = bt(0); pad.fire = bt(2) || bt(7); pad.missile = bt(1); pad.swap = bt(3); pad.dash = bt(5) || bt(6); pad.aim = bt(4); pad.map = bt(8); pad.grapple = bt(11); pad.scan = bt(10); pad.pause = bt(9); pad.start = bt(9);
         break;
       }
     }
+    I.stick = pad.stick || null;
     for (const a of ACTIONS) {
       const h = !!I.k[a] || !!pad[a];
       I.down[a] = !!I.lt[a] || (!!pad[a] && !I.prev[a]);
