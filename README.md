@@ -1,6 +1,6 @@
 # SpaceTroid
 
-A free, original, non-commercial exploration platformer in hand-authored hi-bit pixel art (480x270): five zones, upgrades that open the map, bosses and an escape. **Work in progress: zones 1 (Crash Site) and 2 (Cryo Vaults) are playable from the title screen, with 25 rooms, doors, save points, a map, items and two bosses.**
+A free, original, non-commercial exploration platformer in hand-authored hi-bit pixel art (480x270): five zones, upgrades that open the map, bosses and an escape. **Work in progress: zones 1 (Crash Site), 2 (Cryo Vaults) and 3 (Magma Forge) are playable from the title screen, with 37 rooms, doors, save points, a map, items and three bosses.**
 
 The art is authored as palette-indexed character grids (see `tools/hero_gen.py` and `js/art/`), compiled to canvases at start-up; there are no image files. Preview the current art at `sheet.html`.
 
@@ -38,4 +38,4 @@ Doors: **blue** opens with any shot, **red** needs a missile, **green** a super 
 
 ## Progress notes
 
-Zone 1 gives you the morph ball, missiles and bombs (and the charge beam after its boss), plus energy tanks and missile expansions. Zone 2 adds ice floors, falling icicles, frost wisps you can freeze into stepping stones with the ice beam, shard turrets, a second boss, and the heat suit. Space jump, dash, wave and plasma beams, super missiles and the remaining three zones are still to come.
+Zone 1 gives you the morph ball, missiles and bombs (and the charge beam after its boss), plus energy tanks and missile expansions. Zone 2 adds ice floors, falling icicles, frost wisps you can freeze into stepping stones with the ice beam, shard turrets, a second boss, and the heat suit. Zone 3 adds lava (wadeable with the heat suit), moving platforms, dash blocks and wave-crystal blocks, space jump, dash boots, the wave beam and a lava-wyrm boss. Plasma beam, super missiles, scan visor, grapple, the aqua suit and the last two zones are still to come.

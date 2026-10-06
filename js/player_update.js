@@ -19,6 +19,7 @@
     const p = g.P, I = G.input.held, D = G.input.down, room = g.room, A = g.abil;
     if (p.dead) { p.dead++; return; }
     p.inv = Math.max(0, p.inv - 1); p.hurt = Math.max(0, p.hurt - 1); p.fireCd = Math.max(0, p.fireCd - 1); p.bombCd = Math.max(0, p.bombCd - 1); p.dashCd = Math.max(0, p.dashCd - 1); p.landT = Math.max(0, p.landT - 1); p.spin = Math.max(0, p.spin - 1);
+    if (G.grapple.update(g)) { p.anim += 0; G.weapons.playerFire(g, p, G.input.held, G.input.down); return; }
     const lock = p.hurt > 0;
     const dir = lock ? 0 : (I.r ? 1 : 0) - (I.l ? 1 : 0);
     if (D.jump) p.jbuf = 7; else p.jbuf = Math.max(0, p.jbuf - 1);
@@ -37,7 +38,9 @@
     /* ---- horizontal ---- */
     const moving = dir && !(I.aim && !ball);
     const sprint = I.dash && p.ground && p.mode === 'stand';   /* holding Shift always sprints; the tap-dash burst is the gated upgrade */
-    const top = ball ? K.ball : sprint ? K.run : K.walk;
+    const wet = G.room.at(room, Math.floor(p.x / 16), Math.floor((p.y - p.h * 0.4) / 16)) === 14, aqua = !!A.suitAqua;
+    if (wet && !p.wasWet) { G.fx.puff(p.x, p.y - 10, 5); G.audio.sfx('land'); } p.wasWet = wet;
+    let top = ball ? K.ball : sprint ? K.run : K.walk; if (wet) top *= aqua ? 0.92 : 0.55;
     const slick = p.ground && G.room.at(room, Math.floor(p.x / 16), Math.floor((p.y + 1) / 16)) === 10;   /* ice floor: slow to start, slow to stop */
     if (p.dash > 0) { p.dash--; p.vx = p.face * K.dash; p.vy = 0; if (!p.dash) p.dashCd = 22; }
     else if (moving) p.vx = approach(p.vx, dir * top, p.ground ? (Math.sign(p.vx) === -dir ? K.dec : K.acc) * (slick ? 0.3 : 1) : (Math.abs(p.vx) > top && Math.sign(p.vx) === dir ? 0.02 : K.airAcc));
@@ -60,7 +63,9 @@
     else if (p.spinning && (I.fire || I.u || D.missile)) { p.spinning = false; p.noSpin = true; }
     if (p.spinning) p.spinT++;
     /* ---- gravity + collision ---- */
-    if (!p.dash) p.vy = Math.min(K.fall, p.vy + K.g);
+    if (wet && D.jump && p.swimCd === 0 && !ball && !lock) { p.vy = aqua ? -4.4 : -2.6; p.swimCd = aqua ? 9 : 15; p.jbuf = 0; p.ground = false; G.fx.puff(p.x, p.y - 20, 2); }
+    p.swimCd = Math.max(0, (p.swimCd || 0) - 1);
+    if (!p.dash) p.vy = Math.min(wet ? (aqua ? 3 : 1.8) : K.fall, p.vy + (wet ? (aqua ? 0.2 : 0.12) : K.g));
     const wasAir = !p.ground, vyBefore = p.vy;
     PH.moveX(room, p, p.vx);
     p.ground = p.ground && PH.onGround(room, p, p.drop);
@@ -68,6 +73,16 @@
     if (p.ground && wasAir && vyBefore > 2) { p.landT = 6; G.fx.puff(p.x, p.y, 3); }
     if (p.ground || (p.drop && PH.support(room, p, p.y - 10, p.y + 2, false) === null && p.vy > 1)) p.drop = false;
     p.anim += Math.abs(p.vx) * (ball ? 0.16 : 0.12);
+    /* dash blocks shatter when you dash into them */
+    if (p.dash > 0) {
+      const tx = Math.floor((p.x + p.face * (p.w / 2 + 3)) / 16);
+      for (let ty = Math.floor((p.y - p.h + 2) / 16); ty <= Math.floor((p.y - 2) / 16); ty++) if (G.room.at(room, tx, ty) === 13) { G.room.set(room, tx, ty, 0); G.fx.debris(tx * 16 + 8, ty * 16 + 8, ['#efba42', '#946a78', '#46283a']); G.audio.sfx('break'); }
+    }
+    /* lava: with the heat suit it is a slow, swimmable fluid; without it, it burns and throws you out */
+    if (PH.boxTiles(room, p.x - p.w / 2, p.y - Math.min(p.h, 12), p.x + p.w / 2, p.y - 0.01, 11)) {
+      if (A.suitHeat) { p.inLava = true; p.vx *= 0.9; p.vy = Math.min(p.vy, 1.6); if (I.jump && !lock) p.vy = -2.2; }
+      else if (P.hurt(g, p, 30, p.x + (Math.random() - 0.5))) { p.vy = -6.5; G.audio.sfx('hurt'); }
+    } else p.inLava = false;
     G.weapons.playerFire(g, p, I, D);
   };
 })((window.SGS = window.SGS || {}));

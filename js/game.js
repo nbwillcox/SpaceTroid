@@ -13,7 +13,7 @@
     Game.abil = debugAll ? Game.abilAll() : rec.abil;
     const p = Game.P = P.create(0, 0), h = rec.hero;
     p.tanks = h.tanks; p.missileMax = debugAll ? 20 : h.missileMax; p.missiles = debugAll ? 20 : h.missiles; p.sbombMax = debugAll ? 5 : h.sbombMax; p.sbombs = debugAll ? 5 : h.sbombs; p.superMax = h.superMax; p.supers = h.supers;
-    p.en = P.enMax(p); if (Game.abil.suitHeat) p.suit = 'crimson';
+    p.en = P.enMax(p); if (Game.abil.suitAqua) p.suit = 'teal'; else if (Game.abil.suitHeat) p.suit = 'crimson';
     Game.cam = { x: 0, y: 0 }; Game.shake = 0; Game.hitStop = 0; Game.time = 0; Game.playTime = rec.time || 0; Game.saveRec = null; Game.banner = null; Game.toast = null; Game.trans = null; Game.boss = null;
     Game.enterRoom(rec.room, null, rec.x, rec.y);
     Game.fade = { dir: -1, t: 14, len: 14 };
@@ -21,7 +21,7 @@
   Game.enterRoom = function (id, doorId, sx, sy) {
     const def = G.rooms[id], room = RM.build(def), p = Game.P;
     Game.room = room; Game.roomId = id; Game.shots = []; Game.bombs = []; Game.foes = []; Game.items = []; Game.spores = []; Game.boss = null; G.fx.reset();
-    G.world.setup(Game, room);
+    G.world.setup(Game, room); G.movers.setup(Game, def); Game.frozenRects = []; Game.buildDyn();
     if (doorId) { const dd = Game.doors.find((q) => q.id === doorId); if (dd && !dd.sealed) { dd.state = 'open'; dd.idle = 0; G.world.applyDoor(room, dd); } }
     let start = null;
     for (const s of room.spawns) {
@@ -33,6 +33,10 @@
       else if (s.ch === 'q') G.enemies.spawn(Game, 'wisp', s.x, s.y - 8, -1);
       else if (s.ch === 't') G.enemies.spawn(Game, 'turret', s.x, s.y, -1);
       else if (s.ch === 'v') G.enemies.spawn(Game, 'icicle', s.x, s.ty * 16 + 22, -1);
+      else if (s.ch === 'n') G.enemies.spawn(Game, 'cinder', s.x, s.y, -1);
+      else if (s.ch === 'h') G.enemies.spawn(Game, 'hopper', s.x, s.y, -1);
+      else if (s.ch === 'e') G.enemies.spawn(Game, 'ember', s.x, s.y, -1);
+      else if (s.ch === 'z') G.enemies.spawn(Game, 'magmite', s.x, s.y, -1);
     }
     p.vx = p.vy = 0; p.dead = 0; p.inv = 0; p.hurt = 0; p.charge = 0; p.dash = 0; p.spinning = false; p.drop = false;
     const setMode = (m) => { p.mode = m; p.w = m === 'ball' ? 16 : 14; p.h = m === 'ball' ? 15 : 42; };
@@ -47,6 +51,7 @@
     G.render.bake(room); G.render.camera(Game, true);
     if (G.bosses) G.bosses.setup(Game, room);
   };
+  Game.buildDyn = function () { Game.room.dyn = G.movers.rects(Game).concat(Game.frozenRects || []); };
   Game.respawn = function () {
     const rec = Game.slot !== null && Game.slot !== undefined && G.save.read(Game.slot) || Game.saveRec || Game.baseRec;
     const dbg = Game.debugAll; Game.begin(Game.slot, rec, false); if (dbg) Game.debugAll = true;
@@ -66,7 +71,8 @@
     }
     if (Game.hitStop > 0) { Game.hitStop--; return; }
     Game.time++; Game.playTime += 1 / 60; Game.shake = Math.max(0, Game.shake - 0.5);
-    P.update(Game); G.weapons.update(Game); G.enemies.update(Game); if (G.bosses) G.bosses.update(Game); G.world.update(Game); G.fx.update();
+    G.movers.update(Game); Game.buildDyn();
+    P.update(Game); G.weapons.update(Game); G.enemies.update(Game); Game.buildDyn(); if (G.bosses) G.bosses.update(Game); G.world.update(Game); G.fx.update();
     if (!p.dead && p.inv === 0 && PH.boxTiles(room, p.x - p.w / 2, p.y - 6, p.x + p.w / 2, p.y - 0.01, 8)) { if (P.hurt(Game, p, 14, p.x + (Math.random() - 0.5))) { G.audio.sfx('hurt'); p.vy = -4.5; } }
     G.render.camera(Game, false);
     if (p.dead > 150) Game.respawn();

@@ -10,6 +10,13 @@
     charge: { name: 'CHARGE BEAM', ramp: 'cobalt', lines: ['Hold Fire to charge a heavy shot.', 'Release at full charge.'], apply: (g) => { g.abil.charge = true; } },
     iceBeam: { name: 'ICE BEAM', ramp: 'cobalt', lines: ['Freezes enemies solid for a while.', 'Frozen enemies make stepping stones. Toggle: 1'], apply: (g) => { g.abil.hasIce = true; g.abil.beams.ice = true; } },
     heatSuit: { name: 'HEAT SUIT', ramp: 'crimson', lines: ['Shrugs off extreme heat.', 'Magma will hurt far less.'], apply: (g) => { g.abil.suitHeat = true; g.P.suit = 'crimson'; } },
+    spaceJump: { name: 'SPACE JUMP', ramp: 'teal', lines: ['Press Jump again in mid-air to flip higher.', 'Chain it to climb tall shafts.'], apply: (g) => { g.abil.spacejump = true; } },
+    dashBoots: { name: 'DASH BOOTS', ramp: 'gold', lines: ['Tap Shift for a burst of speed.', 'Dash into cracked blocks; jump out of a dash to leap far.'], apply: (g) => { g.abil.dash = true; } },
+    waveBeam: { name: 'WAVE BEAM', ramp: 'visor', lines: ['Shots ripple through walls and shatter crystal blocks.', 'Toggle: 2'], apply: (g) => { g.abil.hasWave = true; g.abil.beams.wave = true; } },
+    aquaSuit: { name: 'AQUA SUIT', ramp: 'cobalt', lines: ['Swim and move freely underwater.', 'Water no longer drags you down.'], apply: (g) => { g.abil.suitAqua = true; g.P.suit = 'teal'; } },
+    grapple: { name: 'GRAPPLE BEAM', ramp: 'gold', lines: ['Hold Q near a ceiling anchor to be reeled in.', 'Jump to leap from it.'], apply: (g) => { g.abil.grapple = true; } },
+    superMissile: { name: 'SUPER MISSILES', ramp: 'teal', lines: ['Opens green doors; hits much harder.', 'R swaps between missile types.'], apply: (g) => { g.abil.supers = true; g.P.superMax = Math.max(g.P.superMax, 5); g.P.supers = g.P.superMax; } },
+    superTank: { name: 'SUPER MISSILE EXPANSION', tank: 'super', lines: ['Super missile capacity +5.'], apply: (g) => { g.P.superMax += 5; g.P.supers = Math.min(g.P.superMax, g.P.supers + 5); } },
     energyTank: { name: 'ENERGY TANK', tank: 'energy', lines: ['Maximum energy +100.'], apply: (g) => { g.P.tanks++; g.P.en = G.player.enMax(g.P); } },
     missileTank: { name: 'MISSILE EXPANSION', tank: 'missile', lines: ['Missile capacity +5.'], apply: (g) => { g.P.missileMax += 5; g.P.missiles = Math.min(g.P.missileMax, g.P.missiles + 5); } },
   };

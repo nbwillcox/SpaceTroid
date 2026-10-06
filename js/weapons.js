@@ -45,7 +45,7 @@
   };
   W.breakAt = function (g, tx, ty, kind) {
     const k = RM.at(g.room, tx, ty);
-    const ok = k === 5 || (k === 6 && (kind === 'bomb')) || (k === 7 && (kind === 'missile' || kind === 'super' || kind === 'bomb2'));
+    const ok = k === 5 || (k === 12 && kind === 'wave') || (k === 6 && (kind === 'bomb')) || (k === 7 && (kind === 'missile' || kind === 'super' || kind === 'bomb2'));
     if (!ok) return false;
     RM.set(g.room, tx, ty, 0); G.fx.debris(tx * T + 8, ty * T + 8, k === 5 ? ['#8a5a40', '#b88454', '#5c3a34'] : ['#52627a', '#7f8c96', '#33405e']); G.audio.sfx('break');
     return true;
@@ -66,7 +66,7 @@
       s.x += s.vx; s.y += s.vy; s.life--;
       const tx = Math.floor(s.x / T), ty = Math.floor(s.y / T), k = RM.at(room, tx, ty);
       if (RM.isSolid(k) || ((k === 3 || k === 4) && s.y >= RM.surface(k, ty, Math.floor(s.x) - tx * T))) {
-        const brk = W.breakAt(g, tx, ty, s.kind === 'beam' ? 'shot' : s.kind);
+        const brk = W.breakAt(g, tx, ty, s.kind === 'beam' ? (s.wave ? 'wave' : 'shot') : s.kind);
         if (k === 9) G.world.shotDoor(g, tx, ty, s.kind === 'beam' ? 'shot' : s.kind);
         if (k === 5 && s.kind === 'beam') { s.dead = true; G.fx.spark(s.x, s.y, '#fff'); }
         else if (s.wave && s.kind === 'beam') { /* wave passes walls */ }

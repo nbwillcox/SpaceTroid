@@ -31,7 +31,7 @@
   }
   function ending(ctx, time, g) {
     ctx.fillStyle = '#05071a'; ctx.fillRect(0, 0, 480, 270);
-    txt(ctx, 'ZONE ' + g.room.zone + ' COMPLETE', 240, 60, '#fff2a8', 'c', 3); txt(ctx, g.room.zone === 1 ? 'THE LIFT DESCENDS INTO THE CRYO VAULTS...' : 'HEAT RISES FROM BELOW. THE MAGMA FORGE AWAITS...', 240, 100, '#a6ccff', 'c');
+    txt(ctx, 'ZONE ' + g.room.zone + ' COMPLETE', 240, 60, '#fff2a8', 'c', 3); txt(ctx, ['', 'THE LIFT DESCENDS INTO THE CRYO VAULTS...', 'HEAT RISES FROM BELOW. THE MAGMA FORGE AWAITS...', 'FLOODWATER ROARS BELOW. THE DROWNED REACTOR AWAITS...'][g.room.zone], 240, 100, '#a6ccff', 'c');
     const n = Object.keys(g.prog.items).length, tot = G.world.itemTotal();
     txt(ctx, 'ITEMS  ' + n + ' / ' + tot + '  (' + Math.round(100 * n / tot) + '%)', 240, 140, '#dde7fb', 'c'); txt(ctx, 'TIME  ' + fmtTime(g.playTime), 240, 156, '#dde7fb', 'c');
     txt(ctx, 'TO BE CONTINUED', 240, 196, '#ec5c4a', 'c', 2);

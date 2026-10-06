@@ -20,7 +20,7 @@
     for (let ty = fl(yA / T); ty <= fl(yB / T); ty++) {
       for (let tx = fl(l / T); tx <= fl((r - E) / T); tx++) {
         const k = RM.at(room, tx, ty);
-        if (!k || k === 8) continue;
+        if (!k || k === 8 || k === 11 || k === 14 || k === 15) continue;
         let s;
         if (k === 3 || k === 4) {
           /* feet are narrower than the body on slopes: sample the foot columns centre +-3 and rest on the highest one */

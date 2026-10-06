@@ -2,7 +2,7 @@
 (function (G) {
   'use strict';
   const T = 16;
-  const CH = { '.': 0, '#': 1, '=': 2, '/': 3, '\\': 4, 'b': 5, 'B': 6, 'M': 7, '^': 8, 'i': 10 };
+  const CH = { '.': 0, '#': 1, '=': 2, '/': 3, '\\': 4, 'b': 5, 'B': 6, 'M': 7, '^': 8, 'i': 10, 'L': 11, 'x': 12, 'D': 13, 'W': 14, 'G': 15 };
   const R = { T: { AIR: 0, SOLID: 1, LEDGE: 2, SLR: 3, SLL: 4, SHOT: 5, BOMB: 6, MISSILE: 7, SPIKE: 8 } };
   G.room = R;
   R.build = function (def) {
@@ -14,15 +14,18 @@
       else if (c === 'w') room.wall[y * w + x] = 1;
       else if (c !== ' ') room.spawns.push({ ch: c, x: x * T + 8, y: y * T + T, tx: x, ty: y });
     }
+    room.water = []; for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (room.t[y * w + x] === 14) room.water.push({ tx: x, ty: y, top: y === 0 || room.t[(y - 1) * w + x] !== 14 });
+    room.anchors = []; for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (room.t[y * w + x] === 15) room.anchors.push({ x: x * T + 8, y: y * T + 8, tx: x, ty: y });
+    room.lava = []; for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (room.t[y * w + x] === 11) room.lava.push({ tx: x, ty: y, top: y === 0 || room.t[(y - 1) * w + x] !== 11 });
     /* back wall: any marked 'w' cell, or every air cell when def.wallAll is set */
     if (def.wallAll) for (let i = 0; i < w * h; i++) if (!room.t[i]) room.wall[i] = 1;
     return room;
   };
   /* tile type at tile coords; outside left/right/bottom counts as solid, above the top as air */
   R.at = (room, tx, ty) => (ty < 0 ? 0 : tx < 0 || tx >= room.w || ty >= room.h ? 1 : room.t[ty * room.w + tx]);
-  R.isSolid = (k) => k === 1 || k === 5 || k === 6 || k === 7 || k === 9 || k === 10;
+  R.isSolid = (k) => k === 1 || k === 5 || k === 6 || k === 7 || k === 9 || k === 10 || k === 12 || k === 13;
   R.solidAt = (room, tx, ty) => R.isSolid(R.at(room, tx, ty));
   R.set = (room, tx, ty, k) => { if (tx >= 0 && ty >= 0 && tx < room.w && ty < room.h) { room.t[ty * room.w + tx] = k; room.dirty = true; } };
   /* y of the walkable surface of a tile at local pixel column lx (0..15), or null */
-  R.surface = (k, ty, lx) => (k === 1 || k === 5 || k === 6 || k === 7 || k === 9 || k === 10 || k === 2 ? ty * T : k === 3 ? ty * T + 16 - lx : k === 4 ? ty * T + 1 + lx : null);
+  R.surface = (k, ty, lx) => (k === 1 || k === 5 || k === 6 || k === 7 || k === 9 || k === 10 || k === 12 || k === 13 || k === 2 ? ty * T : k === 3 ? ty * T + 16 - lx : k === 4 ? ty * T + 1 + lx : null);
 })((window.SGS = window.SGS || {}));

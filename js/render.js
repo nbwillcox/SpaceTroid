@@ -4,7 +4,7 @@
   const S = G.sprites, RM = G.room, T = 16, U = G.U;
   const R = {};
   G.render = R;
-  const solidish = (room, tx, ty) => { const k = RM.at(room, tx, ty); return k === 1 || k === 3 || k === 4 || k === 5 || k === 6 || k === 7 || k === 9 || k === 10; };
+  const solidish = (room, tx, ty) => { const k = RM.at(room, tx, ty); return k === 1 || k === 3 || k === 4 || k === 5 || k === 6 || k === 7 || k === 9 || k === 10 || k === 12 || k === 13; };
   const hash = (a, b) => ((a * 73856093) ^ (b * 19349663)) >>> 0;
   /* bake the static layers of a room into one canvas (re-run when blocks break) */
   R.bake = function (room) {
@@ -37,6 +37,8 @@
       else if (k === 7) x.drawImage(tile.missile, px, py);
       else if (k === 8) x.drawImage(tile.spikes, px, py);
       else if (k === 10) x.drawImage(tile.ice, px, py);
+      else if (k === 12) x.drawImage(tile.wave, px, py);
+      else if (k === 13) x.drawImage(tile.dashblock, px, py);
     }
     room.baked = c; room.dirty = false;
   };
@@ -67,7 +69,12 @@
     G.world.drawBack(ctx, g, time);
     G.enemies.draw(ctx, g, time);
     G.bosses.draw(ctx, g, time);
-    G.world.drawFront(ctx, g, time);
+    const TS3 = S.tilesets[room.zone || 1], lf = Math.floor(time * 6) & 3;
+    const lavaPass = () => { for (const l of room.lava) { const lx = l.tx * T, ly = l.ty * T; if (lx + 16 < ox || lx > ox + 480 || ly + 16 < oy || ly > oy + 270) continue; ctx.drawImage((l.top ? TS3.lavaTop : TS3.lava)[(lf + l.tx) & 3], lx, ly); } };
+    if (room.lava.length) lavaPass();
+    const waterPass = (a) => { ctx.globalAlpha = a; for (const w of room.water) { const wx = w.tx * T, wy = w.ty * T; if (wx + 16 < ox || wx > ox + 480 || wy + 16 < oy || wy > oy + 270) continue; ctx.fillStyle = '#2a78c8'; ctx.fillRect(wx, wy, 16, 16); if (w.top) { ctx.fillStyle = '#c8f0ff'; ctx.fillRect(wx, wy + (Math.floor(time * 3 + w.tx) & 1), 16, 1); } else if ((w.tx * 7 + w.ty * 13 + Math.floor(time * 2)) % 9 === 0) { ctx.fillStyle = '#a8e8ff'; ctx.fillRect(wx + 5, wy + 6, 2, 2); } } ctx.globalAlpha = 1; };
+    if (room.water.length) waterPass(0.26);
+    G.movers.draw(ctx, g); G.world.drawFront(ctx, g, time);
     for (const b of g.bombs) {
       const fl = Math.floor(b.t / (b.t > 30 ? 3 : 6)) & 1, r = b.big ? 7 : 4, bx = Math.round(b.x), by = Math.round(b.y);
       ctx.fillStyle = b.big ? '#6b3d14' : '#2e3452'; ctx.fillRect(bx - r, by - r + 1, r * 2, r * 2 - 2); ctx.fillRect(bx - r + 1, by - r, r * 2 - 2, r * 2);
@@ -82,6 +89,9 @@
       else ctx.drawImage(c, Math.round(p.x - S.heroAx), Math.round(p.y - S.heroAy));
       if (p.charge > 0) { const m = G.player.muzzle(p), r = 1 + Math.floor(p.charge / 14); ctx.fillStyle = p.charge >= 50 ? '#fff' : '#ffd24a'; ctx.fillRect(Math.round(m.x) - r, Math.round(m.y) - r, r * 2, r * 2); if (Math.floor(time * 30) & 1) { ctx.fillStyle = '#fff6a0'; ctx.fillRect(Math.round(m.x) - r - 1, Math.round(m.y), 1, 1); ctx.fillRect(Math.round(m.x) + r, Math.round(m.y), 1, 1); } }
     }
+    if (room.lava.length) { ctx.globalAlpha = 0.5; lavaPass(); ctx.globalAlpha = 1; }
+    if (room.water.length) waterPass(0.2);
+    G.grapple.draw(ctx, g, time);
     for (const s of g.shots) R.shot(ctx, s, time);
     G.fx.draw(ctx);
     ctx.restore();

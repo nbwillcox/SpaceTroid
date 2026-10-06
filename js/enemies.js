@@ -35,7 +35,7 @@
     const wall = PH.boxSolid(room, ahead - 1, f.y - f.h, ahead + 1, f.y - E);
     const floor = PH.support(room, { x: ahead, w: 2 }, f.y - 2, f.y + 6, false) !== null;
     if (f.ground && (wall || !floor)) f.face = -f.face;
-    PH.moveX(room, f, f.face * 0.38);
+    PH.moveX(room, f, f.face * (f.spd || 0.38));
     f.anim += 0.07;
   }
   function flyMoth(g, f) {
@@ -64,18 +64,19 @@
     if (f.frozen > 0) { f.frozen--; return; }
     if (N.step[f.type]) N.step[f.type](g, f); else if (f.type === 'crawler') walkCrawler(g, f); else if (f.type === 'moth') flyMoth(g, f); else if (f.type === 'pod') pod(g, f);
   }
+  N.walk = walkCrawler;
   N.update = function (g) {
     const p = g.P;
     for (const f of g.foes) {
       if (f.dead) continue;
       foeStep(g, f);
-      if (!p.dead && Math.abs(p.x - f.x) < (p.w + f.w) / 2 - 1 && p.y > f.y - f.h + 2 && p.y - p.h < f.y - 2) {
+      if (!p.dead && !f.ghost && Math.abs(p.x - f.x) < (p.w + f.w) / 2 - 1 && p.y > f.y - f.h + 2 && p.y - p.h < f.y - 2) {
         if (f.frozen > 0) continue;
         if (G.player.hurt(g, p, f.dmg, f.x)) G.audio.sfx('hurt');
       }
     }
     g.foes = g.foes.filter((f) => !f.dead);
-    g.room.dyn = g.foes.filter((f) => f.frozen > 0 && f.type !== 'icicle').map((f) => ({ x0: f.x - f.w / 2 - 4, x1: f.x + f.w / 2 + 4, y: f.y - f.h }));
+    g.frozenRects = g.foes.filter((f) => f.frozen > 0 && f.type !== 'icicle').map((f) => ({ x0: f.x - f.w / 2 - 4, x1: f.x + f.w / 2 + 4, y: f.y - f.h }));
     for (const s of g.spores) {
       s.t++; if (s.kind !== 'shard') s.vy += 0.13; s.x += s.vx; s.y += s.vy;
       if (PH.boxSolid(g.room, s.x - 1, s.y - 1, s.x + 1, s.y + 1) || s.t > 200) s.dead = true;
@@ -101,6 +102,7 @@
   N.draw = function (ctx, g, time) {
     const SP = G.sprites.foe;
     for (const f of g.foes) {
+      if (f.type === 'magmite' && f.ghost) continue;
       const d = DEF[f.type], set = SP[f.type];
       const fr = N.frame[f.type] ? N.frame[f.type](f, set) : f.type === 'crawler' ? set[Math.floor(f.anim * 2.4) & 3] : f.type === 'moth' ? set[Math.floor(f.anim) & 3] : set[f.open > 0.6 ? 1 : 0];
       const c = f.face >= 0 ? fr.r : fr.l;
@@ -111,7 +113,7 @@
       if (f.flash > 0) { ctx.fillStyle = '#fff'; ctx.globalAlpha = 0.55; ctx.fillRect(Math.round(f.x - f.w / 2), Math.round(f.y - f.h), f.w, f.h); ctx.globalAlpha = 1; }
       if (f.frozen > 0) { ctx.fillStyle = '#7ad8ff'; ctx.globalAlpha = 0.5; ctx.fillRect(Math.round(f.x - f.w / 2), Math.round(f.y - f.h), f.w, f.h); ctx.globalAlpha = 1; ctx.fillStyle = '#f2ffff'; ctx.fillRect(Math.round(f.x - f.w / 2), Math.round(f.y - f.h), f.w, 1); }
     }
-    for (const s of g.spores) { if (s.kind === 'shard') { const x = Math.round(s.x), y = Math.round(s.y); ctx.fillStyle = '#146e94'; ctx.fillRect(x - 3, y - 1, 7, 3); ctx.fillRect(x - 1, y - 3, 3, 7); ctx.fillStyle = '#86f0f2'; ctx.fillRect(x - 2, y - 1, 5, 1); ctx.fillStyle = '#f2ffff'; ctx.fillRect(x - 1, y - 1, 2, 1); continue; } ctx.fillStyle = '#ec5c4a'; ctx.fillRect(Math.round(s.x) - 2, Math.round(s.y) - 1, 4, 3); ctx.fillRect(Math.round(s.x) - 1, Math.round(s.y) - 2, 2, 5); ctx.fillStyle = '#ffb89c'; ctx.fillRect(Math.round(s.x) - 1, Math.round(s.y) - 1, 1, 1); }
+    for (const s of g.spores) { if (s.kind === 'fire') { const x = Math.round(s.x), y = Math.round(s.y); ctx.fillStyle = '#c04418'; ctx.fillRect(x - 3, y - 3, 7, 7); ctx.fillRect(x - 4, y - 1, 9, 3); ctx.fillStyle = '#ee8428'; ctx.fillRect(x - 2, y - 2, 5, 5); ctx.fillStyle = '#ffc450'; ctx.fillRect(x - 1, y - 1, 3, 3); ctx.fillStyle = '#fff2b0'; ctx.fillRect(x, y - 1, 1, 1); continue; } if (s.kind === 'shard') { const x = Math.round(s.x), y = Math.round(s.y); ctx.fillStyle = '#146e94'; ctx.fillRect(x - 3, y - 1, 7, 3); ctx.fillRect(x - 1, y - 3, 3, 7); ctx.fillStyle = '#86f0f2'; ctx.fillRect(x - 2, y - 1, 5, 1); ctx.fillStyle = '#f2ffff'; ctx.fillRect(x - 1, y - 1, 2, 1); continue; } ctx.fillStyle = '#ec5c4a'; ctx.fillRect(Math.round(s.x) - 2, Math.round(s.y) - 1, 4, 3); ctx.fillRect(Math.round(s.x) - 1, Math.round(s.y) - 2, 2, 5); ctx.fillStyle = '#ffb89c'; ctx.fillRect(Math.round(s.x) - 1, Math.round(s.y) - 1, 1, 1); }
     for (const it of g.items) {
       if (it.t > it.life - 120 && Math.floor(time * 12) % 2) continue;
       const x = Math.round(it.x), y = Math.round(it.y), b = Math.floor(time * 6) & 1;

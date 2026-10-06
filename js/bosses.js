@@ -8,13 +8,14 @@
     g.rocks = [];
     const s = room.spawns.find((q) => q.ch === 'K');
     if (room.id === 'arena' && !g.prog.flags.boss1) g.boss = { kind: 'beetle', flag: 'boss1', name: 'MOSSBACK WARDEN', x: s.x, y: s.y, w: 88, h: 56, hp: 110, hpMax: 110, state: 'wait', t: 0, face: -1, vx: 0, anim: 0, flash: 0, phase: 1, dead: false };
+    else if (room.id === 'arena3' && !g.prog.flags.boss3) g.boss = { kind: 'wyrm', flag: 'boss3', name: 'CINDER WYRM', x: s.x, y: 224, w: 60, h: 48, hp: 150, hpMax: 150, state: 'wait', t: 0, face: -1, vx: 0, anim: 0, flash: 0, phase: 1, dead: false, open: false, H: 80 };
     else if (room.id === 'arena2' && !g.prog.flags.boss2) g.boss = { kind: 'moth', flag: 'boss2', name: 'RIMEWING SOVEREIGN', x: s.x, y: -60, w: 60, h: 90, hp: 130, hpMax: 130, state: 'wait', t: 0, face: 1, vx: 0, vy: 0, anim: 0, flash: 0, phase: 1, dead: false, volleys: 0 };
     else return;
     room.spawns = room.spawns.filter((q) => q.ch !== 'K');
   };
-  const core = (b) => (b.kind === 'moth' ? { x: b.x, y: b.y + 6 } : { x: b.x - b.face * 30, y: b.y - 52 });
-  const vulnerable = (b) => b.state === 'stun';
-  const inCore = (b, x, y) => { const c = core(b); return b.kind === 'moth' ? Math.abs(x - c.x) < 24 && Math.abs(y - c.y) < 26 : Math.abs(x - c.x) < 30 && y > b.y - 76 && y < b.y - 28; };
+  const core = (b) => (b.kind === 'wyrm' ? { x: b.x, y: b.y } : b.kind === 'moth' ? { x: b.x, y: b.y + 6 } : { x: b.x - b.face * 30, y: b.y - 52 });
+  const vulnerable = (b) => (b.kind === 'wyrm' ? !!b.open && b.state === 'attack' : b.state === 'stun');
+  const inCore = (b, x, y) => { const c = core(b); return b.kind === 'wyrm' ? Math.abs(x - c.x) < 34 && Math.abs(y - c.y) < 28 : b.kind === 'moth' ? Math.abs(x - c.x) < 24 && Math.abs(y - c.y) < 26 : Math.abs(x - c.x) < 30 && y > b.y - 76 && y < b.y - 28; };
   B.damage = function (g, b, dmg) {
     if (!vulnerable(b) || b.dead) return false;
     b.hp -= dmg; b.flash = 4; G.audio.sfx('hit');

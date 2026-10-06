@@ -26,19 +26,34 @@
   P.ramps.iceearth = ['#101a38', '#22305c', '#3c5084', '#5a74a8', '#86a0c8'];
   P.ramps.aurora = ['#04122a', '#082444', '#0e3c5e', '#165a74', '#2a8a8a', '#58c8b0'];
   P.ramps.auroralight = ['#b6ffd8', '#60e0b8', '#b878ff'];
+  /* zone 3 (Magma Forge): basalt, ember glow instead of moss, furnace sky */
+  P.ramps.basalt = ['#140a12', '#2a1622', '#46283a', '#6a4056', '#946a78', '#c8a4a8'];
+  P.ramps.ember = ['#3a0c10', '#7a2012', '#c04418', '#ee8428', '#ffc450', '#fff2b0'];
+  P.ramps.slagearth = ['#1c0c12', '#3a1a20', '#5c2c2c', '#844030', '#b06a40'];
+  P.ramps.furnace = ['#0e0410', '#240818', '#401020', '#681c1c', '#9a3a1a', '#d86a24'];
+  P.ramps.smoke = ['#ffd890', '#f09040', '#c04830'];
+  /* zone 4 (Drowned Reactor): teal steel, coolant glow instead of moss, deep-sea sky */
+  P.ramps.reactor = ['#0a1418', '#142a30', '#244850', '#3c6c74', '#6a9aa0', '#aee0e0'];
+  P.ramps.coolant = ['#082830', '#105058', '#1c8488', '#38c0b0', '#80f0d0', '#d8fff0'];
+  P.ramps.reactorearth = ['#0c1820', '#1c3038', '#305058', '#4c7478', '#78a4a8'];
+  P.ramps.deepsea = ['#020a14', '#04182a', '#08304a', '#104c6c', '#1a7090', '#3aa4b8'];
+  P.ramps.biolight = ['#c8fff0', '#58e8c8', '#38a0e8'];
+  const ZONE_RAMPS = { 1: ['moss', 'stone', 'earth', 'fog', 'dusk'], 2: ['snow', 'icestone', 'iceearth', 'aurora', 'auroralight'], 3: ['ember', 'basalt', 'slagearth', 'furnace', 'smoke'], 4: ['coolant', 'reactor', 'reactorearth', 'deepsea', 'biolight'] };
   P.worldKeys = function (zone) {
-    const R = P.ramps, k = P.keys('cobalt'), z2 = zone === 2;
-    'ABCDEF'.split('').forEach((c, i) => { k[c] = (z2 ? R.snow : R.moss)[i]; });
-    '012345'.split('').forEach((c, i) => { k[c] = (z2 ? R.icestone : R.stone)[i]; });
-    'pqrtu'.split('').forEach((c, i) => { k[c] = (z2 ? R.iceearth : R.earth)[i]; });
-    'HIJKQR'.split('').forEach((c, i) => { k[c] = (z2 ? R.aurora : R.fog)[i]; });
-    const d = z2 ? R.auroralight : R.dusk; k.W = d[0]; k.X = d[1]; k.Z = d[2];
+    const R = P.ramps, k = P.keys('cobalt'), Z = ZONE_RAMPS[zone || 1];
+    'ABCDEF'.split('').forEach((c, i) => { k[c] = R[Z[0]][i]; });
+    '012345'.split('').forEach((c, i) => { k[c] = R[Z[1]][i]; });
+    'pqrtu'.split('').forEach((c, i) => { k[c] = R[Z[2]][i]; });
+    'HIJKQR'.split('').forEach((c, i) => { k[c] = R[Z[3]][i]; });
+    const d = R[Z[4]]; k.W = d[0]; k.X = d[1]; k.Z = d[2];
     return k;
   };
   /* letter -> hex for sprite grids ('.' is transparent) */
   P.keys = function (armor) {
     if (armor === 'world') return P.worldKeys(1);
     if (armor === 'world2') return P.worldKeys(2);
+    if (armor === 'world3') return P.worldKeys(3);
+    if (armor === 'world4') return P.worldKeys(4);
     const R = P.ramps, A = R[armor || 'cobalt'], k = {};
     k.o = A[0]; k['1'] = A[1]; k['2'] = A[2]; k['3'] = A[3]; k['4'] = A[4];
     k.s = R.gold[0]; k.k = R.gold[1]; k.y = R.gold[2]; k.Y = R.gold[3]; k.w = R.gold[4];

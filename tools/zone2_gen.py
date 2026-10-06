@@ -107,7 +107,7 @@ arena2()
 def heat():
     r = room('heat', 'Thermal Vault', 30, 17, 14, 4, wall_all=True)
     r.door('w', 'L', 12, 'blue', 'arena2', 'e')
-    r.item('heat', 'heatSuit', 10, 14); r.station('lift', 22, 14)
+    r.item('heat', 'heatSuit', 10, 14); r.station('lift', 22, 14, to='fgate')
     return r
 heat()
 
