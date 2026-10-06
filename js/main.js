@@ -17,8 +17,8 @@
   M.pause = function () { if (M.mode !== 'play') return; M.mode = 'pause'; I.clear(); UI.open('pause', 'pause'); };
   M.resume = function () { M.mode = 'play'; I.clear(); };
   M.openMap = function () { if (M.mode === 'pause' || M.mode === 'play') { M.fromPause = M.mode === 'pause'; M.mode = 'map'; I.clear(); } };
-  M.toTitle = function () { M.mode = 'title'; I.clear(); UI.open('title'); };
-  M.ending = function () { M.mode = 'end'; I.clear(); UI.open('end'); };
+  M.toTitle = function () { M.mode = 'title'; I.clear(); UI.open('title'); G.music.play('title'); };
+  M.ending = function () { M.mode = 'end'; I.clear(); UI.open('end'); G.music.play('ending'); };
   function update() {
     if (M.mode === 'play') {
       if (I.down.pause) { M.pause(); return; }
@@ -32,6 +32,7 @@
     if (M.mode === 'title') { UI.draw(ctx, t, Game.P && Game.room ? Game : null); return; }
     if (M.mode === 'end') { UI.draw(ctx, t, Game); return; }
     if (!Game.room) return;
+    if (M.mode === 'play') G.music.forRoom(Game);
     G.render.draw(ctx, Game, Game.time / 60); G.hud.draw(ctx, Game, Game.time / 60); G.hud.overlay(ctx, Game, Game.time / 60);
     if (M.mode === 'pause') UI.draw(ctx, t, Game);
     if (M.mode === 'map') G.map.drawScreen(ctx, Game, t);
@@ -47,7 +48,7 @@
   document.addEventListener('visibilitychange', () => { if (document.hidden) { I.clear(); if (M.mode === 'play') M.pause(); } });
   /* test hook: advance n steps with the given held keys, then draw (the pane does not run rAF while hidden) */
   M.run = function (n, held) { for (let i = 0; i < n; i++) { const nk = Object.assign({}, held || {}); for (const a in nk) if (!I.k[a]) I.lt[a] = true; I.k = nk; I.poll(); update(); } M.time += n / 60; M.render(); };
-  UI.open('title');
+  UI.open('title'); G.music.play('title');
   if (params.get('room')) M.startDebug(params.get('room'));
   requestAnimationFrame(frame);
 })((window.SGS = window.SGS || {}));
