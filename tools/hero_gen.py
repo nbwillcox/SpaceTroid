@@ -109,24 +109,29 @@ IDLE_LEGS = (((10, 9), (9, 15)), ((13, 9), (13, 15)))
 JUMP_LEGS = (((14, 8), (11, 13)), ((16, 7), (17, 12)))
 FALL_LEGS = (((11, 9), (9, 15)), ((14, 9), (15, 15)))
 def swap(pose): return (pose[1], pose[0])
-def compose(top, lg, dy=0):
-    g = [list(r) for r in (['.' * W] * 25 + lg)]
-    g[24] = list(lg[0])   # a skirt row under the belt so an upward bob never leaves a seam
+CW = 34   # final frame width: room on the right for the forward lean
+def lean_shift(y, lean, h=25):
+    return int(lean * (h - y) / h + 0.5) if y < h else 0
+def compose(top, lg, dy=0, lean=0):
+    pad = lambda r: '.' + r + '.' * (CW - W - 1)
+    g = [list(pad(r)) for r in (['.' * W] * 25 + lg)]
+    g[24] = list(pad(lg[0]))   # a skirt row under the belt so an upward bob never leaves a seam
     for y, r in enumerate(top):
         yy = y + dy
         if 0 <= yy < len(g):
+            sh = lean_shift(y, lean)
             for x, c in enumerate(r):
-                if c != '.': g[yy][x] = c
+                if c != '.' and 0 <= x + 1 + sh < CW: g[yy][x + 1 + sh] = c
     return [''.join(r) for r in g]
 if __name__ == '__main__':
     top = body()
-    frames = {'idle': compose(top, legs(IDLE_LEGS)), 'jump': compose(top, legs(JUMP_LEGS), -1), 'fall': compose(top, legs(FALL_LEGS))}
+    frames = {'idle': compose(top, legs(IDLE_LEGS), 0, 2), 'jump': compose(top, legs(JUMP_LEGS), -1, 2), 'fall': compose(top, legs(FALL_LEGS), 0, 1)}
     bob = [0, 1, 0, -1]
-    for i in range(4): frames['run%d' % i] = compose(top, legs(RUN[i]), bob[i])
-    for i in range(4): frames['run%d' % (i + 4)] = compose(top, legs(swap(RUN[i])), bob[i])
+    for i in range(4): frames['run%d' % i] = compose(top, legs(RUN[i]), bob[i], 5)
+    for i in range(4): frames['run%d' % (i + 4)] = compose(top, legs(swap(RUN[i])), bob[i], 5)
     for k, v in frames.items():
         for i, r in enumerate(v):
-            if len(r) != W: print('BAD', k, i, len(r))
+            if len(r) != CW: print('BAD', k, i, len(r))
     import os
     open(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'js', 'art', 'hero.js'), 'w').write("/* generated from tools/hero_gen.py (hand-authored parts) */\n(function (G) { 'use strict'; G.art = G.art || {}; G.art.heroParts = " + json.dumps(frames) + "; })((window.SGS = window.SGS || {}));\n")
     print('ok', len(frames))
