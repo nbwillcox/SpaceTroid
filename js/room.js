@@ -2,7 +2,7 @@
 (function (G) {
   'use strict';
   const T = 16;
-  const CH = { '.': 0, '#': 1, '=': 2, '/': 3, '\\': 4, 'b': 5, 'B': 6, 'M': 7, '^': 8 };
+  const CH = { '.': 0, '#': 1, '=': 2, '/': 3, '\\': 4, 'b': 5, 'B': 6, 'M': 7, '^': 8, 'i': 10 };
   const R = { T: { AIR: 0, SOLID: 1, LEDGE: 2, SLR: 3, SLL: 4, SHOT: 5, BOMB: 6, MISSILE: 7, SPIKE: 8 } };
   G.room = R;
   R.build = function (def) {
@@ -20,9 +20,9 @@
   };
   /* tile type at tile coords; outside left/right/bottom counts as solid, above the top as air */
   R.at = (room, tx, ty) => (ty < 0 ? 0 : tx < 0 || tx >= room.w || ty >= room.h ? 1 : room.t[ty * room.w + tx]);
-  R.isSolid = (k) => k === 1 || k === 5 || k === 6 || k === 7 || k === 9;
+  R.isSolid = (k) => k === 1 || k === 5 || k === 6 || k === 7 || k === 9 || k === 10;
   R.solidAt = (room, tx, ty) => R.isSolid(R.at(room, tx, ty));
   R.set = (room, tx, ty, k) => { if (tx >= 0 && ty >= 0 && tx < room.w && ty < room.h) { room.t[ty * room.w + tx] = k; room.dirty = true; } };
   /* y of the walkable surface of a tile at local pixel column lx (0..15), or null */
-  R.surface = (k, ty, lx) => (k === 1 || k === 5 || k === 6 || k === 7 || k === 9 || k === 2 ? ty * T : k === 3 ? ty * T + 16 - lx : k === 4 ? ty * T + 1 + lx : null);
+  R.surface = (k, ty, lx) => (k === 1 || k === 5 || k === 6 || k === 7 || k === 9 || k === 10 || k === 2 ? ty * T : k === 3 ? ty * T + 16 - lx : k === 4 ? ty * T + 1 + lx : null);
 })((window.SGS = window.SGS || {}));

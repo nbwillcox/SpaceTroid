@@ -8,6 +8,8 @@
     missile: { name: 'MISSILES', ramp: 'crimson', lines: ['Opens red doors and breaks missile blocks.', 'Right click or C to fire.'], apply: (g) => { g.abil.missiles = true; g.P.missileMax = Math.max(g.P.missileMax, 5); g.P.missiles = g.P.missileMax; } },
     bombs: { name: 'BOMBS', ramp: 'gold', lines: ['In ball form, Fire lays a bomb.', 'Bombs break bomb blocks and bounce you up.'], apply: (g) => { g.abil.bombs = true; } },
     charge: { name: 'CHARGE BEAM', ramp: 'cobalt', lines: ['Hold Fire to charge a heavy shot.', 'Release at full charge.'], apply: (g) => { g.abil.charge = true; } },
+    iceBeam: { name: 'ICE BEAM', ramp: 'cobalt', lines: ['Freezes enemies solid for a while.', 'Frozen enemies make stepping stones. Toggle: 1'], apply: (g) => { g.abil.hasIce = true; g.abil.beams.ice = true; } },
+    heatSuit: { name: 'HEAT SUIT', ramp: 'crimson', lines: ['Shrugs off extreme heat.', 'Magma will hurt far less.'], apply: (g) => { g.abil.suitHeat = true; g.P.suit = 'crimson'; } },
     energyTank: { name: 'ENERGY TANK', tank: 'energy', lines: ['Maximum energy +100.'], apply: (g) => { g.P.tanks++; g.P.en = G.player.enMax(g.P); } },
     missileTank: { name: 'MISSILE EXPANSION', tank: 'missile', lines: ['Missile capacity +5.'], apply: (g) => { g.P.missileMax += 5; g.P.missiles = Math.min(g.P.missileMax, g.P.missiles + 5); } },
   };
@@ -25,7 +27,7 @@
       return o;
     });
     g.pickups = (def.items || []).filter((it) => !g.prog.items[it.id]).map((it) => Object.assign({}, it, { x: it.tx * T + 8, y: it.ty * T + 16, t: Math.floor(Math.random() * 60) }));
-    g.stations = (def.stations || []).map((s) => ({ type: s.type, x: s.tx * T + 8, y: s.ty * T + 16, t: 0 }));
+    g.stations = (def.stations || []).map((s) => ({ type: s.type, to: s.to, x: s.tx * T + 8, y: s.ty * T + 16, t: 0 }));
     room.decor = (def.decor || []).map((d) => ({ img: G.sprites.wreck, x: d.x, y: d.y }));
     g.prog.visited[room.id] = true;
   };
@@ -70,7 +72,7 @@
   };
   W.useStation = function (g, s) {
     const p = g.P;
-    if (s.type === 'lift') { G.main.ending(g); return; }
+    if (s.type === 'lift') { if (s.to) g.trans = { t: 0, to: s.to, door: null, phase: 'out' }; else G.main.ending(g); return; }
     if (s.type === 'save') {
       p.en = G.player.enMax(p); p.missiles = p.missileMax; p.sbombs = p.sbombMax; p.supers = p.superMax;
       const rec = G.save.snapshot(g, { x: s.x, y: s.y }); g.prog.saves = rec.saves; g.saveRec = rec;

@@ -6,19 +6,20 @@
   const PAD = 46;
   B.setup = function (g, room) {
     g.rocks = [];
-    if (room.id !== 'arena' || g.prog.flags.boss1) return;
     const s = room.spawns.find((q) => q.ch === 'K');
-    g.boss = { x: s.x, y: s.y, w: 88, h: 56, hp: 110, hpMax: 110, state: 'wait', t: 0, face: -1, vx: 0, anim: 0, flash: 0, phase: 1, dead: false };
+    if (room.id === 'arena' && !g.prog.flags.boss1) g.boss = { kind: 'beetle', flag: 'boss1', name: 'MOSSBACK WARDEN', x: s.x, y: s.y, w: 88, h: 56, hp: 110, hpMax: 110, state: 'wait', t: 0, face: -1, vx: 0, anim: 0, flash: 0, phase: 1, dead: false };
+    else if (room.id === 'arena2' && !g.prog.flags.boss2) g.boss = { kind: 'moth', flag: 'boss2', name: 'RIMEWING SOVEREIGN', x: s.x, y: -60, w: 60, h: 90, hp: 130, hpMax: 130, state: 'wait', t: 0, face: 1, vx: 0, vy: 0, anim: 0, flash: 0, phase: 1, dead: false, volleys: 0 };
+    else return;
     room.spawns = room.spawns.filter((q) => q.ch !== 'K');
   };
-  const core = (b) => ({ x: b.x - b.face * 30, y: b.y - 52 });
+  const core = (b) => (b.kind === 'moth' ? { x: b.x, y: b.y + 6 } : { x: b.x - b.face * 30, y: b.y - 52 });
   const vulnerable = (b) => b.state === 'stun';
-  const inCore = (b, x, y) => { const c = core(b); return Math.abs(x - c.x) < 30 && y > b.y - 76 && y < b.y - 28; };
+  const inCore = (b, x, y) => { const c = core(b); return b.kind === 'moth' ? Math.abs(x - c.x) < 24 && Math.abs(y - c.y) < 26 : Math.abs(x - c.x) < 30 && y > b.y - 76 && y < b.y - 28; };
   B.damage = function (g, b, dmg) {
     if (!vulnerable(b) || b.dead) return false;
     b.hp -= dmg; b.flash = 4; G.audio.sfx('hit');
-    if (b.hp <= 65 && b.phase < 2) b.phase = 2;
-    if (b.hp <= 30 && b.phase < 3) b.phase = 3;
+    if (b.hp <= b.hpMax * 0.6 && b.phase < 2) b.phase = 2;
+    if (b.hp <= b.hpMax * 0.28 && b.phase < 3) b.phase = 3;
     if (b.hp <= 0) { b.dead = true; b.state = 'dying'; b.t = 0; G.audio.sfx('boom'); g.shake = 10; }
     return true;
   };
@@ -27,7 +28,7 @@
     const c = core(b);
     if (U.dist2(x, y, c.x, c.y) < (r + 26) * (r + 26)) B.damage(g, b, kind === 'super' ? 24 : kind === 'bomb2' ? 20 : kind === 'bomb' ? 4 : 8);
   };
-  function rocks(g, n) { for (let i = 0; i < n; i++) g.rocks.push({ x: 40 + Math.random() * (g.room.pw - 80), y: 20 - Math.random() * 60, vy: 0, t: 0 }); }
+  function rocks(g, n) { const ice = g.boss && g.boss.kind === 'moth'; for (let i = 0; i < n; i++) g.rocks.push({ x: 40 + Math.random() * (g.room.pw - 80), y: 20 - Math.random() * 60, vy: 0, t: 0, ice }); }
   function volley(g, b) {
     const n = b.phase >= 2 ? 5 : 3;
     for (let i = 0; i < n; i++) g.spores.push({ x: b.x + b.face * 50, y: b.y - 54, vx: b.face * (1 + i * 0.75) + (Math.random() - 0.5) * 0.4, vy: -4.6 - Math.random(), t: 0 });
@@ -35,8 +36,8 @@
   }
   function dropItems(g) { for (let i = 0; i < 2; i++) g.items.push({ kind: i ? 'missile' : 'en', x: 120 + Math.random() * (g.room.pw - 240), y: 40, vy: 0, t: 0, life: 700 }); }
   function finish(g, b) {
-    g.prog.flags.boss1 = true; g.boss = null; G.world.openAll(g);
-    g.toast = { txt: 'WARDEN DEFEATED', t: 0 }; G.audio.sfx('save');
+    g.prog.flags[b.flag] = true; g.boss = null; G.world.openAll(g);
+    g.toast = { txt: b.name + ' DEFEATED', t: 0 }; G.audio.sfx('save');
     for (let i = 0; i < 3; i++) g.items.push({ kind: i === 1 ? 'missile' : 'en', x: b.x + (i - 1) * 24, y: b.y - 40, vy: -2, t: 0, life: 900 });
   }
   function updateRocks(g) {

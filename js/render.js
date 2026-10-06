@@ -4,37 +4,39 @@
   const S = G.sprites, RM = G.room, T = 16, U = G.U;
   const R = {};
   G.render = R;
-  const solidish = (room, tx, ty) => { const k = RM.at(room, tx, ty); return k === 1 || k === 3 || k === 4 || k === 5 || k === 6 || k === 7 || k === 9; };
+  const solidish = (room, tx, ty) => { const k = RM.at(room, tx, ty); return k === 1 || k === 3 || k === 4 || k === 5 || k === 6 || k === 7 || k === 9 || k === 10; };
   const hash = (a, b) => ((a * 73856093) ^ (b * 19349663)) >>> 0;
   /* bake the static layers of a room into one canvas (re-run when blocks break) */
   R.bake = function (room) {
+    const TS = S.tilesets[room.zone || 1], tile = TS, deco = TS.deco;
     const c = room.baked && room.baked.width === room.pw && room.baked.height === room.ph ? room.baked : document.createElement('canvas');
     c.width = room.pw; c.height = room.ph;
     const x = c.getContext('2d'); x.imageSmoothingEnabled = false; x.clearRect(0, 0, c.width, c.height);
     for (let ty = 0; ty < room.h; ty++) for (let tx = 0; tx < room.w; tx++) if (room.wall[ty * room.w + tx]) {
       const h = hash(tx, ty), v = h % 11 === 0 ? 3 : (tx + ty * 2) % 3;
-      x.drawImage(S.tile.wall[v], tx * T, ty * T);
+      x.drawImage(tile.wall[v], tx * T, ty * T);
     }
     for (let ty = 0; ty < room.h; ty++) for (let tx = 0; tx < room.w; tx++) {
       const k = RM.at(room, tx, ty), h = hash(tx, ty), px = tx * T, py = ty * T;
       if (k === 1) {
         const m = (!solidish(room, tx, ty - 1) ? 1 : 0) | (!solidish(room, tx + 1, ty) && tx + 1 < room.w ? 2 : 0) | (!solidish(room, tx, ty + 1) && ty + 1 < room.h ? 4 : 0) | (!solidish(room, tx - 1, ty) && tx > 0 ? 8 : 0);
         let img;
-        if (m) img = S.tile.edge[m][h % 3];
+        if (m) img = tile.edge[m][h % 3];
         else {
           const d = (!solidish(room, tx - 1, ty - 1) ? 1 : 0) | (!solidish(room, tx + 1, ty - 1) ? 2 : 0) | (!solidish(room, tx + 1, ty + 1) ? 4 : 0) | (!solidish(room, tx - 1, ty + 1) ? 8 : 0);
-          img = d ? S.tile.diag[d] : S.tile.edge[0][h % 3];
+          img = d ? tile.diag[d] : tile.edge[0][h % 3];
         }
         x.drawImage(img, px, py);
-        if ((m & 1) && !(m & 8) && !(m & 2)) { const r = h % 9; if (r === 0) x.drawImage(S.deco.tuft, px + 3, py - 7); else if (r === 1) x.drawImage(S.deco.fern, px, py - 11); else if (r === 2) x.drawImage(S.deco.rubble, px, py - 7); }
-        if ((m & 4) && !(m & 8) && !(m & 2) && h % 7 === 0) x.drawImage(S.deco.vine[h % 3], px + 4, py + 16);
-      } else if (k === 3) x.drawImage(S.tile.slopeR, px, py);
-      else if (k === 4) x.drawImage(S.tile.slopeL, px, py);
-      else if (k === 2) x.drawImage(S.tile.ledge, px, py);
-      else if (k === 5) x.drawImage(S.tile.shot, px, py);
-      else if (k === 6) x.drawImage(S.tile.bomb, px, py);
-      else if (k === 7) x.drawImage(S.tile.missile, px, py);
-      else if (k === 8) x.drawImage(S.tile.spikes, px, py);
+        if ((m & 1) && !(m & 8) && !(m & 2)) { const r = h % 9; if (r < tile.top.length) { const [im, ox, oy] = tile.top[r]; x.drawImage(im, px + ox, py - oy); } }
+        if ((m & 4) && !(m & 8) && !(m & 2) && h % 7 === 0) { const [im, ox] = tile.hang[h % tile.hang.length]; x.drawImage(im, px + ox, py + 16); }
+      } else if (k === 3) x.drawImage(tile.slopeR, px, py);
+      else if (k === 4) x.drawImage(tile.slopeL, px, py);
+      else if (k === 2) x.drawImage(tile.ledge, px, py);
+      else if (k === 5) x.drawImage(tile.shot, px, py);
+      else if (k === 6) x.drawImage(tile.bomb, px, py);
+      else if (k === 7) x.drawImage(tile.missile, px, py);
+      else if (k === 8) x.drawImage(tile.spikes, px, py);
+      else if (k === 10) x.drawImage(tile.ice, px, py);
     }
     room.baked = c; room.dirty = false;
   };
@@ -53,7 +55,7 @@
     let ox = Math.round(cam.x), oy = Math.round(cam.y);
     if (sh > 0.3) { ox += Math.round((Math.random() - 0.5) * sh); oy += Math.round((Math.random() - 0.5) * sh); }
     /* parallax (horizontal only) */
-    const bg = S.bg1, fx = -Math.floor(cam.x * 0.12) % 480, mx = -Math.floor(cam.x * 0.4) % 480;
+    const bg = S.bgs[room.zone || 1], fx = -Math.floor(cam.x * 0.12) % 480, mx = -Math.floor(cam.x * 0.4) % 480;
     ctx.fillStyle = '#05071a'; ctx.fillRect(0, 0, 480, 270);
     const rx0 = Math.max(0, -ox), rx1 = Math.min(480, room.pw - ox), ry0 = Math.max(0, -oy), ry1 = Math.min(270, room.ph - oy);
     ctx.save(); ctx.beginPath(); ctx.rect(rx0, ry0, rx1 - rx0, ry1 - ry0); ctx.clip();

@@ -20,18 +20,25 @@
   P.ramps.fog = ['#0a0e2c', '#141a46', '#222c68', '#364488', '#566cac', '#8ea2d2'];
   P.ramps.dusk = ['#ffd9a0', '#f4a67c', '#d8688a'];
   /* world letters: stone 0-5, moss A-F, earth p q r t u, fog H I J K Q R, dusk W X Z, plus the sprite letters (gold, energy, metal, ...) */
-  P.worldKeys = function () {
-    const R = P.ramps, k = P.keys('cobalt');
-    'ABCDEF'.split('').forEach((c, i) => { k[c] = R.moss[i]; });
-    '012345'.split('').forEach((c, i) => { k[c] = R.stone[i]; });
-    'pqrtu'.split('').forEach((c, i) => { k[c] = R.earth[i]; });
-    'HIJKQR'.split('').forEach((c, i) => { k[c] = R.fog[i]; });
-    k.W = R.dusk[0]; k.X = R.dusk[1]; k.Z = R.dusk[2];
+  /* zone 2 (Cryo Vaults): icy blue stone, snow instead of moss, aurora sky */
+  P.ramps.icestone = ['#0c1630', '#1a2a52', '#2e4678', '#4f72a6', '#86a8cc', '#c8e0ee'];
+  P.ramps.snow = ['#1c3a68', '#3a64a0', '#6e9fd0', '#a8d4ee', '#dff4fc', '#ffffff'];
+  P.ramps.iceearth = ['#101a38', '#22305c', '#3c5084', '#5a74a8', '#86a0c8'];
+  P.ramps.aurora = ['#04122a', '#082444', '#0e3c5e', '#165a74', '#2a8a8a', '#58c8b0'];
+  P.ramps.auroralight = ['#b6ffd8', '#60e0b8', '#b878ff'];
+  P.worldKeys = function (zone) {
+    const R = P.ramps, k = P.keys('cobalt'), z2 = zone === 2;
+    'ABCDEF'.split('').forEach((c, i) => { k[c] = (z2 ? R.snow : R.moss)[i]; });
+    '012345'.split('').forEach((c, i) => { k[c] = (z2 ? R.icestone : R.stone)[i]; });
+    'pqrtu'.split('').forEach((c, i) => { k[c] = (z2 ? R.iceearth : R.earth)[i]; });
+    'HIJKQR'.split('').forEach((c, i) => { k[c] = (z2 ? R.aurora : R.fog)[i]; });
+    const d = z2 ? R.auroralight : R.dusk; k.W = d[0]; k.X = d[1]; k.Z = d[2];
     return k;
   };
   /* letter -> hex for sprite grids ('.' is transparent) */
   P.keys = function (armor) {
-    if (armor === 'world') return P.worldKeys();
+    if (armor === 'world') return P.worldKeys(1);
+    if (armor === 'world2') return P.worldKeys(2);
     const R = P.ramps, A = R[armor || 'cobalt'], k = {};
     k.o = A[0]; k['1'] = A[1]; k['2'] = A[2]; k['3'] = A[3]; k['4'] = A[4];
     k.s = R.gold[0]; k.k = R.gold[1]; k.y = R.gold[2]; k.Y = R.gold[3]; k.w = R.gold[4];
@@ -39,7 +46,7 @@
     k.U = R.under[1]; k.u = R.under[2]; k.n = R.under[3]; k.N = R.under[4]; k.b = R.under[0];
     k.z = R.metal[0]; k.M = R.metal[1]; k.m = R.metal[2]; k.l = R.metal[3]; k.L = R.metal[4];
     k.d = R.energy[0]; k.g = R.energy[1]; k.e = R.energy[2]; k.E = R.energy[3]; k.h = R.energy[4];
-    'ABCDEF'.split('').forEach((c, i) => { k[c] = R.moss[i]; });
+    'ABCDF'.split('').forEach((c, i) => { k[c] = R.moss[i < 4 ? i : 5]; });   /* moss greens for creature sprites; E stays the energy glow */
     return k;
   };
 })((window.SGS = window.SGS || {}));

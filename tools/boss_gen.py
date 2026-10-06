@@ -37,7 +37,7 @@ def shell(open_core, flick):
     for y in range(8, 40):            # moss on the lit crown
         for x in range(Wd):
             if shape[y][x] and y < 8 + 20 * (1 - abs((x - 44) / 44.0)) and math.sin(x * 0.55) + math.cos(y * 0.8) > 0.95:
-                g[y][x] = 'E' if (x + y) % 7 == 0 else 'D' if (x * y) % 3 else 'C'
+                g[y][x] = 'F' if (x + y) % 7 == 0 else 'D' if (x * y) % 3 else 'C'
     for y in range(57, 62):           # belly shadow band
         for x in range(10, 90):
             if abs(x - 50) <= 42 - (y - 57) * 3: g[y][x] = '1'; shape[y][x] = True

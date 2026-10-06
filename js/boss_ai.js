@@ -2,7 +2,7 @@
 (function (G) {
   'use strict';
   const U = G.U, B = G.bosses;
-  B.update = function (g) {
+  B.updateBeetle = function (g) {
     const b = g.boss, p = g.P;
     if (!b) { B.updateRocks(g); return; }
     b.t++; b.flash = Math.max(0, b.flash - 1); b.anim += 0.1;
@@ -47,8 +47,14 @@
   };
   const whites = new Map();
   const whiteOf = (c) => { let w = whites.get(c); if (!w) { w = document.createElement('canvas'); w.width = c.width; w.height = c.height; const x = w.getContext('2d'); x.drawImage(c, 0, 0); x.globalCompositeOperation = 'source-in'; x.fillStyle = '#fff'; x.fillRect(0, 0, w.width, w.height); whites.set(c, w); } return w; };
-  B.draw = function (ctx, g) {
-    for (const r of g.rocks || []) { const x = Math.round(r.x), y = Math.round(r.y); ctx.fillStyle = '#33405e'; ctx.fillRect(x - 6, y - 12, 12, 12); ctx.fillStyle = '#7f8c96'; ctx.fillRect(x - 5, y - 11, 5, 3); ctx.fillStyle = '#1f2744'; ctx.fillRect(x + 2, y - 5, 4, 5); }
+  B.drawRocks = function (ctx, g) {
+    for (const r of g.rocks || []) {
+      const x = Math.round(r.x), y = Math.round(r.y);
+      if (r.ice) { ctx.fillStyle = '#6e9fd0'; ctx.fillRect(x - 3, y - 14, 6, 10); ctx.fillRect(x - 2, y - 4, 4, 4); ctx.fillStyle = '#dff4fc'; ctx.fillRect(x - 3, y - 14, 2, 10); ctx.fillStyle = '#3a64a0'; ctx.fillRect(x + 1, y - 12, 2, 8); ctx.fillRect(x - 1, y, 2, 3); continue; }
+      ctx.fillStyle = '#33405e'; ctx.fillRect(x - 6, y - 12, 12, 12); ctx.fillStyle = '#7f8c96'; ctx.fillRect(x - 5, y - 11, 5, 3); ctx.fillStyle = '#1f2744'; ctx.fillRect(x + 2, y - 5, 4, 5);
+    }
+  };
+  B.drawBeetle = function (ctx, g) {
     const b = g.boss; if (!b) return;
     const SP = G.sprites.boss; let fr;
     if (b.state === 'wait' || b.state === 'walk') fr = SP.walk[Math.floor(b.anim * 1.4) & 3];

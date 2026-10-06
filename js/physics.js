@@ -32,6 +32,8 @@
         if (s >= yA - E && s <= yB + E && (best === null || s < best)) best = s;
       }
     }
+    /* frozen enemies act as one-way platforms */
+    if (room.dyn && !drop) for (const q of room.dyn) if (l < q.x1 && r > q.x0 && q.y >= yA - E && q.y <= yB + E && (best === null || q.y < best)) best = q.y;
     return best;
   };
   P.onGround = (room, b, drop) => P.support(room, b, b.y - E, b.y + 1, drop) !== null;

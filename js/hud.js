@@ -22,7 +22,7 @@
     if (G.map) G.map.mini(ctx, g, time);
     const b = g.boss;
     if (b && b.state !== 'wait') {
-      const w = 220, x = 130, y = 250; ctx.fillStyle = 'rgba(10,14,44,0.7)'; ctx.fillRect(x - 3, y - 12, w + 6, 20); txt(ctx, 'MOSSBACK WARDEN', 240, y - 10, '#ffb89c', 'c');
+      const w = 220, x = 130, y = 250; ctx.fillStyle = 'rgba(10,14,44,0.7)'; ctx.fillRect(x - 3, y - 12, w + 6, 20); txt(ctx, b.name, 240, y - 10, '#ffb89c', 'c');
       ctx.fillStyle = '#2a0812'; ctx.fillRect(x, y, w, 5); ctx.fillStyle = b.state === 'stun' ? '#f2ffff' : '#ec5c4a'; ctx.fillRect(x, y, Math.round(w * Math.max(0, b.hp) / b.hpMax), 5);
     }
     if (g.toast) { const a = g.toast.t < 10 ? g.toast.t / 10 : g.toast.t > 130 ? (150 - g.toast.t) / 20 : 1; ctx.globalAlpha = Math.max(0, a); ctx.fillStyle = 'rgba(10,14,44,0.8)'; ctx.fillRect(160, 58, 160, 16); txt(ctx, g.toast.txt, 240, 63, '#f2ffff', 'c'); ctx.globalAlpha = 1; }

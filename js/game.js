@@ -13,7 +13,7 @@
     Game.abil = debugAll ? Game.abilAll() : rec.abil;
     const p = Game.P = P.create(0, 0), h = rec.hero;
     p.tanks = h.tanks; p.missileMax = debugAll ? 20 : h.missileMax; p.missiles = debugAll ? 20 : h.missiles; p.sbombMax = debugAll ? 5 : h.sbombMax; p.sbombs = debugAll ? 5 : h.sbombs; p.superMax = h.superMax; p.supers = h.supers;
-    p.en = P.enMax(p);
+    p.en = P.enMax(p); if (Game.abil.suitHeat) p.suit = 'crimson';
     Game.cam = { x: 0, y: 0 }; Game.shake = 0; Game.hitStop = 0; Game.time = 0; Game.playTime = rec.time || 0; Game.saveRec = null; Game.banner = null; Game.toast = null; Game.trans = null; Game.boss = null;
     Game.enterRoom(rec.room, null, rec.x, rec.y);
     Game.fade = { dir: -1, t: 14, len: 14 };
@@ -29,6 +29,10 @@
       else if (s.ch === 'c') G.enemies.spawn(Game, 'crawler', s.x, s.y, -1);
       else if (s.ch === 'm') G.enemies.spawn(Game, 'moth', s.x, s.y - 8, -1);
       else if (s.ch === 'o') G.enemies.spawn(Game, 'pod', s.x, s.y, -1);
+      else if (s.ch === 'f') G.enemies.spawn(Game, 'frostling', s.x, s.y, -1);
+      else if (s.ch === 'q') G.enemies.spawn(Game, 'wisp', s.x, s.y - 8, -1);
+      else if (s.ch === 't') G.enemies.spawn(Game, 'turret', s.x, s.y, -1);
+      else if (s.ch === 'v') G.enemies.spawn(Game, 'icicle', s.x, s.ty * 16 + 22, -1);
     }
     p.vx = p.vy = 0; p.dead = 0; p.inv = 0; p.hurt = 0; p.charge = 0; p.dash = 0; p.spinning = false; p.drop = false;
     const setMode = (m) => { p.mode = m; p.w = m === 'ball' ? 16 : 14; p.h = m === 'ball' ? 15 : 42; };

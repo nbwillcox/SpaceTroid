@@ -8,6 +8,7 @@ class Room:
         s.id, s.name, s.w, s.h, s.mx, s.my = rid, name, w, h, mx, my
         s.g = [['.'] * w for _ in range(h)]
         s.doors, s.items, s.stations, s.decor = [], [], [], []
+        s.zone = 1
         s.fill(0, 0, w - 1, 1, '#'); s.fill(0, h - 2, w - 1, h - 1, '#'); s.fill(0, 0, 0, h - 1, '#'); s.fill(w - 1, 0, w - 1, h - 1, '#')
         s.wall_all = wall_all
     def fill(s, x0, y0, x1, y1, c):
@@ -37,11 +38,14 @@ class Room:
                     if x < x0 + dl or x > x1 - dr or y < y0 + dt or y > y1 - db: continue
                 if s.g[y][x] == '.': s.g[y][x] = 'w'
     def item(s, iid, typ, tx, ty): s.items.append({'id': iid, 'type': typ, 'tx': tx, 'ty': ty})
-    def station(s, typ, tx, ty): s.stations.append({'type': typ, 'tx': tx, 'ty': ty})
+    def station(s, typ, tx, ty, to=None):
+        d = {'type': typ, 'tx': tx, 'ty': ty}
+        if to: d['to'] = to
+        s.stations.append(d)
     def emit(s):
         if s.wall_all: s.wall(1, 2, s.w - 2, s.h - 3, ragged=False)
         rows = [''.join(r) for r in s.g]
-        d = {'id': s.id, 'name': s.name, 'zone': 1, 'mx': s.mx, 'my': s.my, 'map': rows, 'doors': s.doors, 'items': s.items, 'stations': s.stations, 'decor': s.decor}
+        d = {'id': s.id, 'name': s.name, 'zone': s.zone, 'mx': s.mx, 'my': s.my, 'map': rows, 'doors': s.doors, 'items': s.items, 'stations': s.stations, 'decor': s.decor}
         return d
 
 ROOMS = []
@@ -195,7 +199,7 @@ def lift():
     r = Room('lift', 'Lift Shaft', 30, 17, 15, 1, wall_all=True)
     r.door('w', 'L', 12, 'blue', 'arena', 'e')
     r.item('charge', 'charge', 10, 14)
-    r.station('lift', 22, 14)
+    r.station('lift', 22, 14, to='gate')
     return r
 ROOMS.append(lift())
 

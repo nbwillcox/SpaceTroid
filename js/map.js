@@ -37,18 +37,20 @@
   };
   M.drawScreen = function (ctx, g, time) {
     ctx.fillStyle = 'rgba(6,8,26,0.94)'; ctx.fillRect(0, 0, 480, 270);
-    PX.text(ctx, 'MAP', 240, 14, { s: 2, c: '#a6ccff', o: '#0a0e2c', a: 'c' });
-    const cw = 26, ch = 20, ox = Math.round((480 - 17 * cw) / 2), oy = 60;
-    ctx.fillStyle = '#10142e'; ctx.fillRect(ox - 4, oy - 4, 17 * cw + 8, 3 * ch + 8);
+    PX.text(ctx, 'MAP', 240, 10, { s: 2, c: '#a6ccff', o: '#0a0e2c', a: 'c' });
+    let cols = 1, rows = 1;
+    for (const id in G.rooms) for (const [x, y] of G.world.cells(G.rooms[id])) { cols = Math.max(cols, x + 1); rows = Math.max(rows, y + 1); }
+    const cw = Math.min(28, Math.floor(450 / cols)), ch = Math.min(22, Math.floor(170 / rows)), ox = Math.round((480 - cols * cw) / 2), oy = 34;
+    ctx.fillStyle = '#10142e'; ctx.fillRect(ox - 4, oy - 4, cols * cw + 8, rows * ch + 8);
     M.drawWorld(ctx, g, ox, oy, cw, ch, time, true);
-    const n = Object.keys(g.prog.items).length, tot = G.world.itemTotal();
-    PX.text(ctx, 'ITEMS ' + n + '/' + tot, 240, 150, { s: 1, c: '#efba42', o: '#0a0e2c', a: 'c' });
+    const n = Object.keys(g.prog.items).length, tot = G.world.itemTotal(), ly = oy + rows * ch + 12;
+    PX.text(ctx, 'ITEMS ' + n + '/' + tot, 240, ly, { s: 1, c: '#efba42', o: '#0a0e2c', a: 'c' });
     const lg = [['BLUE', DOOR.blue, 'SHOT'], ['RED', DOOR.red, 'MISSILE'], ['GREEN', DOOR.green, 'SUPER'], ['GOLD', DOOR.boss, 'BOSS KEY']];
-    lg.forEach((l, i) => { ctx.fillStyle = l[1]; ctx.fillRect(98 + i * 78, 175, 5, 8); PX.text(ctx, l[2], 108 + i * 78, 176, { s: 1, c: '#c8d4f0', o: '#0a0e2c' }); });
-    ctx.fillStyle = '#86f0f2'; ctx.fillRect(110, 198, 4, 4); PX.text(ctx, 'SAVE', 120, 197, { s: 1, c: '#c8d4f0', o: '#0a0e2c' });
-    ctx.fillStyle = '#b878ff'; ctx.fillRect(170, 198, 4, 4); PX.text(ctx, 'MAP', 180, 197, { s: 1, c: '#c8d4f0', o: '#0a0e2c' });
-    ctx.fillStyle = '#efba42'; ctx.fillRect(220, 198, 3, 3); PX.text(ctx, 'ITEM (MAPPED ROOMS)', 230, 197, { s: 1, c: '#c8d4f0', o: '#0a0e2c' });
-    PX.text(ctx, 'M OR ESC: CLOSE', 240, 246, { s: 1, c: '#8ea2d2', o: '#0a0e2c', a: 'c' });
+    lg.forEach((l, i) => { ctx.fillStyle = l[1]; ctx.fillRect(98 + i * 78, ly + 20, 5, 8); PX.text(ctx, l[2], 108 + i * 78, ly + 21, { s: 1, c: '#c8d4f0', o: '#0a0e2c' }); });
+    ctx.fillStyle = '#86f0f2'; ctx.fillRect(110, ly + 40, 4, 4); PX.text(ctx, 'SAVE', 120, ly + 39, { s: 1, c: '#c8d4f0', o: '#0a0e2c' });
+    ctx.fillStyle = '#b878ff'; ctx.fillRect(170, ly + 40, 4, 4); PX.text(ctx, 'MAP', 180, ly + 39, { s: 1, c: '#c8d4f0', o: '#0a0e2c' });
+    ctx.fillStyle = '#efba42'; ctx.fillRect(220, ly + 40, 3, 3); PX.text(ctx, 'ITEM (MAPPED ROOMS)', 230, ly + 39, { s: 1, c: '#c8d4f0', o: '#0a0e2c' });
+    PX.text(ctx, 'M OR ESC: CLOSE', 240, 256, { s: 1, c: '#8ea2d2', o: '#0a0e2c', a: 'c' });
   };
   /* minimap in the top-right corner: a window of cells around the current one */
   M.mini = function (ctx, g, time) {

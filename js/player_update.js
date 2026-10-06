@@ -38,9 +38,10 @@
     const moving = dir && !(I.aim && !ball);
     const sprint = I.dash && p.ground && p.mode === 'stand';   /* holding Shift always sprints; the tap-dash burst is the gated upgrade */
     const top = ball ? K.ball : sprint ? K.run : K.walk;
+    const slick = p.ground && G.room.at(room, Math.floor(p.x / 16), Math.floor((p.y + 1) / 16)) === 10;   /* ice floor: slow to start, slow to stop */
     if (p.dash > 0) { p.dash--; p.vx = p.face * K.dash; p.vy = 0; if (!p.dash) p.dashCd = 22; }
-    else if (moving) p.vx = approach(p.vx, dir * top, p.ground ? (Math.sign(p.vx) === -dir ? K.dec : K.acc) : (Math.abs(p.vx) > top && Math.sign(p.vx) === dir ? 0.02 : K.airAcc));
-    else p.vx = approach(p.vx, 0, p.ground ? K.dec : K.airDec);
+    else if (moving) p.vx = approach(p.vx, dir * top, p.ground ? (Math.sign(p.vx) === -dir ? K.dec : K.acc) * (slick ? 0.3 : 1) : (Math.abs(p.vx) > top && Math.sign(p.vx) === dir ? 0.02 : K.airAcc));
+    else p.vx = approach(p.vx, 0, p.ground ? K.dec * (slick ? 0.12 : 1) : K.airDec);
     if (A.dash && D.dash && p.dashCd === 0 && p.mode === 'stand' && !lock && p.dash === 0 && !I.d && (p.ground || p.dashAir)) { p.dash = 11; if (!p.ground) p.dashAir = false; G.fx.puff(p.x - p.face * 6, p.y - 4, 4); }
     /* ---- jump (coyote + buffer), space jump, variable height, drop through ledges ---- */
     if (!lock && p.mode === 'stand' && p.jbuf > 0) {
