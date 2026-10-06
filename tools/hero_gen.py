@@ -52,7 +52,7 @@ ARM = [
     (15, 14, "oooooooo"), (16, 14, "o4333222o"), (17, 13, "oo3322111oooooooo"), (18, 13, "o1211kkymmlllLLLo"), (19, 13, "o11kyYMmlLLLLLLo"), (20, 14, "ooooMmmllllllo"), (21, 20, "ooooooooo"),
     (18, 24, "oEh"), (19, 24, "oEh"),
 ]
-def body(): return part(27, HEAD + BACKPACK + TORSO + PAULDRON + ARM)
+def body(): return part(25, HEAD + BACKPACK + TORSO + PAULDRON + ARM)
 
 
 # ---- legs: hand-posed limbs. Each limb is a thigh + shin (thick lines between keypoints) with a gold knee pad and a hand-drawn boot stamp; an outline pass closes them. ----
@@ -92,11 +92,12 @@ def outline(g):
     return out
 HIP = [(8, 0, "o43322111o")]
 def legs(pose):
-    g = blank(18)
+    g = blank(20)
     (bk, ft) = pose
-    limb(g, (11, 2), bk[0], bk[1], False); limb(g, (13, 2), ft[0], ft[1], True)
+    sh = lambda p: (p[0], p[1] + 2)
+    limb(g, (11, 4), sh(bk[0]), sh(bk[1]), False); limb(g, (13, 4), sh(ft[0]), sh(ft[1]), True)
     g = outline(g)
-    put(g, 0, 9, "o43322111o")
+    put(g, 0, 8, "o4332221111o"); put(g, 1, 8, "o3222111111o"); put(g, 2, 9, "o22111111o")
     return fin(g)
 RUN = [
     (((8, 9), (5, 14)), ((15, 8), (17, 15))),    # contact
@@ -109,9 +110,13 @@ JUMP_LEGS = (((14, 8), (11, 13)), ((16, 7), (17, 12)))
 FALL_LEGS = (((11, 9), (9, 15)), ((14, 9), (15, 15)))
 def swap(pose): return (pose[1], pose[0])
 def compose(top, lg, dy=0):
-    g = [list(r) for r in top]
-    if dy: g = [list('.' * W) for _ in range(dy)] + g[:len(g) - dy] if dy > 0 else g[-dy:] + [list('.' * W) for _ in range(-dy)]
-    return [''.join(r) for r in g] + lg
+    g = [list(r) for r in (['.' * W] * 25 + lg)]
+    for y, r in enumerate(top):
+        yy = y + dy
+        if 0 <= yy < len(g):
+            for x, c in enumerate(r):
+                if c != '.': g[yy][x] = c
+    return [''.join(r) for r in g]
 if __name__ == '__main__':
     top = body()
     frames = {'idle': compose(top, legs(IDLE_LEGS)), 'jump': compose(top, legs(JUMP_LEGS), -1), 'fall': compose(top, legs(FALL_LEGS))}
