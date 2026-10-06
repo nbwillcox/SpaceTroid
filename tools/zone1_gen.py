@@ -26,14 +26,20 @@ class Room:
         s.fill(x, ty, x, ty + h - 1, '.')
         s.doors.append({'id': did, 'side': side, 'ty': ty, 'color': color, 'to': to, 'door': tdoor, 'h': h})
     def spawn(s, ch, x, y): s.g[y][x] = ch
-    def wall(s, x0, y0, x1, y1):
+    def wall(s, x0, y0, x1, y1, ragged=True):
+        import math
         for y in range(y0, y1 + 1):
             for x in range(x0, x1 + 1):
+                if ragged:   # crumbled, uneven edges so the back wall does not read as a rectangle
+                    ex = 0 if x0 <= 1 or x1 >= s.w - 2 else 1
+                    dl = int(2.4 * abs(math.sin(y * 1.3 + x0))) * (1 if x0 > 1 else 0); dr = int(2.4 * abs(math.sin(y * 0.9 + x1))) * (1 if x1 < s.w - 2 else 0)
+                    dt = int(2.0 * abs(math.sin(x * 1.1 + y0))) * (1 if y0 > 2 else 0); db = int(2.0 * abs(math.sin(x * 0.7 + y1))) * (1 if y1 < s.h - 3 else 0)
+                    if x < x0 + dl or x > x1 - dr or y < y0 + dt or y > y1 - db: continue
                 if s.g[y][x] == '.': s.g[y][x] = 'w'
     def item(s, iid, typ, tx, ty): s.items.append({'id': iid, 'type': typ, 'tx': tx, 'ty': ty})
     def station(s, typ, tx, ty): s.stations.append({'type': typ, 'tx': tx, 'ty': ty})
     def emit(s):
-        if s.wall_all: s.wall(1, 2, s.w - 2, s.h - 3)
+        if s.wall_all: s.wall(1, 2, s.w - 2, s.h - 3, ragged=False)
         rows = [''.join(r) for r in s.g]
         d = {'id': s.id, 'name': s.name, 'zone': 1, 'mx': s.mx, 'my': s.my, 'map': rows, 'doors': s.doors, 'items': s.items, 'stations': s.stations, 'decor': s.decor}
         return d
