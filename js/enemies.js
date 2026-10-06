@@ -5,9 +5,9 @@
   const N = {};
   G.enemies = N;
   const DEF = {
-    crawler: { w: 16, h: 12, hp: 4, dmg: 8, ax: 10, ay: 13 },
+    crawler: { w: 28, h: 24, hp: 6, dmg: 10, ax: 17, ay: 27 },
     moth: { w: 14, h: 12, hp: 2, dmg: 6, ax: 10, ay: 11 },
-    pod: { w: 14, h: 20, hp: 5, dmg: 10, ax: 8, ay: 23 },
+    pod: { w: 14, h: 24, hp: 5, dmg: 10, ax: 8, ay: 23 },
   };
   N.spawn = function (g, type, x, y, face) {
     const d = DEF[type];
@@ -34,8 +34,8 @@
     const wall = PH.boxSolid(room, ahead - 1, f.y - f.h, ahead + 1, f.y - E);
     const floor = PH.support(room, { x: ahead, w: 2 }, f.y - 2, f.y + 6, false) !== null;
     if (f.ground && (wall || !floor)) f.face = -f.face;
-    PH.moveX(room, f, f.face * 0.42);
-    f.anim += 0.09;
+    PH.moveX(room, f, f.face * 0.38);
+    f.anim += 0.07;
   }
   function flyMoth(g, f) {
     const p = g.P, near = Math.abs(p.x - f.x) < 150 && Math.abs((p.y - 20) - (f.y - 6)) < 110;
@@ -54,7 +54,7 @@
     f.face = dx >= 0 ? 1 : -1; f.t++;
     f.open = near ? Math.min(1, f.open + 0.05) : Math.max(0, f.open - 0.03);
     if (near && f.open >= 1 && f.t % 105 === 0) {
-      const sx = f.x + f.face * 2, sy = f.y - 18, v = U.clamp(dx / 60, -2.2, 2.2);
+      const sx = f.x + f.face * 2, sy = f.y - 20, v = U.clamp(dx / 60, -2.2, 2.2);
       g.spores.push({ x: sx, y: sy, vx: v, vy: -3.4, t: 0 }); G.audio.sfx('spit');
     }
   }
@@ -100,7 +100,7 @@
     const SP = G.sprites.foe;
     for (const f of g.foes) {
       const d = DEF[f.type], set = SP[f.type];
-      const fr = f.type === 'crawler' ? set[Math.floor(f.anim * 2) & 3] : f.type === 'moth' ? set[Math.floor(f.anim) & 3] : set[f.open > 0.6 ? 1 : 0];
+      const fr = f.type === 'crawler' ? set[Math.floor(f.anim * 2.4) & 3] : f.type === 'moth' ? set[Math.floor(f.anim) & 3] : set[f.open > 0.6 ? 1 : 0];
       const c = f.face >= 0 ? fr.r : fr.l;
       const ax = f.face >= 0 ? d.ax : fr.w - 1 - d.ax;
       if (f.flash > 0) { ctx.globalAlpha = 0.5; }

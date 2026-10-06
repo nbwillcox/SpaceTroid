@@ -4,7 +4,7 @@
   const PH = G.phys, U = G.U, E = 0.001;
   const P = {};
   G.player = P;
-  const SZ = { stand: [14, 42], crouch: [14, 26], ball: [12, 12] };
+  const SZ = { stand: [14, 42], crouch: [14, 26], ball: [16, 15] };
   const K = { walk: 1.7, run: 2.5, acc: 0.22, dec: 0.38, airAcc: 0.16, airDec: 0.04, g: 0.3, fall: 6.6, jump: 6.1, cut: 2.2, airJump: 5.0, dash: 4.4, ball: 1.9 };
   P.K = K;
   P.create = function (x, y) {
@@ -14,7 +14,12 @@
   P.fits = (g, p, mode) => { const [w, h] = SZ[mode]; return !PH.boxSolid(g.room, p.x - w / 2, p.y - h, p.x + w / 2, p.y - E); };
   P.setMode = function (g, p, mode) {
     if (p.mode === mode) return true;
-    if (!P.fits(g, p, mode)) return false;
+    if (!P.fits(g, p, mode)) {
+      /* squeezed against a wall (a 16px ball beside a 14px body): slide up to 4px sideways to find room */
+      const x0 = p.x; let ok = false;
+      for (const d of [1, -1, 2, -2, 3, -3, 4, -4]) { p.x = x0 + d; if (P.fits(g, p, mode) && !PH.boxSolid(g.room, p.x - SZ[p.mode][0] / 2, p.y - SZ[p.mode][1], p.x + SZ[p.mode][0] / 2, p.y - E)) { ok = true; break; } p.x = x0; }
+      if (!ok) { p.x = x0; return false; }
+    }
     p.mode = mode; p.w = SZ[mode][0]; p.h = SZ[mode][1]; p.crouchT = 0;
     return true;
   };

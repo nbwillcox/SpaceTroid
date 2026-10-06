@@ -18,9 +18,6 @@ def slope(right):
                     g[y0 + k][x] = c
             if y0 + 4 < W and g[y0 + 4][x] in '1234':
                 g[y0 + 4][x] = '1'
-    if not right:
-        g = [r[::-1] for r in g]
-        # mirror, keeping light from the upper left: flip highlight bias by swapping the lit rim to the new left edge
     return [''.join(r) for r in g]
 
 def slope_mirror_fix(rows):

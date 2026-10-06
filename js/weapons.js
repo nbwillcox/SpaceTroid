@@ -72,7 +72,7 @@
       if (s.dead) continue;
       for (const f of g.foes) {
         if (f.dead || s.hit.has(f) || f.ghost) continue;
-        if (Math.abs(s.x - f.x) < f.w / 2 + s.r && s.y > f.y - f.h - s.r && s.y < f.y + s.r) {
+        if (Math.abs(s.x - f.x) < f.w / 2 + s.r && s.y > f.y - f.h - s.r - 3 && s.y < f.y + s.r + 2) {
           s.hit.add(f); G.enemies.damage(g, f, s.dmg, s.kind, s);
           if (s.kind === 'missile' || s.kind === 'super') { s.dead = true; explode(g, s.x, s.y, s.kind === 'super' ? 30 : 18, 0, s.kind); }
           else if (!s.pierce) { s.dead = true; G.fx.sparkBurst(s.x, s.y, s.col[1], 5); }

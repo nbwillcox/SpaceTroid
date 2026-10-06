@@ -63,7 +63,7 @@
     /* hero */
     if (!p.dead && !(p.inv > 0 && Math.floor(time * 20) % 2 && p.hurt === 0)) {
       const fr = G.player.frame(p), c = p.face >= 0 ? fr.r : fr.l;
-      if (p.mode === 'ball') ctx.drawImage(c, Math.round(p.x - 8), Math.round(p.y - 15));
+      if (p.mode === 'ball') ctx.drawImage(c, Math.round(p.x - 8), Math.round(p.y - 16));
       else ctx.drawImage(c, Math.round(p.x - S.heroAx), Math.round(p.y - S.heroAy));
       if (p.charge > 0) { const m = G.player.muzzle(p), r = 1 + Math.floor(p.charge / 14); ctx.fillStyle = p.charge >= 50 ? '#fff' : '#ffd24a'; ctx.fillRect(Math.round(m.x) - r, Math.round(m.y) - r, r * 2, r * 2); if (Math.floor(time * 30) & 1) { ctx.fillStyle = '#fff6a0'; ctx.fillRect(Math.round(m.x) - r - 1, Math.round(m.y), 1, 1); ctx.fillRect(Math.round(m.x) + r, Math.round(m.y), 1, 1); } }
     }
