@@ -37,6 +37,7 @@
   };
   P.hurt = function (g, p, dmg, fromX) {
     if (p.inv > 0 || p.dead) return false;
+    if (G.settings.hard) dmg = Math.round(dmg * 1.6);
     p.en -= dmg; p.inv = 75; p.hurt = 14; p.charge = 0;
     const d = p.x >= fromX ? 1 : -1;
     p.vx = 2.4 * d; p.vy = -3; p.ground = false; p.dash = 0;

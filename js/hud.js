@@ -19,6 +19,13 @@
   };
   /* everything drawn over the HUD: minimap, boss bar, toast, item banner, fades */
   H.overlay = function (ctx, g, time) {
+    const Mo = G.input.mouse;
+    if (G.settings.mouseAim && Mo.on && !g.banner && !g.trans && g.P.mode !== 'ball' && !G.input.stick) {   /* aiming reticle */
+      const x = Math.round(Mo.x), y = Math.round(Mo.y), pulse = Math.floor(time * 4) & 1;
+      ctx.fillStyle = '#0a0e2c'; for (const [dx, dy, w, h] of [[-6, -1, 4, 3], [3, -1, 4, 3], [-1, -6, 3, 4], [-1, 3, 3, 4]]) ctx.fillRect(x + dx - 1, y + dy - 1, w + 2, h + 2);
+      ctx.fillStyle = pulse ? '#ffffff' : '#86f0f2'; for (const [dx, dy, w, h] of [[-6, 0, 4, 1], [3, 0, 4, 1], [0, -6, 1, 4], [0, 3, 1, 4]]) ctx.fillRect(x + dx, y + dy, w, h);
+      ctx.fillStyle = '#ec5c4a'; ctx.fillRect(x, y, 1, 1);
+    }
     if (G.map) G.map.mini(ctx, g, time);
     const b = g.boss;
     if (b && b.state !== 'wait') {

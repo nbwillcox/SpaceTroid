@@ -63,7 +63,7 @@ def vein():
     r.door('w', 'L', 12, 'blue', 'nest', 'e'); r.door('e', 'R', 12, 'blue', 'pre5', 'w'); r.door('v', 'R', 5, 'green', 'cache5', 'w')
     r.fill(14, 12, 16, 14, '#'); r.fill(30, 12, 33, 14, '#'); r.fill(44, 12, 46, 14, '#'); r.plat(50, 56, 8)
     r.fill(57, 8, 58, 8, '#'); r.fill(20, 15, 24, 15, '^'); r.plat(18, 26, 11)
-    r.fill(37, 4, 42, 4, '#'); r.fill(37, 8, 42, 8, '#'); r.fill(42, 5, 42, 7, '#'); r.fill(37, 5, 37, 7, 'x'); r.plat(32, 36, 8); r.item('mtank9', 'missileTank', 40, 6)       # wave-crystal pocket
+    r.fill(37, 4, 42, 4, '#'); r.fill(37, 8, 42, 8, '#'); r.fill(42, 5, 42, 7, '#'); r.fill(37, 5, 37, 7, 'x'); r.plat(32, 36, 8); r.item('mtank9', 'missileTank', 40, 7)       # wave-crystal pocket
     r.spawn('g', 8, 14); r.spawn('g', 27, 14); r.spawn('g', 40, 14); r.spawn('p', 15, 11); r.spawn('p', 45, 11); r.spawn('k', 52, 7); r.spawn('u', 22, 6)
     return r
 vein()

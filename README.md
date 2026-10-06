@@ -15,7 +15,7 @@ This is an original game inspired by classic exploration platformers. It uses no
 | Action | Keyboard | Gamepad |
 |---|---|---|
 | Move | Arrows or WASD | Stick / d-pad |
-| Aim | Mouse (while you use it), or Up / Up + direction | Up / Up + direction |
+| Aim | Mouse (free 360-degree aim with a reticle), or Up / Up + direction | Right stick (360 degrees), or d-pad Up |
 | Jump (hold for height, again in air = space jump) | Space, Z or K | A |
 | Fire (hold = auto-fire; infinite) | Left click, X or J | X / right trigger |
 | Missile / super missile (limited; R swaps) | Right click, C or L | B / Y |

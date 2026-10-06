@@ -8,7 +8,7 @@
   U.items = {
     title: () => [{ k: 'new', t: 'NEW GAME' }, { k: 'cont', t: 'CONTINUE', off: !anySave() }, { k: 'opt', t: 'OPTIONS' }],
     pause: () => [{ k: 'resume', t: 'RESUME' }, { k: 'map', t: 'MAP' }, { k: 'opt', t: 'OPTIONS' }, { k: 'quit', t: 'QUIT TO TITLE' }],
-    options: () => [{ k: 'sfx', t: 'SOUND VOLUME  ' + bar(S.sfx) }, { k: 'music', t: 'MUSIC VOLUME  ' + bar(S.music) }, { k: 'mouse', t: 'MOUSE AIM  ' + (S.mouseAim ? 'ON' : 'OFF') }, { k: 'shake', t: 'SCREEN SHAKE  ' + (S.shake ? 'ON' : 'OFF') }, { k: 'reduced', t: 'REDUCED EFFECTS  ' + (S.reduced ? 'ON' : 'OFF') }, { k: 'pad', t: 'GAMEPAD  ' + (S.gamepad ? 'ON' : 'OFF') }, { k: 'back', t: 'BACK' }],
+    options: () => [{ k: 'sfx', t: 'SOUND VOLUME  ' + bar(S.sfx) }, { k: 'music', t: 'MUSIC VOLUME  ' + bar(S.music) }, { k: 'mouse', t: 'MOUSE AIM  ' + (S.mouseAim ? 'ON' : 'OFF') }, { k: 'hard', t: 'DIFFICULTY  ' + (S.hard ? 'HARD' : 'NORMAL') }, { k: 'shake', t: 'SCREEN SHAKE  ' + (S.shake ? 'ON' : 'OFF') }, { k: 'reduced', t: 'REDUCED EFFECTS  ' + (S.reduced ? 'ON' : 'OFF') }, { k: 'pad', t: 'GAMEPAD  ' + (S.gamepad ? 'ON' : 'OFF') }, { k: 'back', t: 'BACK' }],
     slots: () => [0, 1, 2].map((n) => ({ k: 'slot', n, rec: G.save.read(n) })).concat([{ k: 'back', t: 'BACK' }]),
   };
   U.open = function (mode, from) {
@@ -30,7 +30,7 @@
     if (U.mode === 'options' && (D.l || D.r)) {
       const d = D.r ? 0.1 : -0.1, cl = (v) => Math.max(0, Math.min(1, Math.round((v + d) * 10) / 10));
       if (it.k === 'sfx') { S.sfx = cl(S.sfx); G.audio.sfx('pickup'); } else if (it.k === 'music') S.music = cl(S.music);
-      else if (it.k === 'mouse') S.mouseAim = !S.mouseAim; else if (it.k === 'shake') S.shake = !S.shake; else if (it.k === 'reduced') S.reduced = !S.reduced; else if (it.k === 'pad') S.gamepad = !S.gamepad;
+      else if (it.k === 'mouse') S.mouseAim = !S.mouseAim; else if (it.k === 'hard') S.hard = !S.hard; else if (it.k === 'shake') S.shake = !S.shake; else if (it.k === 'reduced') S.reduced = !S.reduced; else if (it.k === 'pad') S.gamepad = !S.gamepad;
       S.save();
     }
     if (D.pause && U.mode !== 'title') { if (U.mode === 'pause') M.resume(); else U.back(); return; }
@@ -44,6 +44,7 @@
       case 'map': M.openMap(); break;
       case 'quit': M.toTitle(); break;
       case 'mouse': S.mouseAim = !S.mouseAim; S.save(); break;
+      case 'hard': S.hard = !S.hard; S.save(); break;
       case 'shake': S.shake = !S.shake; S.save(); break;
       case 'reduced': S.reduced = !S.reduced; S.save(); break;
       case 'pad': S.gamepad = !S.gamepad; S.save(); break;

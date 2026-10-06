@@ -29,6 +29,7 @@
   }
   M.render = function () {
     const t = M.time;
+    canvas.style.cursor = M.mode === 'play' && G.settings.mouseAim && Game.room && !Game.banner ? 'none' : 'default';
     if (M.mode === 'title') { UI.draw(ctx, t, Game.P && Game.room ? Game : null); return; }
     if (M.mode === 'end') { UI.draw(ctx, t, Game); return; }
     if (!Game.room) return;
