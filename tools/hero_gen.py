@@ -111,6 +111,7 @@ FALL_LEGS = (((11, 9), (9, 15)), ((14, 9), (15, 15)))
 def swap(pose): return (pose[1], pose[0])
 def compose(top, lg, dy=0):
     g = [list(r) for r in (['.' * W] * 25 + lg)]
+    g[24] = list(lg[0])   # a skirt row under the belt so an upward bob never leaves a seam
     for y, r in enumerate(top):
         yy = y + dy
         if 0 <= yy < len(g):
