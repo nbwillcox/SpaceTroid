@@ -36,7 +36,7 @@ def sluice():
     r.door('w', 'L', 12, 'blue', 'beacon4', 'e'); r.door('e', 'R', 12, 'blue', 'pump', 'w')
     r.fill(6, 11, 22, 14, 'W'); r.fill(36, 11, 52, 14, 'W'); r.fill(26, 12, 32, 14, '#')
     r.spawn('a', 24, 14); r.spawn('a', 34, 14); r.spawn('r', 29, 11); r.spawn('j', 12, 9); r.spawn('j', 44, 9); r.spawn('d', 56, 14)
-    r.g[14][27] = 'b'; r.g[14][28] = '.'; r.g[14][29] = '.'; r.item('tank5', 'energyTank', 29, 14)      # a ball nook in the pillar
+    r.g[14][26] = 'b'; r.fill(27, 14, 29, 14, '.'); r.item('tank5', 'energyTank', 29, 14)      # a ball nook in the pillar, sealed by a shot block
     return r
 sluice()
 
@@ -72,13 +72,14 @@ coolant()
 def gantry():
     r = room('gantry', 'Gantry Shaft', 30, 34, 10, 7, wall_all=True)
     r.door('wl', 'L', 29, 'blue', 'coolant', 'e'); r.door('eh', 'R', 3, 'blue', 'pre4', 'w')
-    # floating blocks every 7 rows, anchors hang beneath them; no ledges in between
-    for (x0, x1, y) in [(4, 8, 25), (20, 24, 18), (6, 10, 11)]:
-        r.fill(x0, y, x1, y, '#')
-        for x in range(x0 + 1, x1): r.g[y + 1][x] = 'G'
-    r.fill(18, 6, 28, 6, '#')
+    # three ledges seven rows apart, each with a ceiling slab and grapple anchors above it: grapple up, hang, and leap onto the ledge
+    for (ly, sx0, sx1, lx0, lx1) in [(25, 9, 12, 6, 15), (18, 13, 16, 10, 19), (11, 17, 20, 14, 20)]:
+        r.plat(lx0, lx1, ly)
+        r.fill(sx0, ly - 4, sx1, ly - 4, '#')
+        for x in range(sx0 + 1, sx1): r.g[ly - 3][x] = 'G'
+    r.fill(22, 6, 28, 6, '#')
     r.fill(2, 30, 27, 31, 'W')
-    r.spawn('d', 20, 31); r.spawn('r', 26, 31); r.spawn('j', 14, 24); r.spawn('j', 14, 14)
+    r.spawn('d', 24, 31); r.spawn('r', 26, 31); r.spawn('j', 8, 20); r.spawn('j', 18, 14)
     return r
 gantry()
 

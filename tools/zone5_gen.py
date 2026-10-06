@@ -43,9 +43,9 @@ maw()
 
 def ascent():
     r = room('ascent', 'The Ascent', 30, 34, 6, 9, wall_all=True)
-    r.door('wl', 'L', 29, 'blue', 'maw', 'e'); r.door('eh', 'R', 3, 'blue', 'nest', 'w')
-    for (x0, x1, y) in [(4, 8, 25), (18, 22, 18), (6, 10, 11)]: r.fill(x0, y, x1, y, 'S')       # a hidden staircase, seven rows apart: scan to climb
-    r.fill(18, 6, 28, 6, '#')
+    r.door('wl', 'L', 29, 'blue', 'maw', 'e'); r.door('eh', 'R', 4, 'blue', 'nest', 'w')
+    for (x0, x1, y) in [(4, 8, 27), (12, 16, 22), (4, 8, 17), (12, 16, 12)]: r.fill(x0, y, x1, y, 'S')       # a hidden staircase, five rows apart (space jump between them): scan to see and stand on it
+    r.fill(18, 7, 28, 7, '#')
     r.spawn('u', 14, 20); r.spawn('u', 12, 9); r.spawn('g', 22, 31); r.spawn('k', 10, 31)
     return r
 ascent()
