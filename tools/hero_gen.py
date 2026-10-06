@@ -145,8 +145,9 @@ RUN = [
     (((16, 8), (16, 12)), ((11, 9), (9, 15))),   # up
 ]
 IDLE_LEGS = (((10, 9), (9, 15)), ((13, 9), (13, 15)))
-JUMP_LEGS = (((14, 8), (11, 13)), ((16, 7), (17, 12)))
-FALL_LEGS = (((11, 9), (9, 15)), ((14, 9), (15, 15)))
+JUMP_LEGS = (((9, 7), (6, 11)), ((17, 6), (14, 10)))
+FALL_LEGS = (((10, 8), (7, 13)), ((16, 8), (14, 13)))
+SPIN_LEGS = (((9, 6), (8, 9)), ((17, 5), (15, 8)))
 def swap(pose): return (pose[1], pose[0])
 CW = 34   # final frame width: room on the right for the forward lean
 def lean_shift(y, lean, h=25):
@@ -208,10 +209,37 @@ if __name__ == '__main__':
                 else: row += '4' if lam > 0.78 else '3' if lam > 0.5 else '2' if lam > 0.15 else '1'
             rows.append(row)
         return rows
+
+    # ---- somersault: the tucked pose rotated about its centre in 45-degree steps (3x supersample, nearest, mode-downsample) ----
+    SP = 48
+    src = compose(top, legs(SPIN_LEGS), 0, 4)
+    pts = [(x, y) for y, r in enumerate(src) for x, c in enumerate(r) if c != '.']
+    cxs = (min(p[0] for p in pts) + max(p[0] for p in pts) + 1) / 2.0; cys = (min(p[1] for p in pts) + max(p[1] for p in pts) + 1) / 2.0
+    SS = 1
+    def rot_frame(deg):
+        a = math.radians(deg); ca, sa = math.cos(a), math.sin(a)
+        big = {}
+        for (x, y) in pts:
+            big[(x, y)] = src[y][x]
+        out = [['.'] * SP for _ in range(SP)]
+        for oy in range(SP):
+            for ox in range(SP):
+                cnt = {}
+                for sy in range(SS):
+                    for sx in range(SS):
+                        px = (ox + (sx + 0.5) / SS) - SP / 2.0; py = (oy + (sy + 0.5) / SS) - SP / 2.0
+                        ux = ca * px + sa * py + cxs; uy = -sa * px + ca * py + cys; ux = math.floor(ux + 1e-9); uy = math.floor(uy + 1e-9)
+                        c = src[int(uy)][int(ux)] if 0 <= int(uy) < len(src) and 0 <= int(ux) < len(src[0]) and uy >= 0 and ux >= 0 else '.'
+                        cnt[c] = cnt.get(c, 0) + 1
+                filled = {k: v for k, v in cnt.items() if k != '.'}
+                if sum(filled.values()) * 2 >= SS * SS:
+                    out[oy][ox] = max(filled, key=lambda k: (filled[k], k == 'o'))
+        return [''.join(r) for r in out]
+    for i in range(8): frames['spin%d' % i] = rot_frame(i * 45)
     balls = {'ball%d' % i: ball(i * math.pi / 4) for i in range(4)}
     for k, v in frames.items():
         for i, r in enumerate(v):
-            if len(r) != CW: print('BAD', k, i, len(r))
+            if len(r) != CW and not k.startswith('spin'): print('BAD', k, i, len(r))
     import os
     open(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'js', 'art', 'hero.js'), 'w').write("/* generated from tools/hero_gen.py (hand-authored parts) */\n(function (G) { 'use strict'; G.art = G.art || {}; G.art.heroParts = " + json.dumps(frames) + "; })((window.SGS = window.SGS || {}));\n")
     balls_json = json.dumps(balls)

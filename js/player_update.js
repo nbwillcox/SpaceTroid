@@ -39,16 +39,23 @@
     const sprint = A.dash && I.dash && p.ground && p.mode === 'stand';
     const top = ball ? K.ball : sprint ? K.run : K.walk;
     if (p.dash > 0) { p.dash--; p.vx = p.face * K.dash; p.vy = 0; if (!p.dash) p.dashCd = 22; }
-    else if (moving) p.vx = approach(p.vx, dir * top, p.ground ? (Math.sign(p.vx) === -dir ? K.dec : K.acc) : K.airAcc);
+    else if (moving) p.vx = approach(p.vx, dir * top, p.ground ? (Math.sign(p.vx) === -dir ? K.dec : K.acc) : (Math.abs(p.vx) > top && Math.sign(p.vx) === dir ? 0.02 : K.airAcc));
     else p.vx = approach(p.vx, 0, p.ground ? K.dec : K.airDec);
     if (A.dash && D.dash && p.dashCd === 0 && p.mode === 'stand' && !lock && p.dash === 0 && !I.d && (p.ground || p.dashAir)) { p.dash = 11; if (!p.ground) p.dashAir = false; G.fx.puff(p.x - p.face * 6, p.y - 4, 4); }
     /* ---- jump (coyote + buffer), space jump, variable height, drop through ledges ---- */
     if (!lock && p.mode === 'stand' && p.jbuf > 0) {
       if (p.ground && I.d && PH.support(room, p, p.y - E, p.y + 1, true) === null) { p.drop = true; p.ground = false; p.y += 1; p.jbuf = 0; p.coyote = 0; }
-      else if (p.coyote > 0) { p.vy = -K.jump; p.jbuf = 0; p.coyote = 0; p.ground = false; G.audio.sfx('jump'); }
-      else if (!p.ground && p.airJumps > 0 && A.spacejump) { p.vy = -K.airJump; p.airJumps--; p.jbuf = 0; p.spin = 16; G.fx.ring(p.x, p.y - 16); G.audio.sfx('spacejump'); }
+      else if (p.coyote > 0) {
+        if (p.dash > 0) { p.vx = p.face * K.dash; p.dash = 0; p.dashCd = 10; }
+        p.vy = -K.jump; p.jbuf = 0; p.coyote = 0; p.ground = false; G.audio.sfx('jump');
+        p.spinning = (Math.abs(p.vx) > 0.8 || dir !== 0) && !I.u && !I.fire; p.spinT = 0; p.noSpin = false;
+      }
+      else if (!p.ground && p.airJumps > 0 && A.spacejump) { p.vy = -K.airJump; p.airJumps--; p.jbuf = 0; p.spin = 16; if (!p.noSpin) { p.spinning = true; p.spinT = 0; } G.fx.ring(p.x, p.y - 16); G.audio.sfx('spacejump'); }
     }
     if (!I.jump && p.vy < -K.cut && !p.dash && !lock) p.vy = -K.cut;
+    if (p.ground || ball || lock || p.mode !== 'stand') { p.spinning = false; p.noSpin = false; }
+    else if (p.spinning && (I.fire || I.u || D.missile)) { p.spinning = false; p.noSpin = true; }
+    if (p.spinning) p.spinT++;
     /* ---- gravity + collision ---- */
     if (!p.dash) p.vy = Math.min(K.fall, p.vy + K.g);
     const wasAir = !p.ground, vyBefore = p.vy;

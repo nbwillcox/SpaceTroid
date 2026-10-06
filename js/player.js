@@ -48,6 +48,7 @@
     const H = G.sprites.hero[p.suit || 'cobalt'];
     if (p.mode === 'ball') return H['ball' + (((Math.floor(p.anim * 1.2) * p.face) % 4 + 4) % 4)];
     if (p.mode === 'crouch') return H.crouch;
+    if (p.spinning && !p.ground) return H['spin' + (Math.floor(p.spinT / 2.4) & 7)];
     const up = p.aim === 'up' || p.aim === 'diagUp';
     if (!p.ground) return up ? H.jumpUp : p.vy < 0 || p.dash > 0 ? H.jump : H.fall;
     if (Math.abs(p.vx) > 0.25) return up ? H.runUp : H['run' + (Math.floor(p.anim) & 7)];
