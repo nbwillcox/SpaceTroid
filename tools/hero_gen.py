@@ -54,31 +54,73 @@ ARM = [
 ]
 def body(): return part(27, HEAD + BACKPACK + TORSO + PAULDRON + ARM)
 
-LEGS_IDLE = [
-    (0, 9, "o43322111o"),
-    (1, 8, "o211o"), (1, 11, "o4321o"),
-    (2, 8, "o211o"), (2, 11, "o4321o"),
-    (3, 8, "o211o"), (3, 11, "o3221o"),
-    (4, 8, "okko"), (4, 11, "o3yYko"),
-    (5, 8, "o1ko"), (5, 11, "o2kyo"),
-    (6, 8, "o211o"), (6, 11, "o4321o"),
-    (7, 8, "o211o"), (7, 11, "o4321o"),
-    (8, 8, "o211o"), (8, 11, "o3221o"),
-    (9, 8, "okko"), (9, 11, "oyYyko"),
-    (10, 8, "o211o"), (10, 11, "o3221o"),
-    (11, 8, "o2211o"), (11, 11, "o43221o"),
-    (12, 8, "o22111o"), (12, 11, "o432211o"),
-    (13, 8, "o3221111o"), (13, 11, "o43221111o"),
-    (14, 8, "o43221111o"), (14, 11, "oyYy221111o"),
-    (15, 8, "oLLl1111oo"), (15, 11, "oLLLl1111oo"),
-    (16, 8, "oooooooooooo"),
+
+# ---- legs: hand-posed limbs. Each limb is a thigh + shin (thick lines between keypoints) with a gold knee pad and a hand-drawn boot stamp; an outline pass closes them. ----
+def line_pts(p0, p1):
+    (x0, y0), (x1, y1) = p0, p1; n = max(abs(x1 - x0), abs(y1 - y0), 1)
+    return [(round(x0 + (x1 - x0) * i / n), round(y0 + (y1 - y0) * i / n)) for i in range(n + 1)]
+BOOT_F = [".....", "....."]  # placeholder (boot is drawn by boot())
+def limb(g, hip, knee, ankle, front):
+    ramp = ('4', '3', '2', '1') if front else ('3', '2', '1', '1')
+    def thick(p0, p1, w):
+        for (x, y) in line_pts(p0, p1):
+            for k in range(w):
+                xx = x - w // 2 + k
+                c = ramp[0] if k == 0 else ramp[1] if k == 1 else ramp[2] if k < w - 1 else ramp[3]
+                if 0 <= y < len(g) and 0 <= xx < W: g[y][xx] = c
+    thick(hip, knee, 5); thick(knee, ankle, 4)
+    kx, ky = knee
+    for dy in (-1, 0, 1):
+        for dx in (-1, 0, 1):
+            if 0 <= ky + dy < len(g) and 0 <= kx + dx < W: g[ky + dy][kx + dx] = 'y' if (dx + dy) < 1 else 'k'
+    g[ky][kx] = 'Y'
+    # boot: heel at ankle, toe forward (right)
+    ax, ay = ankle
+    boot = ["33221", "3222111", "yY222111", "LLl11111"] if front else ["2211", "221111", "yy211111", "ml111111"]
+    for j, row in enumerate(boot):
+        for i, c in enumerate(row):
+            xx, yy = ax - 2 + i, ay - 1 + j
+            if 0 <= yy < len(g) and 0 <= xx < W: g[yy][xx] = c
+def outline(g):
+    h = len(g); out = [r[:] for r in g]
+    for y in range(h):
+        for x in range(W):
+            if g[y][x] == '.':
+                for dx, dy in ((1,0),(-1,0),(0,1),(0,-1)):
+                    xx, yy = x + dx, y + dy
+                    if 0 <= xx < W and 0 <= yy < h and g[yy][xx] not in '.o': out[y][x] = 'o'; break
+    return out
+HIP = [(8, 0, "o43322111o")]
+def legs(pose):
+    g = blank(18)
+    (bk, ft) = pose
+    limb(g, (11, 2), bk[0], bk[1], False); limb(g, (13, 2), ft[0], ft[1], True)
+    g = outline(g)
+    put(g, 0, 9, "o43322111o")
+    return fin(g)
+RUN = [
+    (((8, 9), (5, 14)), ((15, 8), (17, 15))),    # contact
+    (((9, 10), (7, 12)), ((15, 9), (14, 15))),   # down
+    (((14, 8), (11, 11)), ((13, 9), (12, 15))),  # passing
+    (((16, 8), (16, 12)), ((11, 9), (9, 15))),   # up
 ]
+IDLE_LEGS = (((10, 9), (9, 15)), ((13, 9), (13, 15)))
+JUMP_LEGS = (((14, 8), (11, 13)), ((16, 7), (17, 12)))
+FALL_LEGS = (((11, 9), (9, 15)), ((14, 9), (15, 15)))
+def swap(pose): return (pose[1], pose[0])
+def compose(top, lg, dy=0):
+    g = [list(r) for r in top]
+    if dy: g = [list('.' * W) for _ in range(dy)] + g[:len(g) - dy] if dy > 0 else g[-dy:] + [list('.' * W) for _ in range(-dy)]
+    return [''.join(r) for r in g] + lg
 if __name__ == '__main__':
-    out = {'body': body(), 'legsIdle': part(18, LEGS_IDLE)}
-    full = body() + part(18, LEGS_IDLE)
-    out['idle'] = full
-    for k, v in out.items():
+    top = body()
+    frames = {'idle': compose(top, legs(IDLE_LEGS)), 'jump': compose(top, legs(JUMP_LEGS), -1), 'fall': compose(top, legs(FALL_LEGS))}
+    bob = [0, 1, 0, -1]
+    for i in range(4): frames['run%d' % i] = compose(top, legs(RUN[i]), bob[i])
+    for i in range(4): frames['run%d' % (i + 4)] = compose(top, legs(swap(RUN[i])), bob[i])
+    for k, v in frames.items():
         for i, r in enumerate(v):
             if len(r) != W: print('BAD', k, i, len(r))
-    open(__import__('os').path.join(__import__('os').path.dirname(__file__), '..', 'js', 'art', 'hero.js'), 'w').write("/* generated from _hero_gen.py (hand-authored parts) */\n(function (G) { 'use strict'; G.art = G.art || {}; G.art.heroParts = " + json.dumps({'idle': out['idle']}) + "; })((window.SGS = window.SGS || {}));\n")
-    print('ok')
+    import os
+    open(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'js', 'art', 'hero.js'), 'w').write("/* generated from tools/hero_gen.py (hand-authored parts) */\n(function (G) { 'use strict'; G.art = G.art || {}; G.art.heroParts = " + json.dumps(frames) + "; })((window.SGS = window.SGS || {}));\n")
+    print('ok', len(frames))
