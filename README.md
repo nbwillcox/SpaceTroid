@@ -9,3 +9,17 @@ The art is authored as palette-indexed character grids (see `tools/hero_gen.py` 
 Licensed under [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/): free to play, share and remix **non-commercially**, as long as you give credit and **link back to this repository**: https://github.com/nbwillcox/SpaceTroid
 
 This is an original game inspired by classic exploration platformers. It uses no assets, names or code from any existing game.
+
+## Controls (engine test chamber)
+
+| Action | Keyboard | Gamepad |
+|---|---|---|
+| Move / aim | Arrows or WASD (Up aims up, Up + direction aims diagonally) | Stick / d-pad |
+| Jump (hold for height, again in air = space jump) | Space, Z or K | A |
+| Fire (hold to charge) | X or J | X / right trigger |
+| Missile / super missile (R swaps) | C or L | B / Y |
+| Dash | Shift or V | right bumper |
+| Aim lock | E | left bumper |
+| Crouch, then Down again = morph ball (Fire lays a bomb) | S / Down | stick down |
+| Down + Jump on a ledge | drops through | |
+| Beam toggles | 1 / 2 / 3 | |
