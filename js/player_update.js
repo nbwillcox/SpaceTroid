@@ -36,7 +36,7 @@
     if (dir && !(I.aim && !ball)) p.face = dir; else if (I.aim && !ball && (I.l || I.r)) p.face = I.r ? 1 : -1;
     /* ---- horizontal ---- */
     const moving = dir && !(I.aim && !ball);
-    const sprint = A.dash && I.dash && p.ground && p.mode === 'stand';
+    const sprint = I.dash && p.ground && p.mode === 'stand';   /* holding Shift always sprints; the tap-dash burst is the gated upgrade */
     const top = ball ? K.ball : sprint ? K.run : K.walk;
     if (p.dash > 0) { p.dash--; p.vx = p.face * K.dash; p.vy = 0; if (!p.dash) p.dashCd = 22; }
     else if (moving) p.vx = approach(p.vx, dir * top, p.ground ? (Math.sign(p.vx) === -dir ? K.dec : K.acc) : (Math.abs(p.vx) > top && Math.sign(p.vx) === dir ? 0.02 : K.airAcc));
