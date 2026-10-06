@@ -4,7 +4,7 @@
   const S = G.sprites, RM = G.room, T = 16, U = G.U;
   const R = {};
   G.render = R;
-  const solidish = (room, tx, ty) => { const k = RM.at(room, tx, ty); return k === 1 || k === 3 || k === 4 || k === 5 || k === 6 || k === 7; };
+  const solidish = (room, tx, ty) => { const k = RM.at(room, tx, ty); return k === 1 || k === 3 || k === 4 || k === 5 || k === 6 || k === 7 || k === 9; };
   const hash = (a, b) => ((a * 73856093) ^ (b * 19349663)) >>> 0;
   /* bake the static layers of a room into one canvas (re-run when blocks break) */
   R.bake = function (room) {
@@ -54,12 +54,24 @@
     if (sh > 0.3) { ox += Math.round((Math.random() - 0.5) * sh); oy += Math.round((Math.random() - 0.5) * sh); }
     /* parallax (horizontal only) */
     const bg = S.bg1, fx = -Math.floor(cam.x * 0.12) % 480, mx = -Math.floor(cam.x * 0.4) % 480;
+    ctx.fillStyle = '#05071a'; ctx.fillRect(0, 0, 480, 270);
+    const rx0 = Math.max(0, -ox), rx1 = Math.min(480, room.pw - ox), ry0 = Math.max(0, -oy), ry1 = Math.min(270, room.ph - oy);
+    ctx.save(); ctx.beginPath(); ctx.rect(rx0, ry0, rx1 - rx0, ry1 - ry0); ctx.clip();
     for (const [img, o] of [[bg.far, fx], [bg.mid, mx]]) { const a = o < 0 ? o : o - 480; ctx.drawImage(img, a, 0); ctx.drawImage(img, a + 480, 0); }
+    ctx.restore();
     ctx.translate(-ox, -oy);
     ctx.drawImage(room.baked, 0, 0);
     for (const d of room.decor || []) ctx.drawImage(d.img, d.x, d.y);
+    G.world.drawBack(ctx, g, time);
     G.enemies.draw(ctx, g, time);
-    for (const b of g.bombs) { const fl = Math.floor(b.t / (b.t > 30 ? 3 : 6)) & 1; ctx.fillStyle = '#2e3452'; ctx.fillRect(Math.round(b.x) - 4, Math.round(b.y) - 3, 8, 7); ctx.fillRect(Math.round(b.x) - 3, Math.round(b.y) - 4, 6, 9); ctx.fillStyle = '#5a658a'; ctx.fillRect(Math.round(b.x) - 3, Math.round(b.y) - 3, 3, 2); ctx.fillStyle = fl ? '#fff2a8' : '#ef7a2a'; ctx.fillRect(Math.round(b.x), Math.round(b.y) - 6, 2, 2); }
+    G.bosses.draw(ctx, g, time);
+    G.world.drawFront(ctx, g, time);
+    for (const b of g.bombs) {
+      const fl = Math.floor(b.t / (b.t > 30 ? 3 : 6)) & 1, r = b.big ? 7 : 4, bx = Math.round(b.x), by = Math.round(b.y);
+      ctx.fillStyle = b.big ? '#6b3d14' : '#2e3452'; ctx.fillRect(bx - r, by - r + 1, r * 2, r * 2 - 2); ctx.fillRect(bx - r + 1, by - r, r * 2 - 2, r * 2);
+      ctx.fillStyle = b.big ? '#efba42' : '#5a658a'; ctx.fillRect(bx - r + 1, by - r + 1, r - 1, 2);
+      ctx.fillStyle = fl ? '#fff2a8' : '#ef7a2a'; ctx.fillRect(bx, by - r - 2, 2, 2);
+    }
     /* hero */
     if (!p.dead && !(p.inv > 0 && Math.floor(time * 20) % 2 && p.hurt === 0)) {
       const fr = G.player.frame(p), c = p.face >= 0 ? fr.r : fr.l;

@@ -1,6 +1,6 @@
 # SpaceTroid
 
-A free, original, non-commercial exploration platformer in hand-authored hi-bit pixel art (480x270): five zones, upgrades that open the map, bosses and an escape. **Work in progress.**
+A free, original, non-commercial exploration platformer in hand-authored hi-bit pixel art (480x270): five zones, upgrades that open the map, bosses and an escape. **Work in progress: zone 1 (the Crash Site) is playable from the title screen, with 14 rooms, doors, save points, a map, items and a boss.**
 
 The art is authored as palette-indexed character grids (see `tools/hero_gen.py` and `js/art/`), compiled to canvases at start-up; there are no image files. Preview the current art at `sheet.html`.
 
@@ -24,3 +24,18 @@ This is an original game inspired by classic exploration platformers. It uses no
 | Crouch, then Down again = morph ball (Fire lays a limited bomb) | S / Down | stick down |
 | Down + Jump on a ledge | drops through | |
 | Beam toggles | 1 / 2 / 3 | |
+
+## More controls
+
+| Action | Keyboard |
+|---|---|
+| Map | M or Tab |
+| Pause | P or Esc |
+| Save / use map terminal | stand on the pad and press Up |
+| Menus | Up / Down, Left / Right to change values, Jump or Enter to select |
+
+Doors: **blue** opens with any shot, **red** needs a missile, **green** a super missile, **gold** opens when the zone boss is beaten.
+
+## Progress notes
+
+Zone 1 gives you the morph ball, missiles and bombs, plus two energy tanks and three missile expansions. Ice, wave and plasma beams, space jump, dash, super missiles and the other four zones are still to come.

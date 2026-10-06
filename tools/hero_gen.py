@@ -145,9 +145,9 @@ RUN = [
     (((16, 8), (16, 12)), ((11, 9), (9, 15))),   # up
 ]
 IDLE_LEGS = (((10, 9), (9, 15)), ((13, 9), (13, 15)))
-JUMP_LEGS = (((9, 7), (6, 11)), ((17, 6), (14, 10)))
-FALL_LEGS = (((10, 8), (7, 13)), ((16, 8), (14, 13)))
-SPIN_LEGS = (((9, 6), (8, 9)), ((17, 5), (15, 8)))
+JUMP_LEGS = (((9, 6), (7, 9)), ((18, 5), (15, 8)))
+FALL_LEGS = (((10, 7), (8, 11)), ((17, 7), (15, 11)))
+SPIN_LEGS = (((9, 5), (9, 7)), ((18, 4), (16, 6)))
 def swap(pose): return (pose[1], pose[0])
 CW = 34   # final frame width: room on the right for the forward lean
 def lean_shift(y, lean, h=25):

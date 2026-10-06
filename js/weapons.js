@@ -22,14 +22,17 @@
     p.fireCd = 10; G.audio.sfx(sup ? 'super' : 'missile');
   }
   function bomb(g, p) {
-    if (g.bombs.length >= 3 || p.bombs <= 0) { p.bombCd = 10; G.audio.sfx('hit'); return; }
-    p.bombs--;
+    if (g.bombs.filter((b) => !b.big).length >= 3) return;
     g.bombs.push({ x: p.x, y: p.y - 7, t: 0, fuse: 48 }); p.bombCd = 12; G.audio.sfx('bomb');
+  }
+  function superBomb(g, p) {
+    if (p.sbombs <= 0 || g.bombs.some((b) => b.big)) { p.bombCd = 10; return; }
+    p.sbombs--; g.bombs.push({ x: p.x, y: p.y - 8, t: 0, fuse: 70, big: true }); p.bombCd = 20; G.audio.sfx('bomb');
   }
   W.playerFire = function (g, p, I, D) {
     const A = g.abil;
     if (p.hurt > 0 || p.dead) { p.charge = 0; p.held = 0; return; }
-    if (p.mode === 'ball') { if (D.fire && A.bombs && p.bombCd === 0) bomb(g, p); p.charge = 0; return; }
+    if (p.mode === 'ball') { if (D.fire && A.bombs && p.bombCd === 0) bomb(g, p); else if (D.missile && A.sbombs && p.bombCd === 0) superBomb(g, p); p.charge = 0; return; }
     if (!A.charge) { if (I.fire && p.fireCd === 0) { shoot(g, p, false); p.fireCd = 9; } p.charge = 0; }
     else {
     if (D.fire && p.fireCd === 0) { shoot(g, p, false); p.fireCd = 8; p.held = 0; }
@@ -51,6 +54,7 @@
     G.fx.boom(x, y, r);
     for (let ty = Math.floor((y - r) / T); ty <= Math.floor((y + r) / T); ty++) for (let tx = Math.floor((x - r) / T); tx <= Math.floor((x + r) / T); tx++) if (U.dist2(tx * T + 8, ty * T + 8, x, y) <= (r + 6) * (r + 6)) W.breakAt(g, tx, ty, kind);
     for (const f of g.foes) if (!f.dead && U.dist2(f.x, f.y - f.h / 2, x, y) <= (r + f.w / 2) * (r + f.w / 2)) G.enemies.damage(g, f, dmg, kind);
+    if (G.bosses) G.bosses.blast(g, x, y, r, kind);
     g.shake = Math.max(g.shake, r > 20 ? 3 : 1.5);
   }
   W.update = function (g) {
@@ -63,6 +67,7 @@
       const tx = Math.floor(s.x / T), ty = Math.floor(s.y / T), k = RM.at(room, tx, ty);
       if (RM.isSolid(k) || ((k === 3 || k === 4) && s.y >= RM.surface(k, ty, Math.floor(s.x) - tx * T))) {
         const brk = W.breakAt(g, tx, ty, s.kind === 'beam' ? 'shot' : s.kind);
+        if (k === 9) G.world.shotDoor(g, tx, ty, s.kind === 'beam' ? 'shot' : s.kind);
         if (k === 5 && s.kind === 'beam') { s.dead = true; G.fx.spark(s.x, s.y, '#fff'); }
         else if (s.wave && s.kind === 'beam') { /* wave passes walls */ }
         else { s.dead = true; if (s.kind === 'missile' || s.kind === 'super') explode(g, s.x - s.vx * 0.5, s.y - s.vy * 0.5, s.kind === 'super' ? 30 : 18, s.dmg * 0.4, s.kind); else G.fx.sparkBurst(s.x, s.y, s.col ? s.col[1] : '#fff', 4); }
@@ -84,9 +89,9 @@
     for (const b of g.bombs) {
       b.t++;
       if (b.t >= b.fuse) {
-        b.dead = true; explode(g, b.x, b.y, 26, 6, 'bomb');
+        b.dead = true; if (b.big) explode(g, b.x, b.y, 56, 30, 'bomb2'); else explode(g, b.x, b.y, 26, 6, 'bomb');
         const dx = p.x - b.x, dy = (p.y - p.h / 2) - b.y;
-        if (p.mode === 'ball' && dx * dx + dy * dy < 30 * 30) { p.vy = -4.6; p.vx += Math.sign(dx || 1) * 1.3; p.ground = false; }
+        if (!b.big && p.mode === 'ball' && dx * dx + dy * dy < 30 * 30) { p.vy = -4.6; p.vx += Math.sign(dx || 1) * 1.3; p.ground = false; }
         G.audio.sfx('boom');
       }
     }

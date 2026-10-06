@@ -48,12 +48,13 @@
       if (p.ground && I.d && PH.support(room, p, p.y - E, p.y + 1, true) === null) { p.drop = true; p.ground = false; p.y += 1; p.jbuf = 0; p.coyote = 0; }
       else if (p.coyote > 0) {
         if (p.dash > 0) { p.vx = p.face * K.dash; p.dash = 0; p.dashCd = 10; }
-        p.vy = -K.jump; p.jbuf = 0; p.coyote = 0; p.ground = false; G.audio.sfx('jump');
+        p.vy = -K.jump; p.jbuf = 0; p.coyote = 0; p.ground = false; G.audio.sfx('jump'); p.jumping = true;
         p.spinning = (Math.abs(p.vx) > 0.8 || dir !== 0) && !I.u && !I.fire; p.spinT = 0; p.noSpin = false;
       }
-      else if (!p.ground && p.airJumps > 0 && A.spacejump) { p.vy = -K.airJump; p.airJumps--; p.jbuf = 0; p.spin = 16; if (!p.noSpin) { p.spinning = true; p.spinT = 0; } G.fx.ring(p.x, p.y - 16); G.audio.sfx('spacejump'); }
+      else if (!p.ground && p.airJumps > 0 && A.spacejump) { p.vy = -K.airJump; p.airJumps--; p.jbuf = 0; p.spin = 16; p.jumping = true; if (!p.noSpin) { p.spinning = true; p.spinT = 0; } G.fx.ring(p.x, p.y - 16); G.audio.sfx('spacejump'); }
     }
-    if (!I.jump && p.vy < -K.cut && !p.dash && !lock) p.vy = -K.cut;
+    if (p.ground || p.vy >= 0) p.jumping = false;
+    if (!I.jump && p.jumping && p.vy < -K.cut && !p.dash && !lock) p.vy = -K.cut;
     if (p.ground || ball || lock || p.mode !== 'stand') { p.spinning = false; p.noSpin = false; }
     else if (p.spinning && (I.fire || I.u || D.missile)) { p.spinning = false; p.noSpin = true; }
     if (p.spinning) p.spinT++;

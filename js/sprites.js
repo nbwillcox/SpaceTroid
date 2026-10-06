@@ -23,5 +23,12 @@
     const F = A.zone1foes;
     S.foe = { crawler: F.crawler.map((g) => both(g, 'crimson', 'cr')), moth: F.moth.map((g) => both(g, 'crimson', 'mo')), pod: F.pod.map((g) => both(g, 'crimson', 'pod')) };
     S.bg1 = A.buildZone1Bg();
+    const W1 = A.world1, mkc = (rows, ramp, n) => A.make(rows, ramp, n).c;
+    S.door = { blue: W1.door.map((g, i) => mkc(g, 'cobalt', 'db' + i)), red: W1.door.map((g, i) => mkc(g, 'crimson', 'dr' + i)), green: W1.door.map((g, i) => mkc(g, 'teal', 'dg' + i)), boss: W1.door.map((g, i) => mkc(g, 'gold', 'dB' + i)) };
+    S.orb = {}; for (const r of ['cobalt', 'crimson', 'teal', 'gold']) S.orb[r] = W1.orb.map((g, i) => mkc(g, r, 'orb' + r + i));
+    S.tank = { energy: W1.tankEnergy.map((g) => mkc(g, 'cobalt', 'te')), missile: W1.tankMissile.map((g) => mkc(g, 'cobalt', 'tm')), super: W1.tankSuper.map((g) => mkc(g, 'cobalt', 'ts')) };
+    const B1 = A.boss1, bb = (g) => both(g, 'crimson', 'boss');
+    S.boss = { walk: B1.walk.map(bb), rear: bb(B1.rear), tele: B1.tele.map(bb), charge: B1.charge.map(bb), stun: B1.stun.map(bb) };
+    S.pad = W1.pad.map((g) => mkc(g, 'cobalt', 'pad')); S.term = W1.terminal.map((g) => mkc(g, 'cobalt', 'term')); S.wreck = mkc(W1.wreck, 'cobalt', 'wreck');
   };
 })((window.SGS = window.SGS || {}));

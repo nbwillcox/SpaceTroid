@@ -18,7 +18,7 @@
     const r = Math.random();
     if (r < 0.5) g.items.push({ kind: 'en', x: f.x, y: f.y - 8, vy: -2, t: 0, life: 560 });
     else if (r < 0.72 && g.abil.missiles) g.items.push({ kind: 'missile', x: f.x, y: f.y - 8, vy: -2, t: 0, life: 560 });
-    else if (r < 0.86 && g.abil.bombs) g.items.push({ kind: 'bomb', x: f.x, y: f.y - 8, vy: -2, t: 0, life: 560 });
+    else if (r < 0.80 && g.abil.sbombs) g.items.push({ kind: 'sbomb', x: f.x, y: f.y - 8, vy: -2, t: 0, life: 560 });
   };
   N.damage = function (g, f, dmg, kind, shot) {
     if (f.dead) return;
@@ -89,7 +89,7 @@
         it.dead = true; G.audio.sfx('pickup');
         if (it.kind === 'en') p.en = Math.min(G.player.enMax(p), p.en + 5);
         else if (it.kind === 'missile') p.missiles = Math.min(p.missileMax, p.missiles + 2);
-        else if (it.kind === 'bomb') p.bombs = Math.min(p.bombMax, p.bombs + 2);
+        else if (it.kind === 'sbomb') p.sbombs = Math.min(p.sbombMax, p.sbombs + 1);
         else if (it.kind === 'super') p.supers = Math.min(p.superMax, p.supers + 1);
       }
       if (it.t > it.life) it.dead = true;
@@ -114,7 +114,7 @@
       if (it.t > it.life - 120 && Math.floor(time * 12) % 2) continue;
       const x = Math.round(it.x), y = Math.round(it.y), b = Math.floor(time * 6) & 1;
       if (it.kind === 'en') { ctx.fillStyle = '#146e94'; ctx.fillRect(x - 3, y - 2, 6, 5); ctx.fillRect(x - 2, y - 3, 4, 7); ctx.fillStyle = '#2cbad8'; ctx.fillRect(x - 2, y - 2, 4, 4); ctx.fillStyle = b ? '#f2ffff' : '#86f0f2'; ctx.fillRect(x - 1, y - 2, 2, 2); }
-      else if (it.kind === 'bomb') { ctx.fillStyle = '#2e3452'; ctx.fillRect(x - 3, y - 2, 6, 5); ctx.fillRect(x - 2, y - 3, 4, 7); ctx.fillStyle = '#5a658a'; ctx.fillRect(x - 2, y - 2, 2, 2); ctx.fillStyle = b ? '#fff2a8' : '#ef7a2a'; ctx.fillRect(x, y - 5, 2, 2); }
+      else if (it.kind === 'sbomb') { ctx.fillStyle = '#2e3452'; ctx.fillRect(x - 3, y - 2, 6, 5); ctx.fillRect(x - 2, y - 3, 4, 7); ctx.fillStyle = '#5a658a'; ctx.fillRect(x - 2, y - 2, 2, 2); ctx.fillStyle = b ? '#fff2a8' : '#ef7a2a'; ctx.fillRect(x, y - 5, 2, 2); }
       else { ctx.fillStyle = '#6a1224'; ctx.fillRect(x - 3, y - 2, 6, 5); ctx.fillStyle = '#ec5c4a'; ctx.fillRect(x - 2, y - 3, 4, 6); ctx.fillStyle = b ? '#fff2a8' : '#efba42'; ctx.fillRect(x - 1, y - 3, 2, 2); ctx.fillRect(x - 1, y, 2, 2); }
     }
   };
