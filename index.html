@@ -1,5 +1,10 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>SpaceTroid</title>
-<style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0c0e1c;color:#cfe0ff;font:16px/1.6 system-ui,sans-serif;text-align:center}a{color:#8ad0ff}</style></head>
-<body><main><h1>SpaceTroid</h1><p>A free, original pixel-art exploration platformer. In development.</p><p><a href="sheet.html">Art sheet (work in progress)</a> · <a href="https://github.com/nbwillcox/SpaceTroid">github.com/nbwillcox/SpaceTroid</a></p></main><p><a href="tiles.html">Zone 1 tiles, parallax and enemies (work in progress)</a></p>
+<style>html,body{margin:0;height:100%;background:#05071a;overflow:hidden}body{display:grid;place-items:center}canvas{image-rendering:pixelated;image-rendering:crisp-edges;display:block;background:#0a0e2c}#links{position:fixed;left:8px;bottom:6px;font:11px monospace;color:#566cac}#links a{color:#8ea2d2}</style></head>
+<body><canvas id="game"></canvas><div id="links">SpaceTroid (in development) &middot; <a href="sheet.html">hero</a> &middot; <a href="tiles.html">zone 1 art</a> &middot; <a href="https://github.com/nbwillcox/SpaceTroid">source</a></div>
+<script src="js/util.js"></script><script src="js/px.js"></script><script src="js/config.js"></script><script src="js/palette.js"></script><script src="js/art.js"></script>
+<script src="js/art/hero.js"></script><script src="js/art/ball.js"></script><script src="js/art/zone1.js"></script><script src="js/art/zone1deco.js"></script><script src="js/art/zone1misc.js"></script><script src="js/art/zone1bg.js"></script><script src="js/art/zone1foes.js"></script>
+<script src="js/sprites.js"></script><script src="js/input.js"></script><script src="js/room.js"></script><script src="js/physics.js"></script><script src="js/fx.js"></script><script src="js/audio.js"></script>
+<script src="js/player.js"></script><script src="js/player_update.js"></script><script src="js/weapons.js"></script><script src="js/enemies.js"></script><script src="js/hud.js"></script><script src="js/render.js"></script>
+<script src="js/rooms/sandbox.js"></script><script src="js/game.js"></script><script src="js/main.js"></script>
 </body></html>

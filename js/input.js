@@ -1,0 +1,41 @@
+/* Keyboard + gamepad. Arrows/WASD move, Space/Z/K jump, X/J fire (hold to charge), C/L missile, Shift/V dash, E aim-lock, R swap missile type, M map, P/Esc pause. */
+(function (G) {
+  'use strict';
+  const I = { held: {}, down: {}, k: {}, lt: {}, prev: {}, mouse: { on: false, x: 0, y: 0, fire: false } };
+  const MAP = { ArrowLeft: 'l', KeyA: 'l', ArrowRight: 'r', KeyD: 'r', ArrowUp: 'u', KeyW: 'u', ArrowDown: 'd', KeyS: 'd', Space: 'jump', KeyZ: 'jump', KeyK: 'jump', KeyX: 'fire', KeyJ: 'fire', KeyC: 'missile', KeyL: 'missile', ShiftLeft: 'dash', ShiftRight: 'dash', KeyV: 'dash', KeyE: 'aim', KeyR: 'swap', KeyM: 'map', Tab: 'map', KeyP: 'pause', Escape: 'pause', Enter: 'start', Digit1: 'b1', Digit2: 'b2', Digit3: 'b3' };
+  const ACTIONS = ['l', 'r', 'u', 'd', 'jump', 'fire', 'missile', 'dash', 'aim', 'swap', 'map', 'pause', 'start', 'b1', 'b2', 'b3'];
+  const typing = (t) => { const n = t && t.tagName; return n === 'INPUT' || n === 'TEXTAREA' || n === 'SELECT'; };
+  window.addEventListener('keydown', (e) => {
+    if (typing(e.target)) return;
+    const a = MAP[e.code]; if (!a) return;
+    if (!I.k[a]) I.lt[a] = true;
+    I.k[a] = true; I.any = true; e.preventDefault();
+  });
+  window.addEventListener('keyup', (e) => { const a = MAP[e.code]; if (a) I.k[a] = false; });
+  window.addEventListener('blur', () => { I.k = {}; });
+  const cv = () => document.getElementById('game');
+  window.addEventListener('pointermove', (e) => { const c = cv(); if (!c || e.target !== c) return; const r = c.getBoundingClientRect(); I.mouse.on = true; I.mouse.x = (e.clientX - r.left) / r.width * 480; I.mouse.y = (e.clientY - r.top) / r.height * 270; });
+  window.addEventListener('pointerdown', (e) => { if (e.button === 0 && e.target === cv() && G.settings.mouseAim) { if (!I.k.fire) I.lt.fire = true; I.k.fire = true; I.mouse.fire = true; I.any = true; } });
+  window.addEventListener('pointerup', (e) => { if (e.button === 0 && I.mouse.fire) { I.k.fire = false; I.mouse.fire = false; } });
+  /* sample once per fixed step: I.held[a] = held now, I.down[a] = pressed this step */
+  I.poll = function () {
+    const pad = {};
+    if (G.settings.gamepad && navigator.getGamepads) {
+      for (const g of navigator.getGamepads()) {
+        if (!g || !g.connected) continue;
+        const bt = (i) => !!(g.buttons[i] && g.buttons[i].pressed), ax = g.axes[0] || 0, ay = g.axes[1] || 0;
+        pad.l = ax < -0.4 || bt(14); pad.r = ax > 0.4 || bt(15); pad.u = ay < -0.5 || bt(12); pad.d = ay > 0.5 || bt(13);
+        pad.jump = bt(0); pad.fire = bt(2) || bt(7); pad.missile = bt(1); pad.swap = bt(3); pad.dash = bt(5) || bt(6); pad.aim = bt(4); pad.map = bt(8); pad.pause = bt(9); pad.start = bt(9);
+        break;
+      }
+    }
+    for (const a of ACTIONS) {
+      const h = !!I.k[a] || !!pad[a];
+      I.down[a] = !!I.lt[a] || (!!pad[a] && !I.prev[a]);
+      I.held[a] = h; I.prev[a] = !!pad[a]; I.lt[a] = false;
+      if (pad[a]) I.any = true;
+    }
+  };
+  I.clear = () => { I.k = {}; I.lt = {}; I.held = {}; I.down = {}; I.any = false; };
+  G.input = I;
+})((window.SGS = window.SGS || {}));
