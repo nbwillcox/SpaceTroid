@@ -29,9 +29,25 @@
     });
     if (U.confirm) { ctx.fillStyle = 'rgba(5,7,26,0.9)'; ctx.fillRect(100, 100, 280, 70); txt(ctx, 'OVERWRITE THIS SAVE?', 240, 112, '#ffb89c', 'c'); txt(ctx, 'NO', 200, 140, !U.confirm.yes ? '#fff2a8' : '#8ea2d2', 'c'); txt(ctx, 'YES', 280, 140, U.confirm.yes ? '#fff2a8' : '#8ea2d2', 'c'); }
   }
-  function ending(ctx, time, g) {
+  function finalEnding(ctx, time, g) {
+    const n = Object.keys(g.prog.items).length, tot = G.world.itemTotal(), pct = Math.round(100 * n / tot), tier = pct >= 90 ? 2 : pct >= 50 ? 1 : 0;
     ctx.fillStyle = '#05071a'; ctx.fillRect(0, 0, 480, 270);
-    txt(ctx, 'ZONE ' + g.room.zone + ' COMPLETE', 240, 60, '#fff2a8', 'c', 3); txt(ctx, ['', 'THE LIFT DESCENDS INTO THE CRYO VAULTS...', 'HEAT RISES FROM BELOW. THE MAGMA FORGE AWAITS...', 'FLOODWATER ROARS BELOW. THE DROWNED REACTOR AWAITS...'][g.room.zone], 240, 100, '#a6ccff', 'c');
+    const sky = ctx.createLinearGradient(0, 0, 0, 160); sky.addColorStop(0, '#0a0e2c'); sky.addColorStop(1, tier === 2 ? '#d86a8a' : tier === 1 ? '#e8802c' : '#566cac'); ctx.fillStyle = sky; ctx.fillRect(0, 0, 480, 170);
+    for (let i = 0; i < 40; i++) { ctx.fillStyle = '#fff'; ctx.fillRect((i * 97) % 480, (i * 53) % 110, 1, 1); }
+    ctx.fillStyle = '#1b2c66'; ctx.fillRect(0, 170, 480, 100); ctx.fillStyle = '#2b4fa4'; ctx.fillRect(0, 170, 480, 2);
+    const sh = G.sprites.hero[tier === 2 ? 'cobalt' : 'cobalt'].idle.r; ctx.drawImage(sh, 150, 170 - 44);
+    const t = Math.floor(time * 2) % 2; ctx.fillStyle = '#e8ecf8'; ctx.fillRect(300, 150 - ((time * 12) % 150), 3, 14); ctx.fillStyle = '#ffd24a'; ctx.fillRect(300, 164 - ((time * 12) % 150), 3, 3 + t);
+    txt(ctx, ['MISSION COMPLETE', 'VICTORY', 'PERFECT VICTORY'][tier], 240, 24, '#fff2a8', 'c', 3);
+    txt(ctx, ['THE HIVE IS GONE, BUT THE GALAXY KEEPS ITS SECRETS.', 'THE HIVE FALLS SILENT. THE LONG WAY HOME BEGINS.', 'EVERY LAST SECRET RECOVERED. THE SIGNAL FADES, AT PEACE.'][tier], 240, 72, '#dde7fb', 'c');
+    txt(ctx, 'ITEMS  ' + n + ' / ' + tot + '  (' + pct + '%)', 240, 184, '#fff2a8', 'c'); txt(ctx, 'TIME  ' + fmtTime(g.playTime), 240, 198, '#dde7fb', 'c');
+    txt(ctx, tier === 2 ? 'ENDING: STARBOUND' : tier === 1 ? 'ENDING: HOMEWARD' : 'ENDING: ADRIFT', 240, 218, '#86f0f2', 'c');
+    txt(ctx, 'THANKS FOR PLAYING  -  CC BY-NC 4.0  -  GITHUB.COM/NBWILLCOX/SPACETROID', 240, 240, '#8ea2d2', 'c');
+    if (Math.floor(time * 2) % 2) txt(ctx, 'PRESS JUMP', 240, 256, '#8ea2d2', 'c');
+  }
+  function ending(ctx, time, g) {
+    if (g.room.zone === 5) { finalEnding(ctx, time, g); return; }
+    ctx.fillStyle = '#05071a'; ctx.fillRect(0, 0, 480, 270);
+    txt(ctx, 'ZONE ' + g.room.zone + ' COMPLETE', 240, 60, '#fff2a8', 'c', 3); txt(ctx, ['', 'THE LIFT DESCENDS INTO THE CRYO VAULTS...', 'HEAT RISES FROM BELOW. THE MAGMA FORGE AWAITS...', '', 'THE HIVE CORE PULSES IN THE DARK BELOW...'][g.room.zone], 240, 100, '#a6ccff', 'c');
     const n = Object.keys(g.prog.items).length, tot = G.world.itemTotal();
     txt(ctx, 'ITEMS  ' + n + ' / ' + tot + '  (' + Math.round(100 * n / tot) + '%)', 240, 140, '#dde7fb', 'c'); txt(ctx, 'TIME  ' + fmtTime(g.playTime), 240, 156, '#dde7fb', 'c');
     txt(ctx, 'TO BE CONTINUED', 240, 196, '#ec5c4a', 'c', 2);

@@ -10,6 +10,7 @@ class Room:
         s.doors, s.items, s.stations, s.decor = [], [], [], []
         s.zone = 1
         s.movers = []
+        s.pressure = False
         s.fill(0, 0, w - 1, 1, '#'); s.fill(0, h - 2, w - 1, h - 1, '#'); s.fill(0, 0, 0, h - 1, '#'); s.fill(w - 1, 0, w - 1, h - 1, '#')
         s.wall_all = wall_all
     def fill(s, x0, y0, x1, y1, c):
@@ -47,7 +48,7 @@ class Room:
     def emit(s):
         if s.wall_all: s.wall(1, 2, s.w - 2, s.h - 3, ragged=False)
         rows = [''.join(r) for r in s.g]
-        d = {'id': s.id, 'name': s.name, 'zone': s.zone, 'mx': s.mx, 'my': s.my, 'map': rows, 'doors': s.doors, 'items': s.items, 'stations': s.stations, 'decor': s.decor, 'movers': s.movers}
+        d = {'id': s.id, 'name': s.name, 'zone': s.zone, 'mx': s.mx, 'my': s.my, 'map': rows, 'doors': s.doors, 'items': s.items, 'stations': s.stations, 'decor': s.decor, 'movers': s.movers, 'pressure': s.pressure}
         return d
 
 ROOMS = []

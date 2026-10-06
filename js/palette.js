@@ -38,7 +38,13 @@
   P.ramps.reactorearth = ['#0c1820', '#1c3038', '#305058', '#4c7478', '#78a4a8'];
   P.ramps.deepsea = ['#020a14', '#04182a', '#08304a', '#104c6c', '#1a7090', '#3aa4b8'];
   P.ramps.biolight = ['#c8fff0', '#58e8c8', '#38a0e8'];
-  const ZONE_RAMPS = { 1: ['moss', 'stone', 'earth', 'fog', 'dusk'], 2: ['snow', 'icestone', 'iceearth', 'aurora', 'auroralight'], 3: ['ember', 'basalt', 'slagearth', 'furnace', 'smoke'], 4: ['coolant', 'reactor', 'reactorearth', 'deepsea', 'biolight'] };
+  /* zone 5 (Hive Core): chitin and flesh, bioluminescent green-yellow instead of moss, throbbing magenta sky */
+  P.ramps.chitin = ['#180816', '#321430', '#58244a', '#80386a', '#b05c90', '#e0a0c0'];
+  P.ramps.biogreen = ['#142a10', '#2a5a1c', '#4c9a2c', '#88d04a', '#c8f078', '#f4ffc0'];
+  P.ramps.hiveearth = ['#1c0818', '#3a1230', '#5c2250', '#80386c', '#a85c8c'];
+  P.ramps.hivefog = ['#10040e', '#240a1c', '#40102c', '#661a40', '#922858', '#c83c74'];
+  P.ramps.hivelight = ['#ffd0f0', '#ff80c8', '#a860ff'];
+  const ZONE_RAMPS = { 5: ['biogreen', 'chitin', 'hiveearth', 'hivefog', 'hivelight'], 1: ['moss', 'stone', 'earth', 'fog', 'dusk'], 2: ['snow', 'icestone', 'iceearth', 'aurora', 'auroralight'], 3: ['ember', 'basalt', 'slagearth', 'furnace', 'smoke'], 4: ['coolant', 'reactor', 'reactorearth', 'deepsea', 'biolight'] };
   P.worldKeys = function (zone) {
     const R = P.ramps, k = P.keys('cobalt'), Z = ZONE_RAMPS[zone || 1];
     'ABCDEF'.split('').forEach((c, i) => { k[c] = R[Z[0]][i]; });
@@ -54,6 +60,7 @@
     if (armor === 'world2') return P.worldKeys(2);
     if (armor === 'world3') return P.worldKeys(3);
     if (armor === 'world4') return P.worldKeys(4);
+    if (armor === 'world5') return P.worldKeys(5);
     const R = P.ramps, A = R[armor || 'cobalt'], k = {};
     k.o = A[0]; k['1'] = A[1]; k['2'] = A[2]; k['3'] = A[3]; k['4'] = A[4];
     k.s = R.gold[0]; k.k = R.gold[1]; k.y = R.gold[2]; k.Y = R.gold[3]; k.w = R.gold[4];

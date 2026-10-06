@@ -2,8 +2,8 @@
 (function (G) {
   'use strict';
   const U = G.U, B = G.bosses, FLOOR_Y = 240 - 47;
-  B.update = function (g) { const b = g.boss; if (b && b.kind === 'moth') B.updateMoth(g); else if (b && b.kind === 'wyrm') B.updateWyrm(g); else B.updateBeetle(g); };
-  B.draw = function (ctx, g) { B.drawRocks(ctx, g); const b = g.boss; if (!b) return; if (b.kind === 'moth') B.drawMoth(ctx, g); else if (b.kind === 'wyrm') B.drawWyrm(ctx, g); else B.drawBeetle(ctx, g); };
+  B.update = function (g) { const b = g.boss; if (b && b.kind === 'moth') B.updateMoth(g); else if (b && b.kind === 'wyrm') B.updateWyrm(g); else if (b && b.kind === 'jelly') B.updateJelly(g); else if (b && b.kind === 'heart') { B.updateHeart(g); B.updateRocks(g); } else B.updateBeetle(g); };
+  B.draw = function (ctx, g) { B.drawRocks(ctx, g); const b = g.boss; if (!b) return; if (b.kind === 'moth') B.drawMoth(ctx, g); else if (b.kind === 'wyrm') B.drawWyrm(ctx, g); else if (b.kind === 'jelly') B.drawJelly(ctx, g); else if (b.kind === 'heart') B.drawHeart(ctx, g); else B.drawBeetle(ctx, g); };
   function fan(g, b, n, spd) {
     const p = g.P, a0 = Math.atan2((p.y - 20) - (b.y + 10), p.x - b.x), spread = 0.26;
     for (let i = 0; i < n; i++) { const a = a0 + (i - (n - 1) / 2) * spread; g.spores.push({ kind: 'shard', x: b.x, y: b.y + 14, vx: Math.cos(a) * spd, vy: Math.sin(a) * spd, t: 0 }); }

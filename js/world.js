@@ -17,6 +17,8 @@
     grapple: { name: 'GRAPPLE BEAM', ramp: 'gold', lines: ['Hold Q near a ceiling anchor to be reeled in.', 'Jump to leap from it.'], apply: (g) => { g.abil.grapple = true; } },
     superMissile: { name: 'SUPER MISSILES', ramp: 'teal', lines: ['Opens green doors; hits much harder.', 'R swaps between missile types.'], apply: (g) => { g.abil.supers = true; g.P.superMax = Math.max(g.P.superMax, 5); g.P.supers = g.P.superMax; } },
     superTank: { name: 'SUPER MISSILE EXPANSION', tank: 'super', lines: ['Super missile capacity +5.'], apply: (g) => { g.P.superMax += 5; g.P.supers = Math.min(g.P.superMax, g.P.supers + 5); } },
+    scanVisor: { name: 'SCAN VISOR', ramp: 'teal', lines: ['Hold F to scan: hidden blocks appear and turn solid.', 'Look for faint shimmers.'], apply: (g) => { g.abil.scan = true; } },
+    plasmaBeam: { name: 'PLASMA BEAM', ramp: 'crimson', lines: ['Burning shots pierce through enemies.', 'Toggle: 3'], apply: (g) => { g.abil.hasPlasma = true; g.abil.beams.plasma = true; } },
     energyTank: { name: 'ENERGY TANK', tank: 'energy', lines: ['Maximum energy +100.'], apply: (g) => { g.P.tanks++; g.P.en = G.player.enMax(g.P); } },
     missileTank: { name: 'MISSILE EXPANSION', tank: 'missile', lines: ['Missile capacity +5.'], apply: (g) => { g.P.missileMax += 5; g.P.missiles = Math.min(g.P.missileMax, g.P.missiles + 5); } },
   };

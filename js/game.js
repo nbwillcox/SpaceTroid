@@ -14,7 +14,7 @@
     const p = Game.P = P.create(0, 0), h = rec.hero;
     p.tanks = h.tanks; p.missileMax = debugAll ? 20 : h.missileMax; p.missiles = debugAll ? 20 : h.missiles; p.sbombMax = debugAll ? 5 : h.sbombMax; p.sbombs = debugAll ? 5 : h.sbombs; p.superMax = h.superMax; p.supers = h.supers;
     p.en = P.enMax(p); if (Game.abil.suitAqua) p.suit = 'teal'; else if (Game.abil.suitHeat) p.suit = 'crimson';
-    Game.cam = { x: 0, y: 0 }; Game.shake = 0; Game.hitStop = 0; Game.time = 0; Game.playTime = rec.time || 0; Game.saveRec = null; Game.banner = null; Game.toast = null; Game.trans = null; Game.boss = null;
+    Game.cam = { x: 0, y: 0 }; Game.shake = 0; Game.hitStop = 0; Game.time = 0; Game.playTime = rec.time || 0; Game.saveRec = null; Game.escape = null; Game.banner = null; Game.toast = null; Game.trans = null; Game.boss = null;
     Game.enterRoom(rec.room, null, rec.x, rec.y);
     Game.fade = { dir: -1, t: 14, len: 14 };
   };
@@ -37,6 +37,14 @@
       else if (s.ch === 'h') G.enemies.spawn(Game, 'hopper', s.x, s.y, -1);
       else if (s.ch === 'e') G.enemies.spawn(Game, 'ember', s.x, s.y, -1);
       else if (s.ch === 'z') G.enemies.spawn(Game, 'magmite', s.x, s.y, -1);
+      else if (s.ch === 'j') G.enemies.spawn(Game, 'jelly', s.x, s.y - 8, -1);
+      else if (s.ch === 'd') G.enemies.spawn(Game, 'drone', s.x, s.y, -1);
+      else if (s.ch === 'r') G.enemies.spawn(Game, 'rturret', s.x, s.y, -1);
+      else if (s.ch === 'a') G.enemies.spawn(Game, 'arc', s.x, s.y, -1);
+      else if (s.ch === 'u') G.enemies.spawn(Game, 'hmoth', s.x, s.y - 8, -1);
+      else if (s.ch === 'g') G.enemies.spawn(Game, 'guard', s.x, s.y, -1);
+      else if (s.ch === 'p') G.enemies.spawn(Game, 'hpod', s.x, s.y, -1);
+      else if (s.ch === 'k') G.enemies.spawn(Game, 'egg', s.x, s.y, -1);
     }
     p.vx = p.vy = 0; p.dead = 0; p.inv = 0; p.hurt = 0; p.charge = 0; p.dash = 0; p.spinning = false; p.drop = false;
     const setMode = (m) => { p.mode = m; p.w = m === 'ball' ? 16 : 14; p.h = m === 'ball' ? 15 : 42; };
@@ -52,7 +60,13 @@
     if (G.bosses) G.bosses.setup(Game, room);
   };
   Game.buildDyn = function () { Game.room.dyn = G.movers.rects(Game).concat(Game.frozenRects || []); };
+  /* after the final boss: a collapsing base and a countdown to reach the surface hatch */
+  Game.startEscape = function (g) {
+    g.escape = { t: 100 * 60, total: 100 * 60 }; g.toast = { txt: 'THE HIVE IS COLLAPSING - ESCAPE!', t: 0 }; g.shake = 8;
+    G.world.openAll(g);
+  };
   Game.respawn = function () {
+    if (Game.escape) { Game.escape.t = Game.escape.total; const p = Game.P; p.en = P.enMax(p); Game.enterRoom('heartroom', null, 120, 240); Game.fade = { dir: -1, t: 14, len: 14 }; return; }
     const rec = Game.slot !== null && Game.slot !== undefined && G.save.read(Game.slot) || Game.saveRec || Game.baseRec;
     const dbg = Game.debugAll; Game.begin(Game.slot, rec, false); if (dbg) Game.debugAll = true;
   };
@@ -71,6 +85,11 @@
     }
     if (Game.hitStop > 0) { Game.hitStop--; return; }
     Game.time++; Game.playTime += 1 / 60; Game.shake = Math.max(0, Game.shake - 0.5);
+    if (Game.escape && !p.dead) {
+      Game.escape.t--; Game.shake = Math.max(Game.shake, 1.2);
+      if (Game.time % 70 === 0 && Game.rocks) Game.rocks.push({ x: Game.cam.x + 30 + Math.random() * 420, y: Game.cam.y - 10, vy: 0, t: 0 });
+      if (Game.escape.t <= 0) { G.fx.boom(p.x, p.y - 20, 30); p.en = 0; p.dead = 1; G.audio.sfx('boom'); Game.escape.t = 0; }
+    }
     G.movers.update(Game); Game.buildDyn();
     P.update(Game); G.weapons.update(Game); G.enemies.update(Game); Game.buildDyn(); if (G.bosses) G.bosses.update(Game); G.world.update(Game); G.fx.update();
     if (!p.dead && p.inv === 0 && PH.boxTiles(room, p.x - p.w / 2, p.y - 6, p.x + p.w / 2, p.y - 0.01, 8)) { if (P.hurt(Game, p, 14, p.x + (Math.random() - 0.5))) { G.audio.sfx('hurt'); p.vy = -4.5; } }

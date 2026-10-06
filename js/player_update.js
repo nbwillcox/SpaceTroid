@@ -20,6 +20,7 @@
     if (p.dead) { p.dead++; return; }
     p.inv = Math.max(0, p.inv - 1); p.hurt = Math.max(0, p.hurt - 1); p.fireCd = Math.max(0, p.fireCd - 1); p.bombCd = Math.max(0, p.bombCd - 1); p.dashCd = Math.max(0, p.dashCd - 1); p.landT = Math.max(0, p.landT - 1); p.spin = Math.max(0, p.spin - 1);
     if (G.grapple.update(g)) { p.anim += 0; G.weapons.playerFire(g, p, G.input.held, G.input.down); return; }
+    room.scanOn = !!(A.scan && G.input.held.scan);
     const lock = p.hurt > 0;
     const dir = lock ? 0 : (I.r ? 1 : 0) - (I.l ? 1 : 0);
     if (D.jump) p.jbuf = 7; else p.jbuf = Math.max(0, p.jbuf - 1);
@@ -40,6 +41,7 @@
     const sprint = I.dash && p.ground && p.mode === 'stand';   /* holding Shift always sprints; the tap-dash burst is the gated upgrade */
     const wet = G.room.at(room, Math.floor(p.x / 16), Math.floor((p.y - p.h * 0.4) / 16)) === 14, aqua = !!A.suitAqua;
     if (wet && !p.wasWet) { G.fx.puff(p.x, p.y - 10, 5); G.audio.sfx('land'); } p.wasWet = wet;
+    if (wet && room.def.pressure && !aqua) { p.pt = (p.pt || 0) + 1; if (p.pt === 1 && !g.toast) g.toast = { txt: 'CRUSHING PRESSURE: AQUA SUIT NEEDED', t: 0 }; if (p.pt % 30 === 0) { p.en -= 4; G.audio.sfx('hurt'); if (p.en <= 0) { p.en = 0; p.dead = 1; } } } else p.pt = 0;
     let top = ball ? K.ball : sprint ? K.run : K.walk; if (wet) top *= aqua ? 0.92 : 0.55;
     const slick = p.ground && G.room.at(room, Math.floor(p.x / 16), Math.floor((p.y + 1) / 16)) === 10;   /* ice floor: slow to start, slow to stop */
     if (p.dash > 0) { p.dash--; p.vx = p.face * K.dash; p.vy = 0; if (!p.dash) p.dashCd = 22; }

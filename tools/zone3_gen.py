@@ -109,7 +109,7 @@ arena3()
 def lift3():
     r = room('lift3', 'Surface Hatch', 30, 17, 16, 6, wall_all=True)
     r.door('w', 'L', 12, 'blue', 'arena3', 'e')
-    r.item('wave', 'waveBeam', 10, 14); r.station('lift', 22, 14)
+    r.item('wave', 'waveBeam', 10, 14); r.station('lift', 22, 14, to='rgate')
     return r
 lift3()
 
