@@ -1,0 +1,7 @@
+<!DOCTYPE html><html><body style="margin:0;background:#1a1d2b;color:#9fb;font:12px monospace"><p style="margin:8px">SpaceTroid art sheet (work in progress): hero idle draft, 14x zoom with a 1x copy beside it.</p><canvas id="c" width="1200" height="760"></canvas>
+<script src="js/util.js"></script><script src="js/px.js"></script><script src="js/palette.js"></script><script src="js/art.js"></script><script src="js/art/hero.js"></script>
+<script>
+const G=SGS, ctx=document.getElementById('c').getContext('2d'); ctx.imageSmoothingEnabled=false;
+const hp=G.art.heroParts; let x=10;
+for (const k in hp) { const s=G.art.make(hp[k],'cobalt',k); ctx.fillStyle='#2a3050'; ctx.fillRect(x,10,s.w*14,s.h*14); ctx.drawImage(s.c,x,10,s.w*14,s.h*14); ctx.drawImage(s.c,x+s.w*14+10,10,s.w,s.h); x+=s.w*14+60; }
+</script></body></html>
