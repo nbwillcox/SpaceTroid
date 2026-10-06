@@ -61,6 +61,7 @@
   };
   P.moveY = function (room, b, dy, drop) {
     b.bump = false;
+    const moved = dy !== 0;
     while (dy !== 0) {
       const st = Math.abs(dy) < 1 ? dy : Math.sign(dy);
       if (st > 0) {
@@ -73,6 +74,6 @@
       }
       dy -= st;
     }
-    b.ground = false;
+    if (moved) b.ground = false;
   };
 })((window.SGS = window.SGS || {}));

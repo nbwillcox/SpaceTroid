@@ -44,6 +44,7 @@
     if (A.dash && D.dash && p.dashCd === 0 && p.mode === 'stand' && !lock && p.dash === 0 && !I.d && (p.ground || p.dashAir)) { p.dash = 11; if (!p.ground) p.dashAir = false; G.fx.puff(p.x - p.face * 6, p.y - 4, 4); }
     /* ---- jump (coyote + buffer), space jump, variable height, drop through ledges ---- */
     if (!lock && p.mode === 'stand' && p.jbuf > 0) {
+      if (p.dash > 0 && (p.coyote > 0 || (p.airJumps > 0 && A.spacejump))) { p.vx = p.face * K.dash; p.dash = 0; p.dashCd = 10; }
       if (p.ground && I.d && PH.support(room, p, p.y - E, p.y + 1, true) === null) { p.drop = true; p.ground = false; p.y += 1; p.jbuf = 0; p.coyote = 0; }
       else if (p.coyote > 0) {
         if (p.dash > 0) { p.vx = p.face * K.dash; p.dash = 0; p.dashCd = 10; }
