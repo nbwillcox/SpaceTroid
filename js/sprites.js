@@ -68,15 +68,15 @@
     S.tank = { energy: IT.tanks.energy.map((g) => mkc(g, 'cobalt', 'te')), missile: IT.tanks.missile.map((g) => mkc(g, 'crimson', 'tm')), super: IT.tanks.super.map((g) => mkc(g, 'teal', 'ts')) };
     S.drop = {}; for (const k in IT.drops) S.drop[k] = IT.drops[k].map((g, i) => mkc(g, IT.dropRamps[k], 'dr' + k + i));
     S.statue = { big: {}, small: {} }; for (let z = 1; z <= 5; z++) { S.statue.big[z] = mkc(IT.statue.big, z === 1 ? 'world' : 'world' + z, 'stb' + z); S.statue.small[z] = mkc(IT.statue.small, z === 1 ? 'world' : 'world' + z, 'sts' + z); }
-    const B1 = A.boss1, bb = (g) => both(g, 'crimson', 'boss');
+    const BO = A.bosses, B1 = BO.beetle, bb = (g) => both(g, 'crimson', 'boss');
     S.boss = { walk: B1.walk.map(bb), rear: bb(B1.rear), tele: B1.tele.map(bb), charge: B1.charge.map(bb), stun: B1.stun.map(bb) };
-    const B2 = A.boss2, b2 = (g) => A.make(g, 'teal', 'boss2').c;
+    const B2 = BO.moth, b2 = (g) => A.make(g, 'teal', 'boss2').c;
     S.boss2 = { fly: B2.fly.map(b2), shoot: B2.shoot.map(b2), dive: b2(B2.dive), stun: B2.stun.map(b2), dead: b2(B2.dead) };
     const whites = new Map();
     S.whiteOf = (c) => { let w = whites.get(c); if (!w) { w = document.createElement('canvas'); w.width = c.width; w.height = c.height; const x = w.getContext('2d'); x.drawImage(c, 0, 0); x.globalCompositeOperation = 'source-in'; x.fillStyle = '#fff'; x.fillRect(0, 0, w.width, w.height); whites.set(c, w); } return w; };
-    S.wyrm = { head: F3.head.map((g) => both(g, 'crimson', 'wh')), neck: A.make(F3.neck, 'crimson', 'wn').c, splash: F3.splash.map((g) => A.make(g, 'crimson', 'ws').c) };
-    S.jellyBoss = A.zone4foes.bell.map((g) => A.make(g, 'teal', 'bell').c);
-    S.heart = { body: F5.heart.map((g) => A.make(g, 'visor', 'heart').c), node: F5.node.map((g) => A.make(g, 'visor', 'node').c) };
+    const BW = BO.wyrm; S.wyrm = { head: BW.head.map((g) => both(g, 'crimson', 'wh')), neck: A.make(BW.neck, 'crimson', 'wn').c, splash: BW.splash.map((g) => A.make(g, 'crimson', 'ws').c) };
+    S.jellyBoss = BO.jelly.bell.map((g) => A.make(g, 'teal', 'bell').c);
+    const BH = BO.heart; S.heart = { body: BH.heart.map((g) => A.make(g, 'visor', 'heart').c), node: BH.node.map((g) => A.make(g, 'visor', 'node').c) };
     S.pad = W1.pad.map((g) => mkc(g, 'cobalt', 'pad')); S.term = W1.terminal.map((g) => mkc(g, 'cobalt', 'term')); S.wreck = mkc(W1.wreck, 'cobalt', 'wreck');
   };
 })((window.SGS = window.SGS || {}));
