@@ -1,5 +1,14 @@
-<!DOCTYPE html><html><body style="margin:0;background:#1a1d2b;color:#9fb;font:12px monospace"><p style="margin:8px">SpaceTroid hero art sheet: every painted frame at 4x (green dot = cannon muzzle, red dot = feet anchor); run cycle animating bottom right.</p><canvas id="c" width="1200" height="640"></canvas>
+<!DOCTYPE html><html><body style="margin:0;background:#1a1d2b;color:#9fb;font:12px monospace"><p style="margin:8px">SpaceTroid hero art sheet: every painted frame at 4x (green dot = cannon muzzle, red dot = feet anchor); the four run cycles animate along the bottom.</p><canvas id="c" width="1200" height="640"></canvas>
 <script src="js/art/heroimg.js"></script>
+<script>
+const F=SGS.art.heroimg, ctx=document.getElementById('c').getContext('2d'); ctx.imageSmoothingEnabled=false;
+const names=Object.keys(F).filter(k=>k.indexOf('suit_')!==0), img={}; let x=10, y=10, rowH=0, left=names.length;
+const draw=()=>{ x=10; y=10; rowH=0; for(const k of names){ const f=F[k], w=f.w*4, h=f.h*4; if(x+w>1190){x=10;y+=rowH+22;rowH=0;} ctx.fillStyle='#2a3050'; ctx.fillRect(x,y,w,h); ctx.drawImage(img[k],x,y,w,h);
+  ctx.fillStyle='#f55'; ctx.fillRect(x+f.ax*4-2,y+f.ay*4-2,4,4); if(f.tx!==undefined){ ctx.fillStyle='#5f5'; ctx.fillRect(x+(f.ax+f.tx)*4-2,y+(f.ay+f.ty)*4-2,4,4); } ctx.fillStyle='#9fb'; ctx.fillText(k,x,y+h+12); x+=w+12; rowH=Math.max(rowH,h); } };
+for(const k of names){ const i=new Image(); i.onload=()=>{ img[k]=i; if(--left===0) draw(); }; i.src=F[k].u; }
+const sets=['run_f','run_u45','run_u90','run_d45'], cv=[]; sets.forEach((k,j)=>{ const c=document.createElement('canvas'); c.width=200; c.height=220; c.style.cssText='position:fixed;bottom:10px;left:'+(10+j*210)+'px;background:#2a3050'; document.body.append(c); cv.push(c.getContext('2d')); cv[j].imageSmoothingEnabled=false; });
+setInterval(()=>{ sets.forEach((s,j)=>{ const k=s+(Math.floor(Date.now()/100)%8), f=F[k], i=img[k]; if(!i) return; const x=cv[j]; x.clearRect(0,0,200,220); x.drawImage(i,100-f.ax*3,200-f.ay*3,f.w*3,f.h*3); }); },40);
+</script>
 <script>
 const F=SGS.art.heroimg, ctx=document.getElementById('c').getContext('2d'); ctx.imageSmoothingEnabled=false;
 const names=Object.keys(F).filter(k=>k.indexOf('suit_')!==0), img={}; let x=10, y=10, rowH=0, left=names.length;

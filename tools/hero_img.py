@@ -1,54 +1,44 @@
-"""Cuts the supplied hero artwork sheet (_boss_src/hero.png) into game frames and writes js/art/heroimg.js.
-Frames face right; anchor (ax, ay) = feet centre (spin: body centre; ball: bottom centre); tip (tx, ty) = the cannon muzzle relative to the anchor. Run: python tools/hero_img.py"""
-import base64, io, json, os, sys
+"""Cuts the supplied hero artwork sheet (_boss_src/hero3.png: run cycles at four aim angles, jump poses, standing aim, crouch, ball, spin) into game frames
+and writes js/art/heroimg.js. Frames face right; anchor (ax, ay) = feet (x of the pelvis band, y of the lowest pixel; spin: body centre; ball: bottom centre);
+tip (tx, ty) = the cannon muzzle relative to the anchor. Run: python tools/hero_img.py"""
+import base64, io, json, math, os
 import numpy as np
 from PIL import Image
 from collections import deque
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-SRC = os.path.join(HERE, '..', '_boss_src', 'hero.png')
+SRC = os.path.join(HERE, '..', '_boss_src', 'hero3.png')
+HERO_H = 43.0                      # standing forward-aim head-to-feet height in game pixels
+CW, C2 = 132.25, 264.5             # cell widths (8 across / 4 across); the grid starts at x = 13
+def row(names, y0, y1, x0=13.0, w=CW): return [(n, int(x0 + i * w) + 3, int(x0 + (i + 1) * w) - 2, y0, y1) for i, n in enumerate(names)]
+CELLS = []
+for pre, y0, y1 in (('run_f', 64, 181), ('run_u45', 234, 354), ('run_u90', 407, 543), ('run_d45', 597, 709)): CELLS += row([pre + str(i) for i in range(8)], y0, y1)
+CELLS += row(['air_0', 'air_u45', 'air_u90', 'air_d45'], 792, 924, w=C2)
+CELLS += row(['aim_90', 'aim_70', 'aim_45', 'aim_20', 'aim_0', 'aim_m20', 'aim_m45', 'aim_m90'], 992, 1132)
+CELLS += row(['crouch_0', 'crouch_45', 'crouch_up', 'crouch_down'], 1195, 1270, w=C2)
+CELLS += row(['ball0', 'ball1', 'ball2', 'ball3'], 1322, 1407, x0=14.0, w=98.5)
+CELLS += row(['spin%d' % i for i in range(8)], 1322, 1407, x0=420.0, w=81.5)
+def theta(n):
+    if n.startswith(('spin', 'ball')): return None
+    for k, v in (('u45', 45), ('u90', 90), ('d45', -45), ('_f', 0), ('m90', -90), ('m45', -45), ('m20', -20), ('_90', 90), ('_70', 70), ('_45', 45), ('_20', 20), ('_0', 0), ('crouch_up', 90), ('crouch_down', -45), ('crouch_45', 45)):
+        if k in n: return v
+    return 0
 
-# (band y0, y1, frame names)
-BANDS = [
-    (49, 221, ['aim_90', 'aim_70', 'aim_45', 'aim_20', 'aim_0', 'aim_m20', 'aim_m45', 'aim_m75']),
-    (303, 457, ['run0', 'run1', 'run2', 'run3', 'run4', 'run5', 'run6', 'run7']),
-    (530, 726, ['jump', 'fall', 'skid', 'land', 'itemget', 'front']),
-    (813, 932, ['crouch_0', 'crouch_up', 'crouch_45', 'crouch_down']),
-    (1018, 1150, ['spin0', 'spin1', 'spin2', 'spin3', 'spin4', 'spin5', 'spin6', 'spin7']),
-    (1232, 1383, ['ball0', 'ball1', 'ball2', 'ball3', 'suit_cobalt', 'suit_crimson', 'suit_teal']),
-]
-import math
-HERO_H = 43.0
-THETA = {'aim_90': 90, 'aim_70': 70, 'aim_45': 45, 'aim_20': 20, 'aim_0': 0, 'aim_m20': -20, 'aim_m45': -45, 'aim_m75': -75, 'jump': 60, 'fall': -10, 'skid': 180, 'land': 180, 'itemget': 90,
-         'crouch_0': 0, 'crouch_up': 90, 'crouch_45': 45, 'crouch_down': -30}          # aim_0 head-to-feet height in game pixels
-
-def components(mask, y0, y1):
+def components(mask):
     h, w = mask.shape; seen = np.zeros_like(mask, bool); comps = []
-    for y in range(y0, y1 + 1):
+    for y in range(h):
         for x in np.nonzero(mask[y] & ~seen[y])[0]:
             if seen[y, x]: continue
-            q = deque([(y, x)]); seen[y, x] = True; pts = []
+            q = deque([(y, int(x))]); seen[y, x] = True; pts = []
             while q:
                 cy, cx = q.popleft(); pts.append((cy, cx))
                 for dy in (-1, 0, 1):
                     for dx in (-1, 0, 1):
                         ny, nx = cy + dy, cx + dx
-                        if y0 <= ny <= y1 and 0 <= nx < w and mask[ny, nx] and not seen[ny, nx]:
-                            seen[ny, nx] = True; q.append((ny, nx))
+                        if 0 <= ny < h and 0 <= nx < w and mask[ny, nx] and not seen[ny, nx]: seen[ny, nx] = True; q.append((ny, nx))
             ys = [p[0] for p in pts]; xs = [p[1] for p in pts]
             comps.append(dict(pts=pts, x0=min(xs), x1=max(xs), y0=min(ys), y1=max(ys), n=len(pts)))
     return comps
-
-def group(comps, n):
-    comps = sorted([c for c in comps if c['n'] >= 6], key=lambda c: c['x0'])
-    gaps = []; runmax = comps[0]['x1']
-    for i in range(1, len(comps)):
-        gaps.append((comps[i]['x0'] - runmax, i)); runmax = max(runmax, comps[i]['x1'])
-    cuts = sorted(i for _, i in sorted(gaps, reverse=True)[:n - 1])
-    groups = []; prev = 0
-    for c in cuts + [len(comps)]:
-        groups.append(comps[prev:c]); prev = c
-    return groups
 
 def png64(img):
     buf = io.BytesIO(); img.save(buf, 'PNG', optimize=True)
@@ -65,78 +55,79 @@ def quant(img, n=64):
     rgb = Image.fromarray(a[..., :3], 'RGB').quantize(colors=n, method=Image.MEDIANCUT, dither=Image.NONE).convert('RGB')
     return Image.fromarray(np.dstack([np.asarray(rgb), (alpha * 255).astype(np.uint8)]), 'RGBA')
 
+def fill_holes(g):
+    hh, ww = g.shape; out = np.zeros_like(g); q = deque()
+    for xx in range(ww):
+        for yy in (0, hh - 1):
+            if not g[yy, xx] and not out[yy, xx]: out[yy, xx] = True; q.append((yy, xx))
+    for yy in range(hh):
+        for xx in (0, ww - 1):
+            if not g[yy, xx] and not out[yy, xx]: out[yy, xx] = True; q.append((yy, xx))
+    while q:
+        cy, cx = q.popleft()
+        for dy, dx in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            ny, nx = cy + dy, cx + dx
+            if 0 <= ny < hh and 0 <= nx < ww and not g[ny, nx] and not out[ny, nx]: out[ny, nx] = True; q.append((ny, nx))
+    return ~out
+
 def build():
     im = Image.open(SRC).convert('RGB'); a = np.asarray(im).astype(int)
-    bg = np.median(a[:8, :].reshape(-1, 3), axis=0); mask = np.abs(a - bg).sum(2) > 34
-    frames = {}
+    bg = np.median(a[100:105, 0:6].reshape(-1, 3), axis=0); mask = np.abs(a - bg).sum(2) > 48
     raw = {}
-    for (y0, y1, names) in BANDS:
-        comps = components(mask, y0, y1)
-        for name, grp in zip(names, group(comps, len(names))):
-            big = max(c['n'] for c in grp); body = [c for c in grp if c['n'] >= 0.04 * big]
-            x0 = min(c['x0'] for c in body); x1 = max(c['x1'] for c in body); yy0 = min(c['y0'] for c in body); yy1 = max(c['y1'] for c in body)
-            bx0 = min(c['x0'] for c in body); bx1 = max(c['x1'] for c in body); by0 = min(c['y0'] for c in body); by1 = max(c['y1'] for c in body)
-            m = np.zeros(mask.shape, bool)
-            for c in body:
-                for (py, px) in c['pts']: m[py, px] = True
-            sub = m[yy0:yy1 + 1, x0:x1 + 1].copy()
-            dd = np.abs(a[yy0:yy1 + 1, x0:x1 + 1] - bg).sum(2)
-            while sub.shape[0] > 8 and not (sub[-1] & (dd[-1] > 110)).any():      # strip the dim ground-shadow rows under the feet
-                sub = sub[:-1]; dd = dd[:-1]; yy1 -= 1; by1 = min(by1, yy1)
-            if name.startswith('ball'): sub = sub[:min(sub.shape[0], sub.shape[1] + 1)]; yy1 = yy0 + sub.shape[0] - 1; by1 = min(by1, yy1)
-            g = sub.copy(); g[1:, :] |= sub[:-1, :]; g[:-1, :] |= sub[1:, :]; g[:, 1:] |= sub[:, :-1]; g[:, :-1] |= sub[:, 1:]
-            # fill holes: anything not reachable from the border without crossing the figure is inside it
-            hh, ww = g.shape; outside = np.zeros_like(g); q = deque()
-            for xx in range(ww):
-                for yy in (0, hh - 1):
-                    if not g[yy, xx] and not outside[yy, xx]: outside[yy, xx] = True; q.append((yy, xx))
-            for yy in range(hh):
-                for xx in (0, ww - 1):
-                    if not g[yy, xx] and not outside[yy, xx]: outside[yy, xx] = True; q.append((yy, xx))
-            while q:
-                cy, cx = q.popleft()
-                for dy, dx in ((1, 0), (-1, 0), (0, 1), (0, -1)):
-                    ny, nx = cy + dy, cx + dx
-                    if 0 <= ny < hh and 0 <= nx < ww and not g[ny, nx] and not outside[ny, nx]: outside[ny, nx] = True; q.append((ny, nx))
-            g = ~outside
-            rgb = a[yy0:yy1 + 1, x0:x1 + 1].astype(np.uint8)
-            img = Image.fromarray(np.dstack([rgb, (g * 255).astype(np.uint8)]), 'RGBA')
-            raw[name] = (img, (bx0 - x0, by0 - yy0, bx1 - x0, by1 - yy0), (x0, yy0))
-    # common scale from the forward-aiming standing frame
-    ref = raw['aim_0'][1]; s = HERO_H / (ref[3] - ref[1] + 1)
-    sb = 16.0 / (raw['ball0'][1][2] - raw['ball0'][1][0] + 1)
-    for name, (img, main, _) in raw.items():
-        if name.startswith('suit_'): continue
-        sc = sb if name.startswith('ball') else s
-        im2 = quant(scale(img, sc)); mx0, my0, mx1, my1 = [v * sc for v in main]
-        arr = np.asarray(im2); al = arr[..., 3] > 0
-        if name.startswith('spin'):
-            ax, ay = (mx0 + mx1) / 2.0, (my0 + my1) / 2.0
-        elif name.startswith('ball'):
-            ax, ay = im2.width / 2.0, im2.height
+    for name, x0, x1, y0, y1 in CELLS:
+        sub = mask[y0:y1 + 1, x0:x1 + 1] if not name.startswith('ball') else (np.abs(a - bg).sum(2) > 130)[y0:y1 + 1, x0:x1 + 1]; comps = components(sub)
+        comps = [c for c in comps if not (c['y1'] - c['y0'] < 4 and c['x1'] - c['x0'] > 12)]          # drop stray rules
+        big = max(c['n'] for c in comps); body = [c for c in comps if c['n'] >= 0.03 * big]
+        if not name.startswith(('spin', 'ball')):                                                       # the painted floor line under the feet: clear any long run in the bottom rows
+            yb = max(c['y1'] for c in body); sub = sub.copy()
+            for yy in range(max(0, yb - 14), yb + 1):
+                best = cur = 0
+                for v in sub[yy]: cur = cur + 1 if v else 0; best = max(best, cur)
+                if best >= 45: sub[yy] = False
+            comps = components(sub); big = max(c['n'] for c in comps); body = [c for c in comps if c['n'] >= 0.03 * big]
+        bx0 = min(c['x0'] for c in body); bx1 = max(c['x1'] for c in body); by0 = min(c['y0'] for c in body); by1 = max(c['y1'] for c in body)
+        m = np.zeros(sub.shape, bool)
+        for c in body:
+            for (py, px) in c['pts']: m[py, px] = True
+        m = m[by0:by1 + 1, bx0:bx1 + 1]
+        g = m.copy(); g[1:, :] |= m[:-1, :]; g[:-1, :] |= m[1:, :]; g[:, 1:] |= m[:, :-1]; g[:, :-1] |= m[:, 1:]
+        hole = fill_holes(g) & ~g                                                                        # fill only small gaps (between arm and body); the space between the legs stays open
+        lab = components(hole); keep = np.zeros_like(g)
+        for c in lab:
+            if c['n'] <= 40:
+                for (py, px) in c['pts']: keep[py, px] = True
+        g = g | keep
+        rgb = a[y0 + by0:y0 + by1 + 1, x0 + bx0:x0 + bx1 + 1].astype(np.uint8)
+        raw[name] = Image.fromarray(np.dstack([rgb, (g * 255).astype(np.uint8)]), 'RGBA')
+    ref = raw['aim_0']; s = HERO_H / ref.height
+    frames = {}
+    for name, img in raw.items():
+        sc = 16.0 / max(img.width, img.height) if name.startswith('ball') else s
+        im2 = quant(scale(img, sc)); arr = np.asarray(im2); al = arr[..., 3] > 0
+        ys, xs = np.nonzero(al); my0, my1, mx0, mx1 = ys.min(), ys.max(), xs.min(), xs.max()
+        if name.startswith('spin'): ax, ay = (mx0 + mx1) / 2.0, (my0 + my1) / 2.0
+        elif name.startswith('ball'): ax, ay = im2.width / 2.0, im2.height
         else:
-            ay = my1 + 1
-            rows = np.nonzero(al[int(max(0, my1 - (my1 - my0) * 0.12)):int(my1) + 1].any(axis=0))[0] if False else None
-            bh = my1 - my0 + 1
-            band = al[int(max(0, my1 - 0.52 * bh)):int(my1 - 0.36 * bh) + 1]; cols = np.nonzero(band.any(axis=0))[0]     # pelvis band: a stable horizontal anchor whatever the legs and arms do
+            ay = my1 + 1; bh = my1 - my0 + 1
+            band = al[int(max(0, my1 - 0.52 * bh)):int(my1 - 0.36 * bh) + 1]; cols = np.nonzero(band.any(axis=0))[0]          # pelvis band: a stable horizontal anchor whatever the legs and arms do
             ax = float(cols.mean()) if len(cols) else (mx0 + mx1) / 2.0
-        tip = None
-        if not name.startswith(('spin', 'ball')):
-            th = THETA.get(name, 0.0); dx_, dy_ = math.cos(math.radians(th)), -math.sin(math.radians(th))
-            bh = my1 - my0 + 1; sh = (ax - 2, ay - 0.62 * bh)
-            ys, xs = np.nonzero(al)
-            keep = ys < ay - 0.28 * bh
+        tip = None; th = theta(name)
+        if th is not None:
+            dx_, dy_ = math.cos(math.radians(th)), -math.sin(math.radians(th)); sh = (ax - 2, ay - 0.62 * bh)
+            keep = ys < ay - (0.10 if th < -60 else 0.28) * bh
             if keep.any():
-                ys, xs = ys[keep], xs[keep]; k = int(((xs - sh[0]) * dx_ + (ys - sh[1]) * dy_).argmax()); tip = (float(xs[k]) - ax, float(ys[k]) - ay)
+                kx, ky = xs[keep], ys[keep]; k = int(((kx - sh[0]) * dx_ + (ky - sh[1]) * dy_).argmax()); tip = (float(kx[k]) - ax, float(ky[k]) - ay)
         fr = {'u': png64(im2), 'w': im2.width, 'h': im2.height, 'ax': round(ax), 'ay': round(ay)}
         if tip: fr['tx'] = round(tip[0]); fr['ty'] = round(tip[1])
         frames[name] = fr
+    old = json.load(open(os.path.join(HERE, 'hero_old_frames.json')))
+    frames['front'] = old['front']                                   # the sheet has no camera-facing pose: the save animation keeps the earlier one
     return frames
 
 if __name__ == '__main__':
     fr = build()
     path = os.path.join(HERE, '..', 'js', 'art', 'heroimg.js')
-    src = "/* GENERATED by tools/hero_img.py from the supplied hero artwork: PNG data URIs with anchors (feet centre) and cannon-tip offsets. */\n(function (G) {\n  G.art = G.art || {};\n  G.art.heroimg = " + json.dumps(fr, separators=(',', ':')) + ";\n})((window.SGS = window.SGS || {}));\n"
+    src = "/* GENERATED by tools/hero_img.py from the supplied hero artwork: PNG data URIs with anchors (feet) and cannon-tip offsets. */\n(function (G) {\n  G.art = G.art || {};\n  G.art.heroimg = " + json.dumps(fr, separators=(',', ':')) + ";\n})((window.SGS = window.SGS || {}));\n"
     open(path, 'w', encoding='utf-8').write(src)
     print('wrote', len(src))
     for k, v in fr.items(): print(k, v['w'], v['h'], 'anchor', v['ax'], v['ay'], 'tip', v.get('tx'), v.get('ty'))
