@@ -15,7 +15,7 @@
     else return;
     room.spawns = room.spawns.filter((q) => q.ch !== 'K');
   };
-  const core = (b) => (b.kind === 'heart' ? { x: b.x, y: b.y } : b.kind === 'jelly' ? { x: b.x, y: b.y + 2 } : b.kind === 'wyrm' ? { x: b.x, y: b.y } : b.kind === 'moth' ? { x: b.x, y: b.y + 6 } : { x: b.x - b.face * 30, y: b.y - 52 });
+  const core = (b) => (b.kind === 'heart' ? { x: b.x, y: b.y } : b.kind === 'jelly' ? { x: b.x, y: b.y + 2 } : b.kind === 'wyrm' ? { x: b.x, y: b.y } : b.kind === 'moth' ? { x: b.x, y: b.y + 6 } : { x: b.x - b.face * G.sprites.boss.core.dx, y: b.y - G.sprites.boss.core.dy });
   const vulnerable = (b) => (b.kind === 'heart' ? !!b.open && b.phase >= 2 : b.kind === 'jelly' ? !!b.open : b.kind === 'wyrm' ? !!b.open && b.state === 'attack' : b.state === 'stun');
   const inCore = (b, x, y) => { const c = core(b); return b.kind === 'heart' ? Math.abs(x - c.x) < 40 && Math.abs(y - c.y) < 40 : b.kind === 'jelly' ? Math.abs(x - c.x) < 30 && Math.abs(y - c.y) < 26 : b.kind === 'wyrm' ? Math.abs(x - c.x) < 34 && Math.abs(y - c.y) < 28 : b.kind === 'moth' ? Math.abs(x - c.x) < 24 && Math.abs(y - c.y) < 26 : Math.abs(x - c.x) < 30 && y > b.y - 76 && y < b.y - 28; };
   B.damage = function (g, b, dmg) {

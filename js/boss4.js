@@ -47,7 +47,7 @@
     for (let k = -3; k <= 3; k++) {                                          // barbed tentacles: tapering beaded whips that sway under the skirt, each ending in a glowing stinger
       let sx = 0, sy = 0;
       for (let i = 0; i < 14; i++) {
-        sx = x + k * 14 + Math.round(Math.sin(i * 0.5 + b.anim * 2 + k) * (2 + i * 0.45)); sy = y + 36 + Math.round(i * 4.5);
+        sx = x + k * 14 + Math.round(Math.sin(i * 0.5 + b.anim * 2 + k) * (2 + i * 0.45)); sy = y + 20 + Math.round(i * 4.5);
         const w = Math.max(2, 6 - (i >> 2));
         ctx.fillStyle = '#0c3a44'; ctx.fillRect(sx - (w >> 1) - 1, sy - 1, w + 2, 7);
         ctx.fillStyle = i < 8 ? '#1c8488' : '#38c0b0'; ctx.fillRect(sx - (w >> 1), sy, w, 5);
@@ -56,7 +56,7 @@
       }
       ctx.fillStyle = '#ff7ac6'; ctx.fillRect(sx - 2, sy + 4, 5, 4); ctx.fillStyle = '#ffe2f4'; ctx.fillRect(sx - 1, sy + 5, 2, 2);
     }
-    ctx.drawImage(c, x - 56, y - 44);
-    if (b.flash > 0) { ctx.globalAlpha = 0.6; ctx.drawImage(G.sprites.whiteOf(c), x - 56, y - 44); ctx.globalAlpha = 1; }
+    ctx.drawImage(c, x - c.ax, y - c.ay);
+    if (b.flash > 0) { ctx.globalAlpha = 0.6; ctx.drawImage(G.sprites.whiteOf(c), x - c.ax, y - c.ay); ctx.globalAlpha = 1; }
   };
 })((window.SGS = window.SGS || {}));

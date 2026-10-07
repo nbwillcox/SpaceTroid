@@ -54,7 +54,7 @@
     const b = g.boss, S = G.sprites.boss2; let c;
     if (b.state === 'shoot') c = S.shoot[(b.t >> 2) & 1]; else if (b.state === 'dive') c = S.dive; else if (b.state === 'stun') c = S.stun[(b.t >> 3) & 1];
     else if (b.state === 'dying') c = S.dead; else c = S.fly[Math.floor(b.anim) & 3];
-    const x = Math.round(b.x - 70), y = Math.round(b.y - 50);
+    const x = Math.round(b.x - c.ax), y = Math.round(b.y - c.ay);
     ctx.drawImage(c, x + (b.state === 'dying' ? Math.round((Math.random() - 0.5) * 3) : 0), y);
     if (b.flash > 0) { ctx.globalAlpha = 0.6; ctx.drawImage(G.sprites.whiteOf(c), x, y); ctx.globalAlpha = 1; }
   };

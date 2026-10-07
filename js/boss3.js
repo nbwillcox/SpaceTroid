@@ -63,11 +63,11 @@
     const x = Math.round(b.x), up = b.y < LAVA_Y + 20;
     if (up) {
       const top = Math.round(b.y) + 22;
-      for (let y = LAVA_Y - 6; y > top - 6; y -= 11) ctx.drawImage(S.neck, x - 16 + Math.round(Math.sin(y * 0.05 + b.anim) * 2), y - 9);
-      const fr = S.head[b.open ? 1 : 0], c = b.face >= 0 ? fr.r : fr.l, ax = b.face >= 0 ? 30 : fr.w - 1 - 30, hx = x - ax, hy = Math.round(b.y) - 26;
+      for (let y = LAVA_Y - 6; y > top - 6; y -= 11) ctx.drawImage(S.neck, x - S.neck.ax + Math.round(Math.sin(y * 0.05 + b.anim) * 2), y - S.neck.ay - 1);
+      const fr = S.head[b.open ? 1 : 0], c = b.face >= 0 ? fr.r : fr.l, ax = b.face >= 0 ? fr.ax : fr.w - 1 - fr.ax, hx = x - ax, hy = Math.round(b.y) - fr.ay;
       ctx.drawImage(c, hx, hy);
       if (b.flash > 0) { ctx.globalAlpha = 0.6; ctx.drawImage(G.sprites.whiteOf(c), hx, hy); ctx.globalAlpha = 1; }
     }
-    ctx.drawImage(S.splash[Math.floor(b.anim) % 3], x - 20, LAVA_Y - 14);
+    { const sp = S.splash[Math.floor(b.anim) % 3]; ctx.drawImage(sp, x - sp.ax, LAVA_Y + 4 - sp.ay); }
   };
 })((window.SGS = window.SGS || {}));

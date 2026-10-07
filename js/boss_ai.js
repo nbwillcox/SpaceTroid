@@ -62,7 +62,7 @@
     else if (b.state === 'tele') fr = SP.tele[(b.t >> 2) & 1];
     else if (b.state === 'charge') fr = SP.charge[(b.t >> 2) & 1];
     else fr = SP.stun[(b.t >> 3) & 1];
-    const c = b.face >= 0 ? fr.r : fr.l, ax = b.face >= 0 ? 60 : fr.w - 1 - 60, x = Math.round(b.x - ax), y = Math.round(b.y - 78);
+    const c = b.face >= 0 ? fr.r : fr.l, ax = b.face >= 0 ? fr.ax : fr.w - 1 - fr.ax, x = Math.round(b.x - ax), y = Math.round(b.y - fr.ay);
     ctx.drawImage(c, x + (b.state === 'dying' ? Math.round((Math.random() - 0.5) * 3) : 0), y);
     if (b.flash > 0) { ctx.globalAlpha = 0.6; ctx.drawImage(whiteOf(c), x, y); ctx.globalAlpha = 1; }
   };

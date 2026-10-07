@@ -47,8 +47,8 @@
   };
   B.drawHeart = function (ctx, g) {
     const b = g.boss, S = G.sprites.heart, t = b.anim, pulse = 1 + Math.round(Math.sin(t * 2.2) * 1.5);
-    for (const n of b.nodes) { if (!n.alive) continue; ctx.drawImage(S.node[n.flash > 0 ? 1 : 0], Math.round(n.x) - 17, Math.round(n.y) - 17); ctx.strokeStyle = 'rgba(244,255,192,0.5)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(Math.round(n.x), Math.round(n.y)); ctx.lineTo(Math.round(b.x), Math.round(b.y)); ctx.stroke(); }
-    const fr = S.body[b.open ? ((Math.floor(t * 3) & 1) ? 2 : 1) : 0], x = Math.round(b.x) - 64, y = Math.round(b.y) - 66 + (pulse > 1 ? 1 : 0);
+    for (const n of b.nodes) { if (!n.alive) continue; ctx.drawImage(S.node[n.flash > 0 ? 1 : 0], Math.round(n.x) - S.node[0].ax, Math.round(n.y) - S.node[0].ay); ctx.strokeStyle = 'rgba(244,255,192,0.5)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(Math.round(n.x), Math.round(n.y)); ctx.lineTo(Math.round(b.x), Math.round(b.y)); ctx.stroke(); }
+    const fr = S.body[b.open ? ((Math.floor(t * 3) & 1) ? 2 : 1) : 0], x = Math.round(b.x) - fr.ax, y = Math.round(b.y) - fr.ay + (pulse > 1 ? 1 : 0);
     ctx.drawImage(fr, x, y);
     if (b.flash > 0) { ctx.globalAlpha = 0.6; ctx.drawImage(G.sprites.whiteOf(fr), x, y); ctx.globalAlpha = 1; }
     for (const w of g.waves || []) { const wx = Math.round(w.x), wy = Math.round(w.y); ctx.fillStyle = '#ff80c8'; ctx.fillRect(wx - 7, wy - 9, 14, 9); ctx.fillStyle = '#ffd0f0'; ctx.fillRect(wx - 5, wy - 7, 10, 2); ctx.fillStyle = '#a860ff'; ctx.fillRect(wx - 9, wy - 3, 18, 3); }
