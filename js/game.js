@@ -78,6 +78,7 @@
     if (Game.toast) { Game.toast.t++; if (Game.toast.t > 150) Game.toast = null; }
     if (Game.fade) { Game.fade.t--; if (Game.fade.t <= 0) Game.fade = null; }
     if (Game.banner) { Game.banner.t++; G.fx.update(); if (Game.banner.t > 50 && (D.jump || D.fire || D.start || D.pause)) { Game.banner = null; G.input.clear(); } return; }
+    if (Game.saveAnim) { G.world.saveAnimStep(Game); G.fx.update(); if (G.atmos) G.atmos.update(Game); G.render.camera(Game, false); return; }
     if (Game.trans) {
       const t = Game.trans; t.t++;
       if (t.phase === 'out' && t.t >= 10) Game.finishTrans(); else if (t.phase === 'in' && t.t >= 10) Game.trans = null;

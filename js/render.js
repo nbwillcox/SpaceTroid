@@ -49,6 +49,26 @@
     }
     room.baked = c; room.dirty = false;
   };
+  /* the light that rises from a save pad: stepped bands that grow upward, rising sparkles and a bright base; front = the thin inner beam drawn over the hero */
+  R.saveLight = function (ctx, a, front) {
+    const t = a.t, grow = Math.min(1, t / 30), h = Math.round(84 * (1 - (1 - grow) * (1 - grow))), fade = t > 58 ? Math.max(0, 1 - (t - 58) / 26) : 1;
+    if (fade <= 0) return;
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    for (let y = 0; y < h; y += 2) {
+      if ((y >> 2) % 3 === 2 && !front) continue;
+      const k = 1 - y / 100, w = Math.round((front ? 10 : 26) * (0.6 + 0.4 * k)) & ~1, al = fade * (front ? 0.34 : 0.5) * k;
+      ctx.fillStyle = 'rgba(150,244,255,' + al.toFixed(3) + ')'; ctx.fillRect(Math.round(a.x - w / 2), a.y - 2 - y, w, 2);
+    }
+    if (!front) {
+      ctx.fillStyle = 'rgba(210,252,255,' + (0.55 * fade).toFixed(3) + ')'; ctx.fillRect(Math.round(a.x - 15), a.y - 3, 30, 2); ctx.fillRect(Math.round(a.x - 9), a.y - 5, 18, 2);
+      for (let i = 0; i < 16; i++) {
+        const ph = (t * 1.5 + i * 11) % 84; if (ph > h) continue;
+        const x = Math.round(a.x + (((i * 37) % 19) - 9) * (1 - ph / 110)), y = Math.round(a.y - 4 - ph), sz = i % 3 === 0 ? 2 : 1;
+        ctx.fillStyle = 'rgba(240,255,255,' + (fade * (0.9 - ph / 120)).toFixed(3) + ')'; ctx.fillRect(x, y, sz, sz);
+      }
+    }
+    ctx.restore();
+  };
   R.camera = function (g, snap) {
     const p = g.P, room = g.room, cam = g.cam, W = 480, H = 270;
     const tx = p.x + p.face * 22 - W / 2, ty = p.y - 36 - H / 2 - 24;
@@ -95,6 +115,7 @@
       ctx.fillStyle = b.big ? '#efba42' : '#5a658a'; ctx.fillRect(bx - r + 1, by - r + 1, r - 1, 2);
       ctx.fillStyle = fl ? '#fff2a8' : '#ef7a2a'; ctx.fillRect(bx, by - r - 2, 2, 2);
     }
+    if (g.saveAnim) R.saveLight(ctx, g.saveAnim, false);
     /* hero */
     const dying = p.dead > 0 && p.dead < 16;                                 /* a short white-flash collapse before the explosion */
     if (dying || (!p.dead && !(p.inv > 0 && Math.floor(time * 20) % 2 && p.hurt === 0))) {
@@ -102,8 +123,10 @@
       if (p.mode === 'ball') ctx.drawImage(c, Math.round(p.x - 8), Math.round(p.y - 16));
       else if (p.spinning && !p.ground) ctx.drawImage(c, Math.round(p.x - 24), Math.round(p.y - 22 - 24));
       else ctx.drawImage(c, Math.round(p.x - S.heroAx), Math.round(p.y - (fr.ay || S.heroAy)));
+      if (g.saveAnim && g.saveAnim.t > 30 && g.saveAnim.t < 56) { ctx.globalAlpha = 0.75 * (1 - Math.abs(g.saveAnim.t - 42) / 12); ctx.drawImage(S.whiteOf(c0), Math.round(p.x - S.heroAx), Math.round(p.y - (fr.ay || S.heroAy))); ctx.globalAlpha = 1; }
       if (p.charge > 0) { const m = G.player.muzzle(p), r = 1 + Math.floor(p.charge / 14); ctx.fillStyle = p.charge >= 50 ? '#fff' : '#ffd24a'; ctx.fillRect(Math.round(m.x) - r, Math.round(m.y) - r, r * 2, r * 2); if (Math.floor(time * 30) & 1) { ctx.fillStyle = '#fff6a0'; ctx.fillRect(Math.round(m.x) - r - 1, Math.round(m.y), 1, 1); ctx.fillRect(Math.round(m.x) + r, Math.round(m.y), 1, 1); } }
     }
+    if (g.saveAnim) R.saveLight(ctx, g.saveAnim, true);
     if (room.lava.length) { ctx.globalAlpha = 0.5; lavaPass(); ctx.globalAlpha = 1; }
     if (room.water.length) waterPass(0.2);
     G.grapple.draw(ctx, g, time);

@@ -3,6 +3,7 @@ Torso + legs are layered at runtime (sprites.js) so every aim angle works while 
 import json, math, os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import hero_gen as H
+import hero_front
 
 ANGLES = {90: ((14, 15), (15, 2)), 70: ((14, 15), (19, 3)), 45: ((14, 16), (25, 7)), 20: ((14, 17), (27, 13)), -20: ((14, 18), (27, 22)), -45: ((15, 18), (26, 23)), -75: ((15, 18), (19, 24))}
 TIPS = {90: (15, 2), 70: (19, 3), 45: (25, 7), 20: (27, 13), 0: (27, 18), -20: (27, 22), -45: (26, 23), -75: (19, 24)}
@@ -62,7 +63,7 @@ def build():
     tops = {}
     for a in [0] + sorted(ANGLES):
         for l in LEANS: tops['%d_%d' % (a, l)] = top(a, l)
-    return {'legs': legs, 'top': tops, 'tips': {str(k): v for k, v in TIPS.items()}}
+    return {'front': hero_front.build(), 'legs': legs, 'top': tops, 'tips': {str(k): v for k, v in TIPS.items()}}
 
 if __name__ == '__main__':
     out = build()

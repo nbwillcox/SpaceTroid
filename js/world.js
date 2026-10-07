@@ -82,15 +82,24 @@
   W.useStation = function (g, s) {
     const p = g.P;
     if (s.type === 'lift') { if (s.to) g.trans = { t: 0, to: s.to, door: null, phase: 'out' }; else G.main.ending(g); return; }
-    if (s.type === 'save') {
-      p.en = G.player.enMax(p); p.missiles = p.missileMax; p.sbombs = p.sbombMax; p.supers = p.superMax;
-      const rec = G.save.snapshot(g, { x: s.x, y: s.y }); g.prog.saves = rec.saves; g.saveRec = rec;
-      if (g.slot !== null && g.slot !== undefined) G.save.write(g.slot, rec);
-      g.toast = { txt: 'PROGRESS SAVED', t: 0 }; G.audio.sfx('save'); G.fx.ring(s.x, s.y - 10);
-    } else {
-      for (const id in G.rooms) if (G.rooms[id].zone === g.room.zone) g.prog.mapped[id] = true;
-      g.toast = { txt: 'MAP DATA DOWNLOADED', t: 0 }; G.audio.sfx('save');
-    }
+    if (s.type === 'save') { if (!g.saveAnim) g.saveAnim = { t: 0, x: s.x, y: s.y, s, face: p.face }; return; }
+    for (const id in G.rooms) if (G.rooms[id].zone === g.room.zone) g.prog.mapped[id] = true;
+    g.toast = { txt: 'MAP DATA DOWNLOADED', t: 0 }; G.audio.sfx('save');
+  };
+  /* save pad sequence: the hero turns to face front, a column of light rises from the pad, the progress is written at its peak, then the light fades and play resumes */
+  W.saveDo = function (g, s) {
+    const p = g.P;
+    p.en = G.player.enMax(p); p.missiles = p.missileMax; p.sbombs = p.sbombMax; p.supers = p.superMax;
+    const rec = G.save.snapshot(g, { x: s.x, y: s.y }); g.prog.saves = rec.saves; g.saveRec = rec;
+    if (g.slot !== null && g.slot !== undefined) G.save.write(g.slot, rec);
+    g.toast = { txt: 'PROGRESS SAVED', t: 0 }; G.audio.sfx('save'); G.fx.ring(s.x, s.y - 10); G.fx.ring(s.x, s.y - 30);
+  };
+  W.saveAnimStep = function (g) {
+    const a = g.saveAnim, p = g.P; a.t++;
+    p.x += (a.x - p.x) * 0.3; p.vx = 0; p.vy = 0; p.dash = 0;
+    if (a.t === 1) G.audio.sfx('chargeStart');
+    if (a.t === 40) W.saveDo(g, a.s);
+    if (a.t >= 84) g.saveAnim = null;
   };
   W.collect = function (g, it) {
     const def = W.ITEMS[it.type]; g.prog.items[it.id] = true; def.apply(g); G.audio.sfx('pickup');
@@ -113,6 +122,6 @@
       if (def.tank) ctx.drawImage(S.tank[def.tank][(it.t >> 4) & 1], x - 7, y - 16 + bob);
       else { ctx.fillStyle = 'rgba(255,255,255,0.12)'; ctx.fillRect(x - 11, y - 24 + bob, 22, 22); ctx.drawImage(S.orb[def.ramp][(it.t >> 3) % 3], x - 8, y - 22 + bob); if ((it.t >> 2) % 6 === 0) { ctx.fillStyle = '#fff'; ctx.fillRect(x + 8, y - 24 + bob, 1, 1); } }
     }
-    if (g.near) G.px.text(ctx, { save: 'UP: SAVE', map: 'UP: MAP', lift: 'UP: DESCEND' }[g.near.type], Math.round(g.near.x), Math.round(g.near.y - 62), { s: 1, c: '#f2ffff', o: '#0a0e2c', a: 'c' });
+    if (g.near && !g.saveAnim) G.px.text(ctx, { save: 'UP: SAVE', map: 'UP: MAP', lift: 'UP: DESCEND' }[g.near.type], Math.round(g.near.x), Math.round(g.near.y - 62), { s: 1, c: '#f2ffff', o: '#0a0e2c', a: 'c' });
   };
 })((window.SGS = window.SGS || {}));

@@ -22,7 +22,7 @@
   function update() {
     if (M.mode === 'play') {
       if (I.down.pause) { M.pause(); return; }
-      if (I.down.map && !Game.banner && !Game.trans) { M.openMap(); return; }
+      if (I.down.map && !Game.banner && !Game.trans && !Game.saveAnim) { M.openMap(); return; }
       Game.step();
     } else if (M.mode === 'map') { if (I.down.map || I.down.pause || I.down.jump || I.down.start) { M.mode = M.fromPause ? 'pause' : 'play'; I.clear(); } }
     else UI.update();

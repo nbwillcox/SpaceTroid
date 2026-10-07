@@ -69,6 +69,7 @@
     const H = G.sprites.hero[p.suit || 'cobalt'];
     if (p.mode === 'ball') return H['ball' + (((Math.floor(p.anim * 1.2) * p.face) % 4 + 4) % 4)];
     if (p.spinning && !p.ground) return H['spin' + (Math.floor(p.spinT / 2.4) & 7)];
+    if (G.game && G.game.saveAnim) return G.sprites.heroFront(p.suit || 'cobalt');
     const q = P.pose(p);
     return G.sprites.heroLayered(p.suit || 'cobalt', q.ang, q.lean, q.legs, q.dy);
   };

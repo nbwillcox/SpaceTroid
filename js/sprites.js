@@ -9,6 +9,11 @@
   /* layered hero: torso (per aim angle and lean) over legs (per pose), composed once per distinct combination and cached */
   const h2 = { grids: new Map(), frames: new Map() };
   const gridCanvas = (suit, kind, key) => { const k = suit + kind + key; let c = h2.grids.get(k); if (!c) { c = A.make(A.hero2[kind][key], suit, 'h2' + k).c; h2.grids.set(k, c); } return c; };
+  S.heroFront = function (suit) {                                              /* the front-facing pose used while saving */
+    const k = suit + '|front'; let f = h2.frames.get(k);
+    if (!f) { const c = A.make(A.hero2.front, suit, 'h2front' + suit).c; f = { r: c, l: c, w: 34, h: 47, ay: 46 }; h2.frames.set(k, f); }
+    return f;
+  };
   S.heroLayered = function (suit, ang, lean, legs, dy) {
     const k = suit + '|' + ang + '|' + lean + '|' + legs + '|' + dy; let f = h2.frames.get(k);
     if (!f) {
