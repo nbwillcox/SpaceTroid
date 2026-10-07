@@ -37,7 +37,7 @@ def smelter():
     r.door('w', 'L', 12, 'blue', 'beacon3', 'e'); r.door('e', 'R', 12, 'blue', 'foundry', 'w')
     r.fill(12, 14, 47, 15, 'L')
     r.fill(15, 8, 18, 9, '#'); r.item('tank4', 'energyTank', 16, 7)       # an island above the vat; ride the lift up
-    r.mover('x', 216, 736, 48, 0.9, 222); r.mover('y', 130, 222, 48, 0.7, 232)
+    r.mover('x', 216, 736, 48, 0.9, 222); r.mover('y', 128, 222, 48, 0.7, 232)
     r.spawn('z', 30, 13); r.spawn('z', 40, 13); r.spawn('e', 53, 14); r.spawn('n', 6, 14); r.spawn('n', 52, 14)
     return r
 smelter()
