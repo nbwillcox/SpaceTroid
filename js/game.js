@@ -56,7 +56,7 @@
     } else if (sx !== undefined && sx !== null) { p.x = sx; p.y = sy; }
     else if (start) { p.x = start.x; p.y = start.y; } else { p.x = 40; p.y = 40; }
     p.ground = false;
-    G.render.bake(room); G.render.camera(Game, true);
+    G.render.bake(room); G.render.camera(Game, true); if (G.atmos) G.atmos.reset(Game);
     if (G.bosses) G.bosses.setup(Game, room);
   };
   Game.buildDyn = function () { Game.room.dyn = G.movers.rects(Game).concat(Game.frozenRects || []); };
@@ -92,7 +92,7 @@
       if (Game.escape.t <= 0) { G.fx.boom(p.x, p.y - 20, 30); p.en = 0; p.dead = 1; G.audio.sfx('boom'); Game.escape.t = 0; }
     }
     G.movers.update(Game); Game.buildDyn();
-    P.update(Game); G.weapons.update(Game); G.enemies.update(Game); Game.buildDyn(); if (G.bosses) G.bosses.update(Game); G.world.update(Game); G.fx.update();
+    P.update(Game); G.weapons.update(Game); G.enemies.update(Game); Game.buildDyn(); if (G.bosses) G.bosses.update(Game); G.world.update(Game); G.fx.update(); if (G.atmos) G.atmos.update(Game);
     if (!p.dead && p.inv === 0 && PH.boxTiles(room, p.x - p.w / 2, p.y - 6, p.x + p.w / 2, p.y - 0.01, 8)) { if (P.hurt(Game, p, 14, p.x + (Math.random() - 0.5))) { G.audio.sfx('hurt'); p.vy = -4.5; } }
     G.render.camera(Game, false);
     if (p.dead > 150) Game.respawn();

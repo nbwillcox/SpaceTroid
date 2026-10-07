@@ -123,3 +123,26 @@ class Room:
     def stair(s, hx0, hx1, fr):
         """ledges that climb from a cavern floor (row fr) back up through a gap in the floor above at hx0..hx1"""
         for (x0, x1, y) in [(hx0 - 5, hx0 - 1, fr - 3), (hx0, hx0 + 4, fr - 6), (hx0 - 5, hx0 - 1, fr - 9), (hx0, hx0 + 4, fr - 12), (hx0, hx1, fr - 14)]: s.plat(x0, x1, y)
+
+def layout_report(rooms):
+    """Check that door-linked rooms sit where their doors say (east door of A meets the west door of B, door rows aligned across 30x17 cells) and that no two rooms
+    share a map cell. Returns a list of problems (empty = consistent); positions come from each room's own mx, my."""
+    byid = {r.id: r for r in rooms}
+    cw = lambda r: -(-r.w // 30)
+    bad = []
+    for a in rooms:
+        for d in a.doors:
+            b = byid.get(d['to'])
+            if not b: continue
+            td = next(q for q in b.doors if q['id'] == d['door'])
+            bx = a.mx + cw(a) if d['side'] == 'R' else a.mx - cw(b)
+            by = a.my + d['ty'] // 17 - td['ty'] // 17
+            if (bx, by) != (b.mx, b.my): bad.append('%s.%s -> %s.%s: wants %s but placed %s' % (a.id, d['id'], b.id, td['id'], (bx, by), (b.mx, b.my)))
+    seen = {}
+    for r in rooms:
+        for cx in range(cw(r)):
+            for cy in range(-(-r.h // 17)):
+                k = (r.mx + cx, r.my + cy)
+                if k in seen: bad.append('overlap %s %s at %s' % (r.id, seen[k], k))
+                seen[k] = r.id
+    return bad
