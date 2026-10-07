@@ -8,11 +8,12 @@
     const p = g.P, max = G.player.enMax(p), full = Math.floor(p.en / 100), rest = Math.ceil(p.en % 100);
     ctx.fillStyle = 'rgba(10,14,44,0.55)'; ctx.fillRect(4, 4, 92, 30);
     txt(ctx, 'EN', 8, 8, '#86f0f2'); txt(ctx, String(Math.max(0, p.en > 0 && p.en < 1 ? 1 : Math.ceil(p.en))).padStart(3, '0'), 24, 8, p.en < 30 && Math.floor(time * 4) % 2 ? '#ec5c4a' : '#ffffff');
-    for (let i = 0; i < p.tanks; i++) { ctx.fillStyle = i < full ? '#2cbad8' : '#1b2c66'; ctx.fillRect(8 + i * 7, 18, 5, 5); ctx.fillStyle = i < full ? '#f2ffff' : '#2b4fa4'; ctx.fillRect(8 + i * 7, 18, 5, 1); }
+    for (let i = 0; i < p.tanks; i++) { const x = 8 + i * 8, on = i < full; ctx.fillStyle = on ? '#8ea2d2' : '#2a3050'; ctx.fillRect(x, 17, 6, 1); ctx.fillRect(x, 24, 6, 1); ctx.fillStyle = on ? '#2c6ad8' : '#162050'; ctx.fillRect(x, 18, 6, 6); ctx.fillStyle = on ? '#f2ffff' : '#3a4a80'; ctx.fillRect(x + 2, 19, 2, 1); ctx.fillRect(x + 2, 21, 2, 1); ctx.fillRect(x + 2, 23, 2, 1); ctx.fillRect(x + 1, 19, 1, 5); }
     ctx.fillStyle = '#10142e'; ctx.fillRect(8, 26, 84, 3); ctx.fillStyle = p.en / max < 0.3 ? '#ec5c4a' : '#4cd2b8'; ctx.fillRect(8, 26, Math.round(84 * Math.min(1, p.en / Math.max(1, max))), 3);
-    if (g.abil.missiles) { const sel = p.sel === 0; ctx.fillStyle = sel ? '#efba42' : '#3a3550'; ctx.fillRect(100, 5, 36, 14); ctx.fillStyle = '#10142e'; ctx.fillRect(101, 6, 34, 12); ctx.fillStyle = '#ec5c4a'; ctx.fillRect(104, 9, 7, 3); ctx.fillRect(111, 10, 2, 1); ctx.fillStyle = '#e8ecf8'; ctx.fillRect(104, 12, 7, 2); txt(ctx, String(p.missiles).padStart(2, '0'), 117, 9, sel ? '#fff2a8' : '#98a6ca'); }
-    if (g.abil.supers) { const sel = p.sel === 1; ctx.fillStyle = sel ? '#6cf08a' : '#3a3550'; ctx.fillRect(138, 5, 30, 14); ctx.fillStyle = '#10142e'; ctx.fillRect(139, 6, 28, 12); ctx.fillStyle = '#2a8a4a'; ctx.fillRect(142, 9, 7, 3); ctx.fillStyle = '#6cf08a'; ctx.fillRect(142, 12, 7, 2); txt(ctx, String(p.supers).padStart(2, '0'), 152, 9, sel ? '#d8ffe0' : '#98a6ca'); }
-    if (g.abil.sbombs) { ctx.fillStyle = '#3a3550'; ctx.fillRect(170, 5, 30, 14); ctx.fillStyle = '#10142e'; ctx.fillRect(171, 6, 28, 12); ctx.fillStyle = '#ef7a2a'; ctx.fillRect(174, 8, 8, 8); ctx.fillStyle = '#fff2a8'; ctx.fillRect(175, 9, 3, 3); txt(ctx, String(p.sbombs).padStart(2, '0'), 184, 9, '#ffe2b0'); }
+    const DS = G.sprites.drop;
+    if (g.abil.missiles) { const sel = p.sel === 0; ctx.fillStyle = sel ? '#efba42' : '#3a3550'; ctx.fillRect(100, 5, 36, 14); ctx.fillStyle = '#10142e'; ctx.fillRect(101, 6, 34, 12); ctx.drawImage(DS.missile[0], 105, 6); txt(ctx, String(p.missiles).padStart(2, '0'), 117, 9, sel ? '#fff2a8' : '#98a6ca'); }
+    if (g.abil.supers) { const sel = p.sel === 1; ctx.fillStyle = sel ? '#6cf08a' : '#3a3550'; ctx.fillRect(138, 5, 30, 14); ctx.fillStyle = '#10142e'; ctx.fillRect(139, 6, 28, 12); ctx.drawImage(DS.super[0], 143, 6); txt(ctx, String(p.supers).padStart(2, '0'), 152, 9, sel ? '#d8ffe0' : '#98a6ca'); }
+    if (g.abil.sbombs) { ctx.fillStyle = '#3a3550'; ctx.fillRect(170, 5, 30, 14); ctx.fillStyle = '#10142e'; ctx.fillRect(171, 6, 28, 12); ctx.drawImage(DS.sbomb[0], 173, 6); txt(ctx, String(p.sbombs).padStart(2, '0'), 184, 9, '#ffe2b0'); }
     if (p.charge > 0) { ctx.fillStyle = '#10142e'; ctx.fillRect(100, 22, 40, 5); ctx.fillStyle = p.charge >= 50 ? '#ffffff' : '#ffd24a'; ctx.fillRect(101, 23, Math.round(38 * p.charge / 60), 3); }
     const B = g.abil.beams; let x = 102; for (const [k, c, n] of [['ice', '#7ad8ff', 'I'], ['wave', '#b878ff', 'W'], ['plasma', '#ff7a2a', 'P']]) if (g.abil['has' + n.replace('I', 'Ice').replace('W', 'Wave').replace('P', 'Plasma')]) { ctx.fillStyle = B[k] ? c : '#2a3050'; ctx.fillRect(x, 31, 6, 3); x += 8; }
     if (p.dead > 30) { ctx.fillStyle = 'rgba(10,14,44,' + Math.min(0.8, (p.dead - 30) / 60) + ')'; ctx.fillRect(0, 0, 480, 270); if (p.dead > 60) PX.text(ctx, 'SIGNAL LOST', 240, 128, { s: 2, c: '#ec5c4a', o: '#0a0e2c', a: 'c' }); }
@@ -20,7 +21,7 @@
   /* everything drawn over the HUD: minimap, boss bar, toast, item banner, fades */
   H.overlay = function (ctx, g, time) {
     const Mo = G.input.mouse;
-    if (G.settings.mouseAim && Mo.on && !g.banner && !g.trans && g.P.mode !== 'ball' && !G.input.stick) {   /* aiming reticle */
+    if (G.settings.mouseAim && Mo.on && !g.banner && !g.trans && !g.getAnim && !g.saveAnim && g.P.mode !== 'ball' && !G.input.stick) {   /* aiming reticle */
       const x = Math.round(Mo.x), y = Math.round(Mo.y), pulse = Math.floor(time * 4) & 1;
       ctx.fillStyle = '#0a0e2c'; for (const [dx, dy, w, h] of [[-6, -1, 4, 3], [3, -1, 4, 3], [-1, -6, 3, 4], [-1, 3, 3, 4]]) ctx.fillRect(x + dx - 1, y + dy - 1, w + 2, h + 2);
       ctx.fillStyle = pulse ? '#ffffff' : '#86f0f2'; for (const [dx, dy, w, h] of [[-6, 0, 4, 1], [3, 0, 4, 1], [0, -6, 1, 4], [0, 3, 1, 4]]) ctx.fillRect(x + dx, y + dy, w, h);
@@ -41,6 +42,7 @@
       const bn = g.banner, k = Math.min(1, bn.t / 12), h = Math.round(86 * k), y = 98 + (86 - h) / 2;
       ctx.fillStyle = 'rgba(8,10,34,0.92)'; ctx.fillRect(70, y, 340, h); ctx.fillStyle = '#5688dc'; ctx.fillRect(70, y, 340, 1); ctx.fillRect(70, y + h - 1, 340, 1);
       if (k >= 1) {
+        if (bn.type) { const dfn = G.world.ITEMS[bn.type], im = dfn.tank ? G.sprites.tank[dfn.tank][(Math.floor(time * 3)) & 1] : G.sprites.icon[bn.type]; ctx.imageSmoothingEnabled = false; for (const bx of [86, 354]) ctx.drawImage(im, bx, 112, im.width * 2, im.height * 2); }
         txt(ctx, 'ITEM ACQUIRED', 240, 106, '#86f0f2', 'c'); PX.text(ctx, bn.name, 240, 122, { s: 2, c: '#fff2a8', o: '#2e1a0c', a: 'c' });
         bn.lines.forEach((l, i) => txt(ctx, l, 240, 148 + i * 11, '#dde7fb', 'c'));
         if (bn.t > 50 && Math.floor(time * 2) % 2) txt(ctx, 'PRESS JUMP', 240, 172, '#8ea2d2', 'c');

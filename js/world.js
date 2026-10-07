@@ -24,7 +24,7 @@
   };
   W.itemTotal = function () { let n = 0; for (const id in G.rooms) n += (G.rooms[id].items || []).length; return n; };
   /* map cells (30 x 17 tiles each) a room covers */
-  W.cells = function (def) { const cw = Math.ceil(def.map[0].length / 30), ch = Math.ceil(def.map.length / 17), out = []; for (let y = 0; y < ch; y++) for (let x = 0; x < cw; x++) out.push([def.mx + x, def.my + y]); return out; };
+  W.cells = function (def) { if (def.parent) return []; const cw = Math.ceil(def.map[0].length / 30), ch = Math.ceil(def.map.length / 17), out = []; for (let y = 0; y < ch; y++) for (let x = 0; x < cw; x++) out.push([def.mx + x, def.my + y]); return out; };
   const dkey = (room, d) => room.id + ':' + d.id;
   W.setup = function (g, room) {
     const def = room.def;
@@ -35,9 +35,12 @@
       W.applyDoor(room, o);
       return o;
     });
-    g.pickups = (def.items || []).filter((it) => !g.prog.items[it.id]).map((it) => Object.assign({}, it, { x: it.tx * T + 8, y: it.ty * T + 16, t: Math.floor(Math.random() * 60) }));
+    g.pickups = (def.items || []).filter((it) => !g.prog.items[it.id]).map((it) => Object.assign({}, it, { x: it.tx * T + 8, y: it.ty * T + 16 + (it.dy || 0), t: Math.floor(Math.random() * 60) }));
     g.stations = (def.stations || []).map((s) => ({ type: s.type, to: s.to, x: s.tx * T + 8, y: s.ty * T + 16, t: 0 }));
-    room.decor = (def.decor || []).map((d) => ({ img: G.sprites.wreck, x: d.x, y: d.y }));
+    room.decor = (def.decor || []).map((d) => {
+      if (d.kind === 'statue') { const img = G.sprites.statue[d.size][room.zone || 1]; return { img, x: Math.round(d.x - img.width / 2), y: Math.round(d.y - img.height), statue: d.size, cx: d.x, fy: d.y }; }
+      return { img: G.sprites.wreck, x: d.x, y: d.y };
+    });
     g.prog.visited[room.id] = true;
   };
   W.applyDoor = function (room, d) { const k = d.state === 'open' ? 0 : 9; for (let i = 0; i < d.h; i++) RM.set(room, d.tx, d.ty + i, k); };
@@ -55,6 +58,7 @@
   W.bossOpen = function (g) { for (const d of g.doors) if (d.color === 'boss' && g.prog.flags.boss1) { d.color = 'blue'; } };
   W.update = function (g) {
     const p = g.P, room = g.room;
+    if (g.doorGrace > 0) g.doorGrace--;
     for (const d of g.doors) {
       const cx = d.tx * T + 8, near = Math.abs(p.x - cx) < 60 && p.y > d.ty * T - 16 && p.y < (d.ty + d.h) * T + 40;
       if (d.state === 'opening') { d.t++; if (d.t >= 12) { d.state = 'open'; d.idle = 0; W.applyDoor(room, d); } }
@@ -64,7 +68,8 @@
       } else if (d.state === 'closing') { d.t++; if (d.t >= 10) d.state = 'closed'; }
       if (!g.trans && d.to && d.state === 'open' && !p.dead) {
         const inRows = p.y > d.ty * T + 1 && p.y <= (d.ty + d.h) * T + 2;
-        if (inRows && ((d.side === 'L' && p.x < 12 && p.vx <= 0) || (d.side === 'R' && p.x > room.pw - 12 && p.vx >= 0))) g.trans = { t: 0, to: d.to, door: d.door, phase: 'out' };
+        if (d.side === 'I') { if (inRows && !g.doorGrace && Math.abs(p.x - cx) < 7 && p.vx * d.out < 0) g.trans = { t: 0, to: d.to, door: d.door, phase: 'out' }; }   /* a doorway inside the room (item shrines): walk into it */
+        else if (inRows && ((d.side === 'L' && p.x < 12 && p.vx <= 0) || (d.side === 'R' && p.x > room.pw - 12 && p.vx >= 0))) g.trans = { t: 0, to: d.to, door: d.door, phase: 'out' };
       }
     }
     for (const it of g.pickups) {
@@ -101,11 +106,46 @@
     if (a.t === 40) W.saveDo(g, a.s);
     if (a.t >= 84) g.saveAnim = null;
   };
+  /* picking up an item: the world holds still, the hero raises an arm, a fanfare plays and the item floats up in a burst of light; then the text panel opens */
   W.collect = function (g, it) {
-    const def = W.ITEMS[it.type]; g.prog.items[it.id] = true; def.apply(g); G.audio.sfx('pickup');
-    g.banner = { name: def.name, lines: def.lines, t: 0 }; G.fx.boom(it.x, it.y - 8, 10);
+    const def = W.ITEMS[it.type]; g.prog.items[it.id] = true; def.apply(g);
+    g.getAnim = { t: 0, it: { type: it.type, x: it.x, y: it.y }, def, big: !def.tank };
+    if (G.music && G.music.fanfare) G.music.fanfare(!def.tank); else G.audio.sfx('pickup');
+    G.fx.boom(it.x, it.y - 8, def.tank ? 8 : 14);
+  };
+  W.getAnimStep = function (g) {
+    const a = g.getAnim, p = g.P; a.t++;
+    p.vx = 0; p.vy = 0; p.dash = 0; p.aim = 'up'; p.aimAng = null; p.charge = 0;
+    if (a.t % 5 === 0 && a.t < (a.big ? 130 : 56)) { const m = G.player.muzzle(p); G.fx.spark(m.x + (Math.random() - 0.5) * 10, m.y - 6 - Math.random() * 14, a.big ? '#fff2a8' : '#cfeeff'); }
+    if (a.t >= (a.big ? 168 : 78)) { g.getAnim = null; g.banner = { name: a.def.name, lines: a.def.lines, t: 0, type: a.it.type }; }
+  };
+  /* stepped glow disc behind an item (rows of 1px, so it stays pixel-art) */
+  W.glow = function (ctx, x, y, r, col, a) { ctx.fillStyle = 'rgba(' + col + ',' + a + ')'; for (let dy = -r; dy <= r; dy++) { const dx = Math.floor(Math.sqrt(r * r - dy * dy)); ctx.fillRect(x - dx, y + dy, dx * 2 + 1, 1); } };
+  /* an item as it lies in a shrine: abilities are the object itself in a pulsing aura, expansions are tanks (energy E-tank, missile, super) */
+  W.drawItem = function (ctx, type, x, y, t, bob) {
+    const S = G.sprites, def = W.ITEMS[type], pulse = 0.5 + 0.5 * Math.sin(t * 0.09);
+    if (def.tank) {
+      W.glow(ctx, x, y - 12 + bob, 13, '200,240,255', (0.05 + pulse * 0.05).toFixed(3));
+      ctx.drawImage(S.tank[def.tank][(t >> 4) & 1], x - 10, y - 22 + bob);
+    } else {
+      const col = def.glow || '255,244,190';
+      W.glow(ctx, x, y - 13 + bob, 17, col, (0.05 + pulse * 0.05).toFixed(3)); W.glow(ctx, x, y - 13 + bob, 12, col, (0.08 + pulse * 0.08).toFixed(3));
+      ctx.drawImage(S.icon[type], x - 10, y - 23 + bob);
+      if ((t >> 2) % 7 === 0) { ctx.fillStyle = '#fff'; ctx.fillRect(x + 8, y - 24 + bob, 1, 1); ctx.fillRect(x - 9, y - 6 + bob, 1, 1); }
+    }
   };
   W.drawBack = function (ctx, g, time) {
+    for (const d of g.doors) {                                              /* doorways inside the room (they lead to item shrines): a dark arch with pulsing runes */
+      if (d.side !== 'I') continue;
+      const x = d.tx * T, y = d.ty * T, h = d.h * T, pulse = 0.5 + 0.5 * Math.sin(time * 3 + d.tx);
+      if (d.h === 1) { ctx.fillStyle = 'rgba(6,8,24,0.8)'; ctx.fillRect(x + 1, y + 1, 14, 15); ctx.fillStyle = 'rgba(134,240,242,' + (0.35 + pulse * 0.4).toFixed(2) + ')'; ctx.fillRect(x, y, 16, 1); ctx.fillRect(x, y, 1, 16); ctx.fillRect(x + 15, y, 1, 16); continue; }
+      ctx.fillStyle = 'rgba(6,8,24,0.85)'; ctx.fillRect(x + 1, y + 2, 14, h - 2);
+      ctx.fillStyle = '#6a7ca8'; ctx.fillRect(x - 3, y - 2, 22, 4); ctx.fillRect(x - 1, y, 3, h); ctx.fillRect(x + 14, y, 3, h);
+      ctx.fillStyle = '#a8bce0'; ctx.fillRect(x - 3, y - 2, 22, 1); ctx.fillRect(x - 1, y, 1, h);
+      ctx.fillStyle = '#3a4a78'; ctx.fillRect(x + 16, y, 1, h); ctx.fillRect(x - 3, y + 1, 22, 1);
+      ctx.fillStyle = 'rgba(134,240,242,' + (0.45 + pulse * 0.5).toFixed(2) + ')'; ctx.fillRect(x + 2, y - 1, 2, 2); ctx.fillRect(x + 7, y - 1, 2, 2); ctx.fillRect(x + 12, y - 1, 2, 2);
+      for (let k = 1; k < d.h; k++) { ctx.fillRect(x - 1, y + k * 16 - 4, 1, 3); ctx.fillRect(x + 16, y + k * 16 - 4, 1, 3); }
+    }
     for (const s of g.stations) { const img = s.type === 'map' ? G.sprites.term[Math.floor(time * 2) & 1] : G.sprites.pad[Math.floor(time * 3) & 1]; ctx.drawImage(img, Math.round(s.x - img.width / 2), Math.round(s.y - img.height)); }
   };
   W.drawFront = function (ctx, g, time) {
@@ -117,11 +157,7 @@
       if (d.state === 'opening') f = Math.min(4, Math.floor(d.t / 3)); else if (d.state === 'open') f = 4; else if (d.state === 'closing') f = Math.max(0, 4 - Math.floor(d.t / 2.5));
       ctx.drawImage(set[f], d.tx * T, d.ty * T + (d.h - 3) * T);
     }
-    for (const it of g.pickups) {
-      const def = W.ITEMS[it.type], bob = Math.round(Math.sin(it.t * 0.08) * 2), x = Math.round(it.x), y = Math.round(it.y);
-      if (def.tank) ctx.drawImage(S.tank[def.tank][(it.t >> 4) & 1], x - 7, y - 16 + bob);
-      else { ctx.fillStyle = 'rgba(255,255,255,0.12)'; ctx.fillRect(x - 11, y - 24 + bob, 22, 22); ctx.drawImage(S.orb[def.ramp][(it.t >> 3) % 3], x - 8, y - 22 + bob); if ((it.t >> 2) % 6 === 0) { ctx.fillStyle = '#fff'; ctx.fillRect(x + 8, y - 24 + bob, 1, 1); } }
-    }
+    for (const it of g.pickups) W.drawItem(ctx, it.type, Math.round(it.x), Math.round(it.y), it.t, Math.round(Math.sin(it.t * 0.08) * 2));
     if (g.near && !g.saveAnim) G.px.text(ctx, { save: 'UP: SAVE', map: 'UP: MAP', lift: 'UP: DESCEND' }[g.near.type], Math.round(g.near.x), Math.round(g.near.y - 62), { s: 1, c: '#f2ffff', o: '#0a0e2c', a: 'c' });
   };
 })((window.SGS = window.SGS || {}));

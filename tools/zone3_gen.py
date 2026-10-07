@@ -1,7 +1,7 @@
 r"""Zone 3 (Magma Forge) room layouts -> js/rooms/zone3.js. Extra tiles: L lava (needs the heat suit), x wave-beam crystal block, D dash block (dash into it); spawns n cinder crawler, h ember hopper, e ember turret, z magmite (marker row = the row above the lava surface)."""
 import json, os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from room_kit import Room, BS
+from room_kit import Room, BS, add_shrine
 
 Z = []
 def room(*a, **k):
@@ -28,7 +28,7 @@ def ember():
     r.cave([(0, 32)], [(0, 19), (4, 22), (12, 19), (20, 22), (28, 19), (41, 17, 's'), (53, 17), (54, 19, 's'), (58, 21)], y0=17, y1=33)
     r.stair(47, 49, 32)
     r.fill(14, 31, 38, 32, 'L')
-    r.fill(1, 19, 9, 31, '#'); r.fill(2, 29, 8, 31, '.'); r.fill(9, 29, 9, 31, 'D'); r.item('mtankE', 'missileTank', 3, 31)
+    r.fill(1, 19, 9, 31, '#'); r.fill(2, 29, 8, 31, '.'); r.fill(9, 29, 9, 31, 'D'); add_shrine(Z, r, 'dE', 2, 29, 1, 3, 'mtankE', 'missileTank', 'Arsenal Shrine')
     r.on('n', 12); r.on('h', 41); r.spawn('z', 20, 30); r.spawn('z', 30, 30); r.on('e', 52)
     r.door('eb', 'R', 29, 'blue', 'slagcell', 'w')
     r.wall(1, 18, 58, 32, ragged=False)
@@ -49,7 +49,7 @@ def smelter():
     r.cave([(0, 15), (6, 13), (11, 15), (50, 13), (55, 15)], [(0, 2), (8, 4), (14, 2), (48, 4), (54, 2)])
     r.door('w', 'L', 12, 'blue', 'beacon3', 'e'); r.door('e', 'R', 12, 'blue', 'foundry', 'w')
     r.fill(12, 14, 47, 15, 'L')
-    r.fill(15, 8, 18, 9, '#'); r.item('tank4', 'energyTank', 16, 7)       # an island above the vat; ride the lift up
+    r.fill(15, 8, 18, 9, '#'); add_shrine(Z, r, 'd4', 17, 5, -1, 3, 'tank4', 'energyTank', 'Vigor Shrine')       # an island above the vat; ride the lift up
     r.mover('x', 216, 736, 48, 0.9, 222); r.mover('y', 128, 222, 48, 0.7, 232)
     r.spawn('z', 30, 13); r.spawn('z', 40, 13); r.on('e', 51); r.on('n', 7); r.on('n', 57)
     return r
@@ -57,11 +57,11 @@ smelter()
 
 def foundry():
     r = room('foundry', 'Old Foundry', 30, 17, 6, 6, solid=True, wall_all=True)
-    r.cave([(0, 15), (12, 12), (18, 15)], [(0, 2), (5, 5), (12, 3), (20, 5), (26, 2)])
+    r.style = ['pipes', 'glow']; r.tone = 0.75
+    r.cave([(0, 15)], [(0, 2), (5, 5), (10, 2), (19, 2), (24, 4)])
     r.door('w', 'L', 12, 'blue', 'smelter', 'e'); r.door('e', 'R', 12, 'blue', 'chimney', 'wl')
     r.fill(4, 14, 7, 15, 'L'); r.fill(20, 14, 23, 15, 'L')
-    r.item('space', 'spaceJump', 13, 11)
-    r.spawn('z', 5, 13); r.spawn('z', 21, 13); r.on('h', 3); r.on('h', 26)
+    r.statue(14, 'big', 15, 'space', 'spaceJump')
     return r
 foundry()
 
@@ -79,11 +79,11 @@ chimney()
 
 def anvil():
     r = room('anvil', 'The Anvil', 30, 17, 8, 6, solid=True, wall_all=True)
-    r.cave([(0, 15), (11, 12), (18, 15)], [(0, 2), (6, 4), (20, 2), (25, 5)])
+    r.style = ['beams', 'glow']; r.tone = 0.75
+    r.cave([(0, 15)], [(0, 2), (4, 4), (8, 2), (18, 2), (22, 4)])
     r.door('w', 'L', 12, 'blue', 'chimney', 'wh'); r.door('e', 'R', 12, 'blue', 'slag', 'w')
-    r.item('dash', 'dashBoots', 13, 11)
+    r.statue(12, 'big', 15, 'dash', 'dashBoots')
     r.fill(24, r.cl[24], 24, 14, 'D')                    # a dash block seals the whole passage, floor to roof
-    r.on('h', 5); r.on('h', 21); r.on('e', 27)
     return r
 anvil()
 
@@ -93,7 +93,7 @@ def slag():
     r.door('w', 'L', 12, 'blue', 'anvil', 'e'); r.door('e', 'R', 12, 'blue', 'crucible', 'w')
     r.fill(14, 14, 20, 15, 'L'); r.fill(34, 14, 40, 15, 'L'); r.plat(15, 19, 11); r.plat(35, 39, 11)
     r.ramp(23, 15, 3, True); r.fill(26, 12, 28, 14, '#'); r.ramp(29, 15, 3, False)
-    r.fill(46, r.cl[46], 46, 14, 'D'); r.item('mtank6', 'missileTank', 52, 14)      # the room's last stretch is walled off by dash blocks
+    r.fill(46, r.cl[46], 46, 14, 'D'); add_shrine(Z, r, 'd6', 52, 12, -1, 3, 'mtank6', 'missileTank', 'Arsenal Shrine')      # the room's last stretch is walled off by dash blocks
     r.on('n', 10); r.on('n', 33); r.on('h', 22); r.spawn('e', 27, 11); r.spawn('z', 17, 13); r.spawn('z', 37, 13); r.on('e', 55)
     return r
 slag()
@@ -104,7 +104,7 @@ def crucible():
     r.door('w', 'L', 12, 'blue', 'slag', 'e'); r.door('e', 'R', 12, 'blue', 'pre3', 'w')
     r.fill(14, 14, 26, 15, 'L'); r.plat(15, 18, 11); r.plat(21, 25, 10)
     r.fill(34, 12, 39, 14, '#'); r.fill(44, 12, 46, 14, '#')
-    r.fill(40, 8, 52, 8, '#'); r.fill(40, 9, 40, 11, 'x'); r.fill(41, 12, 52, 12, '#'); r.fill(52, 9, 52, 11, '#'); r.item('mtank7', 'missileTank', 46, 11)   # crystal alcove: wave beam only
+    r.fill(40, 8, 52, 8, '#'); r.fill(40, 9, 40, 11, 'x'); r.fill(41, 12, 52, 12, '#'); r.fill(52, 9, 52, 11, '#'); add_shrine(Z, r, 'd7', 51, 9, -1, 3, 'mtank7', 'missileTank', 'Arsenal Shrine')   # crystal alcove: wave beam only
     r.spawn('e', 35, 11); r.on('n', 8); r.on('n', 31); r.on('h', 54); r.spawn('z', 20, 13); r.on('e', 56)
     r.hang(30, 3, 2); r.hang(10, 2, 1)
     return r
@@ -131,9 +131,10 @@ arena3()
 
 def lift3():
     r = room('lift3', 'Surface Hatch', 30, 17, 16, 6, solid=True, wall_all=True)
-    r.cave([(0, 15), (5, 14), (9, 13), (14, 15)], [(0, 2), (4, 4), (16, 2), (24, 4)])
+    r.style = ['pillars', 'glow']; r.tone = 0.75
+    r.cave([(0, 15)], [(0, 2), (4, 4), (10, 2), (16, 2), (24, 4)])
     r.door('w', 'L', 12, 'blue', 'arena3', 'e')
-    r.item('wave', 'waveBeam', 10, 12); r.station('lift', 22, 14, to='rgate')
+    r.statue(8, 'big', 15, 'wave', 'waveBeam'); r.station('lift', 22, 14, to='rgate')
     return r
 lift3()
 
@@ -144,8 +145,8 @@ def slagcell():
     r.door('w', 'L', 12, 'blue', 'ember', 'eb')
     r.fill(7, 14, 13, 15, 'L'); r.plat(8, 12, 11)
     r.fill(17, r.cl[17], 17, 14, 'D')                    # a dash block seals the rest of the cell, floor to roof
-    r.item('mtankD', 'missileTank', 24, 14)
-    r.on('n', 4); r.on('h', 21); r.spawn('z', 10, 13); r.on('n', 26)
+    r.statue(24, 'small', 15, 'mtankD', 'missileTank')
+    r.on('n', 4); r.spawn('z', 10, 13)
     return r
 slagcell()
 

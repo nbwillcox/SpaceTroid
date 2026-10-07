@@ -30,6 +30,7 @@
     let e = p.aim === 'up' ? 90 : p.aim === 'diagUp' ? 45 : p.aim === 'diagDown' ? -45 : 0;
     if (p.aimAng !== null && p.aimAng !== undefined) e = Math.atan2(-Math.sin(p.aimAng), Math.abs(Math.cos(p.aimAng))) * 180 / Math.PI;
     let ang = 0, bd = 1e9; for (const a of ELEV) { const d = Math.abs(a - e); if (d < bd) { bd = d; ang = a; } }
+    if (G.game && G.game.getAnim) { ang = 90; return { ang: 90, lean: 2, legs: 'idle', dy: 0, tx: TIPS[90][0] + 1 + lsh(TIPS[90][1], 2), ty: TIPS[90][1] }; }          /* victory stance: cannon arm raised */
     const sp = Math.abs(p.vx), t = G.game ? G.game.time : 0; let legs, lean = 2, dy = 0;
     if (p.mode === 'crouch') { legs = 'crouch'; lean = 3; dy = 12; }
     else if (p.hurt > 0 && !p.dead) { legs = p.ground ? 'skid' : 'fall'; lean = -2; dy = p.ground ? 2 : 0; }         /* knocked back: leaning away from the hit */
@@ -67,6 +68,7 @@
   /* which sprite frame to draw */
   P.frame = function (p) {
     const H = G.sprites.hero[p.suit || 'cobalt'];
+    if (G.game && G.game.getAnim) { const q = P.pose(p); return G.sprites.heroLayered(p.suit || 'cobalt', q.ang, q.lean, q.legs, q.dy); }
     if (p.mode === 'ball') return H['ball' + (((Math.floor(p.anim * 1.2) * p.face) % 4 + 4) % 4)];
     if (p.spinning && !p.ground) return H['spin' + (Math.floor(p.spinT / 2.4) & 7)];
     if (G.game && G.game.saveAnim) return G.sprites.heroFront(p.suit || 'cobalt');

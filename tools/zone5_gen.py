@@ -1,7 +1,7 @@
 r"""Zone 5 (Hive Core) room layouts -> js/rooms/zone5.js. Extra tiles: S scan block (invisible and non-solid until the scan visor is held, then solid); spawns u hive moth, g carapace guard, p spore pod, k egg spawner, K boss."""
 import json, os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from room_kit import Room, BS
+from room_kit import Room, BS, add_shrine, add_big_shrine
 
 Z = []
 def room(*a, **k):
@@ -22,7 +22,7 @@ def bloom():
     r.door('w', 'L', 12, 'blue', 'hgate', 'e'); r.door('e', 'R', 12, 'blue', 'beacon5', 'w')
     r.station('map', 5, 14)
     r.plat(24, 28, 11); r.plat(33, 37, 9)
-    r.fill(40, 12, 43, 14, '#'); r.fill(48, 11, 56, 11, '#'); r.fill(49, 12, 55, 14, '.'); r.item('scan', 'scanVisor', 52, 10)
+    r.fill(40, 12, 43, 14, '#'); r.fill(48, 11, 56, 11, '#'); r.fill(49, 12, 55, 14, '.'); add_big_shrine(Z, r, 'dScan', 52, 8, -1, 3, 'scan', 'scanVisor', 'Shrine of Sight')
     r.on('g', 8); r.on('g', 30); r.spawn('k', 15, 12); r.on('k', 45); r.spawn('u', 26, 7); r.spawn('p', 41, 11)
     r.wall(14, 2, 46, 14)
     return r
@@ -41,14 +41,14 @@ def maw():
     r.cave([(0, 15), (5, 13), (10, 15), (47, 17, 's'), (50, 15, 's'), (53, 13), (56, 15)], [(0, 2)], y1=16)
     r.door('w', 'L', 12, 'blue', 'beacon5', 'e'); r.door('e', 'R', 12, 'blue', 'ascent', 'wl')
     r.fill(12, 15, 46, 15, '^'); r.plat(14, 17, 12); r.plat(21, 24, 11); r.plat(28, 31, 12); r.plat(35, 38, 11); r.plat(42, 45, 12)
-    r.fill(26, 8, 29, 8, 'S'); r.item('mtank8', 'missileTank', 27, 7)         # hidden stepping stones above the pit: scan to see them
+    r.fill(25, 8, 27, 8, 'S'); r.plat(28, 29, 8); add_shrine(Z, r, 'd8', 29, 5, -1, 3, 'mtank8', 'missileTank', 'Arsenal Shrine', arr=14)         # hidden stepping stones above the pit: scan to see them
     for x in (14, 18, 22, 34, 38, 42, 46): r.hang(x, 3, 1)                    # teeth
     r.spawn('u', 20, 7); r.spawn('u', 38, 6); r.on('g', 6); r.on('g', 52); r.on('p', 57)
     # gullet: the gap at x 47..49 drops into a hive cavern; a staircase of hidden scan blocks climbs to a tank on the west wall
     r.cave([(0, 32), (6, 30), (12, 32)], [(0, 19), (4, 17), (24, 20), (36, 17, 's'), (58, 17)], y0=17, y1=33)
     r.stair(47, 49, 32)
-    for (x0, x1, y) in [(14, 17, 29), (19, 22, 26), (14, 17, 23), (9, 12, 20)]: r.fill(x0, y, x1, y, 'S')
-    r.item('tankM', 'energyTank', 10, 19)
+    for (x0, x1, y) in [(14, 17, 29), (19, 22, 26), (14, 17, 23)]: r.fill(x0, y, x1, y, 'S')
+    r.plat(9, 12, 20); add_shrine(Z, r, 'dM', 11, 17, -1, 3, 'tankM', 'energyTank', 'Vigor Shrine', arr=14)
     r.on('g', 26); r.on('g', 40); r.spawn('u', 20, 22); r.spawn('u', 34, 24); r.on('p', 30); r.on('k', 8)
     r.door('eb', 'R', 29, 'blue', 'cyst', 'w')
     r.wall(1, 18, 58, 32, ragged=False)
@@ -70,8 +70,7 @@ def nest():
     r = room('nest', 'The Nest', 30, 17, 7, 9, solid=True, wall_all=True)
     r.cave([(0, 13), (8, 13), (11, 15), (18, 15), (21, 13)], [(0, 2), (6, 4), (12, 3), (20, 5), (26, 2)])
     r.door('w', 'L', 10, 'blue', 'ascent', 'eh'); r.door('e', 'R', 10, 'blue', 'vein', 'w')
-    r.item('plasma', 'plasmaBeam', 14, 14)
-    r.on('k', 4); r.on('k', 26); r.spawn('u', 14, 6); r.on('g', 24)
+    r.statue(14, 'big', 15, 'plasma', 'plasmaBeam'); r.style = ['veins', 'glow']; r.tone = 0.75
     return r
 nest()
 
@@ -84,7 +83,7 @@ def vein():
     r.ramp(41, 15, 3, True); r.fill(44, 12, 46, 14, '#'); r.ramp(47, 15, 3, False)
     r.plat(50, 56, 8)
     r.fill(57, 8, 58, 8, '#'); r.fill(21, 15, 24, 15, '^'); r.plat(18, 26, 11)
-    r.fill(37, 4, 42, 4, '#'); r.fill(37, 8, 42, 8, '#'); r.fill(42, 5, 42, 7, '#'); r.fill(37, 5, 37, 7, 'x'); r.plat(32, 36, 8); r.item('mtank9', 'missileTank', 40, 7)       # wave-crystal pocket
+    r.fill(37, 4, 42, 4, '#'); r.fill(37, 8, 42, 8, '#'); r.fill(42, 5, 42, 7, '#'); r.fill(37, 5, 37, 7, 'x'); r.plat(32, 36, 8); add_shrine(Z, r, 'd9', 41, 5, -1, 3, 'mtank9', 'missileTank', 'Arsenal Shrine')       # wave-crystal pocket
     r.on('g', 7); r.on('g', 26); r.on('g', 39); r.spawn('p', 15, 11); r.spawn('p', 45, 11); r.spawn('k', 52, 7); r.spawn('u', 22, 6)
     return r
 vein()
@@ -93,8 +92,7 @@ def cache5():
     r = room('cache5', 'Brood Cache', 30, 17, 9, 9, solid=True, wall_all=True)
     r.cave([(0, 15), (12, 13), (18, 15)], [(0, 2), (5, 5), (12, 3), (22, 4)])
     r.door('w', 'L', 12, 'green', 'vein', 'v')
-    r.item('tank7', 'energyTank', 14, 12)
-    r.on('k', 4); r.on('k', 24)
+    r.statue(14, 'small', 13, 'tank7', 'energyTank'); r.style = ['veins', 'glow']; r.tone = 0.7
     return r
 cache5()
 
@@ -153,7 +151,7 @@ def cyst():
     r.door('w', 'L', 12, 'blue', 'maw', 'eb')
     r.fill(8, 15, 21, 15, '^')
     for (x0, x1) in [(9, 11), (14, 16), (19, 21)]: r.fill(x0, 12, x1, 12, 'S')       # hidden stepping stones across the pit: scan to see them
-    r.fill(23, 12, 27, 14, '#'); r.item('mtankY', 'missileTank', 25, 11)
+    r.fill(23, 12, 27, 14, '#'); r.statue(25, 'small', 12, 'mtankY', 'missileTank')
     r.on('g', 4); r.spawn('u', 12, 8); r.spawn('u', 18, 7); r.on('p', 6)
     return r
 cyst()

@@ -15,7 +15,7 @@
   }
   function tick() {
     const ctx = G.audio.ctx, th = T[MU.cur]; if (!ctx || !th || !MU.gain) return;
-    MU.gain.gain.value = G.settings.music * 0.9;
+    MU.gain.gain.value = ctx.currentTime < (MU.duckUntil || 0) ? 0 : G.settings.music * 0.9;
     const spb = 60 / th.bpm / 4;
     while (MU.next < ctx.currentTime + 0.18) {
       const s = MU.step % 16, bar = Math.floor(MU.step / 16) % 4, t = MU.next;
@@ -26,6 +26,23 @@
       MU.next += spb; MU.step++;
     }
   }
+  /* item fanfares: a short triumphant phrase over the (muted) zone theme. big = ability unlock, small = tank / expansion */
+  const hold = (ctx, dst, type, f, t, dur, vol) => {
+    const o = ctx.createOscillator(), g = ctx.createGain(); o.type = type; o.frequency.value = f;
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.02); g.gain.setValueAtTime(vol, t + Math.max(0.03, dur - 0.09)); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g); g.connect(dst); o.start(t); o.stop(t + dur + 0.05);
+  };
+  const BIG = [['square', 67, 0, 0.14, 0.12], ['square', 72, 0.15, 0.14, 0.12], ['square', 76, 0.3, 0.14, 0.12], ['square', 79, 0.45, 0.26, 0.12], ['square', 81, 0.78, 0.12, 0.12], ['square', 79, 0.9, 0.12, 0.12], ['square', 77, 1.02, 0.12, 0.12], ['square', 84, 1.14, 0.7, 0.13], ['square', 83, 1.9, 0.18, 0.12], ['square', 84, 2.1, 1.2, 0.13],
+    ['sawtooth', 62, 0, 0.14, 0.05], ['sawtooth', 67, 0.15, 0.14, 0.05], ['sawtooth', 71, 0.3, 0.14, 0.05], ['sawtooth', 74, 0.45, 0.26, 0.05], ['sawtooth', 76, 0.78, 0.12, 0.05], ['sawtooth', 74, 0.9, 0.12, 0.05], ['sawtooth', 72, 1.02, 0.12, 0.05], ['sawtooth', 79, 1.14, 0.7, 0.06], ['sawtooth', 77, 1.9, 0.18, 0.05], ['sawtooth', 79, 2.1, 1.2, 0.06],
+    ['triangle', 48, 0, 0.45, 0.16], ['triangle', 53, 0.78, 0.35, 0.16], ['triangle', 55, 1.14, 0.7, 0.16], ['triangle', 48, 2.1, 1.2, 0.18], ['triangle', 60, 2.1, 1.2, 0.07], ['triangle', 64, 2.1, 1.2, 0.07], ['triangle', 67, 2.1, 1.2, 0.07]];
+  const SMALL = [['square', 72, 0, 0.1, 0.11], ['square', 76, 0.11, 0.1, 0.11], ['square', 79, 0.22, 0.1, 0.11], ['square', 84, 0.33, 0.55, 0.12], ['sawtooth', 67, 0.33, 0.55, 0.05], ['triangle', 48, 0, 0.9, 0.15], ['triangle', 64, 0.33, 0.55, 0.06]];
+  MU.fanfare = function (big) {
+    const ctx = G.audio.ctx; if (!ctx) return;
+    if (!MU.fgain) { MU.fgain = ctx.createGain(); MU.fgain.connect(ctx.destination); }
+    MU.fgain.gain.value = G.settings.music * 1.1; const t0 = ctx.currentTime + 0.04;
+    MU.duckUntil = t0 + (big ? 3.5 : 1.1);
+    for (const [ty, m, st, du, vol] of big ? BIG : SMALL) hold(ctx, MU.fgain, ty, hz(m), t0 + st, du, vol);
+  };
   MU.play = function (name) {
     if (MU.cur === name) return;
     const A = G.audio; if (!A.ctx) { MU.pending = name; return; }

@@ -1,7 +1,7 @@
 /* Draws a frame: parallax, baked room tiles (autotiled, with hash-placed decor), entities, shots, effects. 480x270 internal canvas. */
 (function (G) {
   'use strict';
-  const S = G.sprites, RM = G.room, T = 16, U = G.U;
+  const S = G.sprites, RM = G.room, T = 16, U = G.U, W = G.world;
   const R = {};
   G.render = R;
   const solidish = (room, tx, ty) => { const k = RM.at(room, tx, ty); return k === 1 || k === 3 || k === 4 || k === 5 || k === 6 || k === 7 || k === 9 || k === 10 || k === 12 || k === 13; };
@@ -69,6 +69,33 @@
     }
     ctx.restore();
   };
+  /* the item-get moment: light rays from the raised cannon, the item floating up with a glow, and a quick white flash */
+  R.getFx = function (ctx, g, time) {
+    const a = g.getAnim, p = g.P, m = G.player.muzzle(p), t = a.t, big = a.big, fade = t > (big ? 140 : 62) ? Math.max(0, 1 - (t - (big ? 140 : 62)) / 24) : 1;
+    const rise = Math.min(big ? 26 : 18, t * 0.5), cx = Math.round(m.x), cy = Math.round(m.y - 6 - rise);
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    const rays = big ? 12 : 8;
+    for (let i = 0; i < rays; i++) {
+      const ang = (i / rays) * 6.283 + t * 0.015, len = Math.min(big ? 46 : 26, t * 1.2) * (0.6 + 0.4 * Math.sin(t * 0.2 + i));
+      for (let d = 6; d < len; d += 2) { const al = fade * (0.5 - d / (big ? 110 : 70)); if (al <= 0) break; ctx.fillStyle = 'rgba(255,240,170,' + al.toFixed(3) + ')'; ctx.fillRect(Math.round(cx + Math.cos(ang) * d), Math.round(cy + Math.sin(ang) * d), 2, 2); }
+    }
+    ctx.restore();
+    ctx.globalAlpha = fade; W.drawItem(ctx, a.it.type, cx, cy + 14, t, Math.round(Math.sin(t * 0.12) * 2)); ctx.globalAlpha = 1;
+  };
+  /* a soft shaft of light falling on a shrine statue: stepped additive bands, with a few motes drifting up through it */
+  R.shaft = function (ctx, d, room, time) {
+    const big = d.statue === 'big', top = 32, bot = d.fy, h = bot - top, w0 = big ? 22 : 14, w1 = big ? 78 : 44;
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    for (let y = top; y < bot; y += 2) {
+      const k = (y - top) / h, w = Math.round(w0 + (w1 - w0) * k), al = (0.085 - k * 0.05) * (0.8 + 0.2 * Math.sin(time * 1.3 + y * 0.05));
+      if (al <= 0) continue; ctx.fillStyle = 'rgba(255,238,190,' + al.toFixed(3) + ')'; ctx.fillRect(Math.round(d.cx - w / 2), y, w, 2);
+    }
+    for (let i = 0; i < 7; i++) {
+      const ph = (time * 14 + i * 37) % h, x = Math.round(d.cx + Math.sin(i * 2.7 + time * 0.6) * (w0 + (w1 - w0) * (ph / h)) * 0.4), y = Math.round(bot - ph);
+      ctx.fillStyle = 'rgba(255,248,210,' + (0.55 * (1 - ph / h)).toFixed(3) + ')'; ctx.fillRect(x, y, 1, 1);
+    }
+    ctx.restore();
+  };
   R.camera = function (g, snap) {
     const p = g.P, room = g.room, cam = g.cam, W = 480, H = 270;
     const tx = p.x + p.face * 22 - W / 2, ty = p.y - 36 - H / 2 - 24;
@@ -92,7 +119,7 @@
     ctx.restore();
     ctx.translate(-ox, -oy);
     ctx.drawImage(room.baked, 0, 0);
-    for (const d of room.decor || []) ctx.drawImage(d.img, d.x, d.y);
+    for (const d of room.decor || []) { if (d.statue) R.shaft(ctx, d, room, time); ctx.drawImage(d.img, d.x, d.y); }
     if (G.atmos) G.atmos.draw(ctx, g, 0, time);
     G.world.drawBack(ctx, g, time);
     G.enemies.draw(ctx, g, time);
@@ -120,13 +147,14 @@
     const dying = p.dead > 0 && p.dead < 16;                                 /* a short white-flash collapse before the explosion */
     if (dying || (!p.dead && !(p.inv > 0 && Math.floor(time * 20) % 2 && p.hurt === 0))) {
       const fr = G.player.frame(p), c0 = p.face >= 0 ? fr.r : fr.l, c = dying && (p.dead & 2) ? S.whiteOf(c0) : c0;
-      if (p.mode === 'ball') ctx.drawImage(c, Math.round(p.x - 8), Math.round(p.y - 16));
-      else if (p.spinning && !p.ground) ctx.drawImage(c, Math.round(p.x - 24), Math.round(p.y - 22 - 24));
+      if (p.mode === 'ball' && !g.getAnim) ctx.drawImage(c, Math.round(p.x - 8), Math.round(p.y - 16));
+      else if (p.spinning && !p.ground && !g.getAnim) ctx.drawImage(c, Math.round(p.x - 24), Math.round(p.y - 22 - 24));
       else ctx.drawImage(c, Math.round(p.x - S.heroAx), Math.round(p.y - (fr.ay || S.heroAy)));
       if (g.saveAnim && g.saveAnim.t > 30 && g.saveAnim.t < 56) { ctx.globalAlpha = 0.75 * (1 - Math.abs(g.saveAnim.t - 42) / 12); ctx.drawImage(S.whiteOf(c0), Math.round(p.x - S.heroAx), Math.round(p.y - (fr.ay || S.heroAy))); ctx.globalAlpha = 1; }
       if (p.charge > 0) { const m = G.player.muzzle(p), r = 1 + Math.floor(p.charge / 14); ctx.fillStyle = p.charge >= 50 ? '#fff' : '#ffd24a'; ctx.fillRect(Math.round(m.x) - r, Math.round(m.y) - r, r * 2, r * 2); if (Math.floor(time * 30) & 1) { ctx.fillStyle = '#fff6a0'; ctx.fillRect(Math.round(m.x) - r - 1, Math.round(m.y), 1, 1); ctx.fillRect(Math.round(m.x) + r, Math.round(m.y), 1, 1); } }
     }
     if (g.saveAnim) R.saveLight(ctx, g.saveAnim, true);
+    if (g.getAnim) R.getFx(ctx, g, time);
     if (room.lava.length) { ctx.globalAlpha = 0.5; lavaPass(); ctx.globalAlpha = 1; }
     if (room.water.length) waterPass(0.2);
     G.grapple.draw(ctx, g, time);
@@ -134,6 +162,7 @@
     G.fx.draw(ctx);
     if (G.atmos) G.atmos.draw(ctx, g, 1, time);
     ctx.restore();
+    if (g.getAnim && g.getAnim.t < 12) { ctx.globalAlpha = (g.getAnim.big ? 0.55 : 0.3) * (1 - g.getAnim.t / 12); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, 480, 270); ctx.globalAlpha = 1; }
     if (G.atmos) G.atmos.vignette(ctx);
   };
   R.shot = function (ctx, s, time) {

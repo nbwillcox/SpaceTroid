@@ -27,6 +27,9 @@ class Room:
         x = 0 if side == 'L' else s.w - 1
         s.fill(x, ty, x, ty + h - 1, '.')
         s.doors.append({'id': did, 'side': side, 'ty': ty, 'color': color, 'to': to, 'door': tdoor, 'h': h})
+    def door_i(s, did, tx, ty, to, tdoor, out, h=1, arr=None):
+        """a doorway inside the room (leads to an item shrine): the hero walks into it moving against `out`, the direction the corridor opens toward"""
+        s.doors.append({'id': did, 'side': 'I', 'tx': tx, 'ty': ty, 'color': 'open', 'to': to, 'door': tdoor, 'h': h, 'out': out, 'arr': arr or (14 if h == 1 else 26)})
     def spawn(s, ch, x, y): s.g[y][x] = ch
     def mover(s, axis, a, b, w, speed, fixed): s.movers.append({'axis': axis, 'a': a, 'b': b, 'w': w, 'speed': speed, 'x' if axis == 'y' else 'y': fixed})
     def wall(s, x0, y0, x1, y1, ragged=True):
@@ -50,6 +53,7 @@ class Room:
         rows = [''.join(r) for r in s.g]
         d = {'id': s.id, 'name': s.name, 'zone': s.zone, 'mx': s.mx, 'my': s.my, 'map': rows, 'doors': s.doors, 'items': s.items, 'stations': s.stations, 'decor': s.decor, 'movers': s.movers, 'pressure': s.pressure}
         if getattr(s, 'style', None): d['style'] = s.style
+        if getattr(s, 'parent', None): d['parent'] = s.parent
         if getattr(s, 'tone', None) is not None: d['tone'] = s.tone
         return d
     # ---- terrain kit: carve organic caves from solid rock (floor and ceiling profiles) ----
@@ -106,6 +110,12 @@ class Room:
         elif mode == 'ragged': s.wall(*a)
     def check(s):
         for d in s.doors:
+            if d['side'] == 'I':
+                for y in range(d['ty'], d['ty'] + d['h']): assert s.g[y][d['tx']] in '.wSW', (s.id, d['id'], 'interior doorway blocked', d['tx'], y, s.g[y][d['tx']])
+                assert s.g[d['ty'] + d['h']][d['tx']] in '#=ibBMDS', (s.id, d['id'], 'no floor under doorway')
+                ox = d['tx'] + d['out']
+                for y in range(d['ty'], d['ty'] + d['h']): assert s.g[y][ox] in '.wSW', (s.id, d['id'], 'doorway approach blocked', ox, y)
+                continue
             x = 0 if d['side'] == 'L' else s.w - 1; xi = 1 if d['side'] == 'L' else s.w - 2
             for y in range(d['ty'], d['ty'] + d['h']):
                 assert s.g[y][xi] in '.wSW', (s.id, d['id'], 'door vestibule blocked at', xi, y, s.g[y][xi])
@@ -125,6 +135,13 @@ class Room:
     def stair(s, hx0, hx1, fr):
         """ledges that climb from a cavern floor (row fr) back up through a gap in the floor above at hx0..hx1"""
         for (x0, x1, y) in [(hx0 - 5, hx0 - 1, fr - 3), (hx0, hx0 + 4, fr - 6), (hx0 - 5, hx0 - 1, fr - 9), (hx0, hx0 + 4, fr - 12), (hx0, hx1, fr - 14)]: s.plat(x0, x1, y)
+    def statue(s, tx, size, floor_row, iid, itype):
+        """a shrine statue centred on tile column tx standing on floor_row, holding the item in its hands (big = ability unlock, small = upgrade)"""
+        s.decor.append({'kind': 'statue', 'size': size, 'x': tx * 16 + 8, 'y': floor_row * 16})
+        s.item(iid, itype, tx, floor_row - 2)
+        if size == 'small': s.items[-1]['dy'] = 9
+        else: s.items[-1]['dy'] = 1
+
 
 def layout_report(rooms):
     """Check that door-linked rooms sit where their doors say (east door of A meets the west door of B, door rows aligned across 30x17 cells) and that no two rooms
@@ -133,18 +150,50 @@ def layout_report(rooms):
     cw = lambda r: -(-r.w // 30)
     bad = []
     for a in rooms:
+        if getattr(a, 'parent', None): continue
         for d in a.doors:
+            if d['side'] == 'I': continue
             b = byid.get(d['to'])
-            if not b: continue
+            if not b or getattr(b, 'parent', None): continue
             td = next(q for q in b.doors if q['id'] == d['door'])
             bx = a.mx + cw(a) if d['side'] == 'R' else a.mx - cw(b)
             by = a.my + d['ty'] // 17 - td['ty'] // 17
             if (bx, by) != (b.mx, b.my): bad.append('%s.%s -> %s.%s: wants %s but placed %s' % (a.id, d['id'], b.id, td['id'], (bx, by), (b.mx, b.my)))
     seen = {}
     for r in rooms:
+        if getattr(r, 'parent', None): continue
         for cx in range(cw(r)):
             for cy in range(-(-r.h // 17)):
                 k = (r.mx + cx, r.my + cy)
                 if k in seen: bad.append('overlap %s %s at %s' % (r.id, seen[k], k))
                 seen[k] = r.id
     return bad
+
+
+def small_shrine(zone, rid, name, parent, pdoor, iid, itype, side):
+    """a tiny dead-end room holding one upgrade on a small statue; it has no map cell (it hangs off its parent's doorway)"""
+    r = Room(rid, name, 20, 17, 0, 0, solid=True, wall_all=True)
+    r.zone = zone; r.parent = parent; r.style = ['glow']; r.tone = 0.7
+    r.cave([(0, 15)], [(0, 8), (3, 5), (6, 3), (13, 3), (16, 5), (19, 8)])
+    r.door('d', side, 12, 'open', parent, pdoor)
+    r.statue(10, 'small', 15, iid, itype)
+    return r
+
+def add_shrine(lst, parent, did, tx, ty, out, h, iid, itype, name, arr=None):
+    """give `parent` an interior doorway (did) at tile tx,ty that leads to a new small shrine holding the item"""
+    parent.door_i(did, tx, ty, 'sh_' + iid, 'd', out, h=h, arr=arr)
+    lst.append(small_shrine(parent.zone, 'sh_' + iid, name, parent.id, did, iid, itype, 'L' if out < 0 else 'R'))
+
+
+def big_shrine(zone, rid, name, parent, pdoor, iid, itype, side):
+    """a dead-end shrine hall for an ability unlock: the big statue holds the item (no map cell, hangs off its parent's doorway)"""
+    r = Room(rid, name, 30, 17, 0, 0, solid=True, wall_all=True)
+    r.zone = zone; r.parent = parent; r.style = ['pillars', 'glow']; r.tone = 0.75
+    r.cave([(0, 15)], [(0, 2), (4, 4), (9, 2), (20, 2), (25, 4)])
+    r.door('d', side, 12, 'open', parent, pdoor)
+    r.statue(14, 'big', 15, iid, itype)
+    return r
+
+def add_big_shrine(lst, parent, did, tx, ty, out, h, iid, itype, name, arr=None):
+    parent.door_i(did, tx, ty, 'sh_' + iid, 'd', out, h=h, arr=arr)
+    lst.append(big_shrine(parent.zone, 'sh_' + iid, name, parent.id, did, iid, itype, 'L' if out < 0 else 'R'))

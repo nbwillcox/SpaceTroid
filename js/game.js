@@ -51,7 +51,8 @@
     setMode('stand');
     if (doorId) {
       const d = def.doors.find((q) => q.id === doorId), h = d.h || 3;
-      p.x = d.side === 'L' ? 30 : room.pw - 30; p.y = (d.ty + h) * 16; p.face = d.side === 'L' ? 1 : -1;
+      if (d.side === 'I') { p.x = d.tx * 16 + 8 + d.out * (d.arr || 26); p.y = (d.ty + h) * 16; p.face = d.out; Game.doorGrace = 40; }
+      else { p.x = d.side === 'L' ? 30 : room.pw - 30; p.y = (d.ty + h) * 16; p.face = d.side === 'L' ? 1 : -1; }
       if (h === 1) setMode('ball');
     } else if (sx !== undefined && sx !== null) { p.x = sx; p.y = sy; }
     else if (start) { p.x = start.x; p.y = start.y; p.face = start.x > room.pw / 2 ? -1 : 1; } else { p.x = 40; p.y = 40; }
@@ -78,6 +79,7 @@
     if (Game.toast) { Game.toast.t++; if (Game.toast.t > 150) Game.toast = null; }
     if (Game.fade) { Game.fade.t--; if (Game.fade.t <= 0) Game.fade = null; }
     if (Game.banner) { Game.banner.t++; G.fx.update(); if (Game.banner.t > 50 && (D.jump || D.fire || D.start || D.pause)) { Game.banner = null; G.input.clear(); } return; }
+    if (Game.getAnim) { G.world.getAnimStep(Game); G.fx.update(); if (G.atmos) G.atmos.update(Game); return; }
     if (Game.saveAnim) { G.world.saveAnimStep(Game); G.fx.update(); if (G.atmos) G.atmos.update(Game); G.render.camera(Game, false); return; }
     if (Game.trans) {
       const t = Game.trans; t.t++;

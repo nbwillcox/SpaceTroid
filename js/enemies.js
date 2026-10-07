@@ -119,9 +119,8 @@
     for (const it of g.items) {
       if (it.t > it.life - 120 && Math.floor(time * 12) % 2) continue;
       const x = Math.round(it.x), y = Math.round(it.y), b = Math.floor(time * 6) & 1;
-      if (it.kind === 'en') { ctx.fillStyle = '#146e94'; ctx.fillRect(x - 3, y - 2, 6, 5); ctx.fillRect(x - 2, y - 3, 4, 7); ctx.fillStyle = '#2cbad8'; ctx.fillRect(x - 2, y - 2, 4, 4); ctx.fillStyle = b ? '#f2ffff' : '#86f0f2'; ctx.fillRect(x - 1, y - 2, 2, 2); }
-      else if (it.kind === 'sbomb') { ctx.fillStyle = '#2e3452'; ctx.fillRect(x - 3, y - 2, 6, 5); ctx.fillRect(x - 2, y - 3, 4, 7); ctx.fillStyle = '#5a658a'; ctx.fillRect(x - 2, y - 2, 2, 2); ctx.fillStyle = b ? '#fff2a8' : '#ef7a2a'; ctx.fillRect(x, y - 5, 2, 2); }
-      else { ctx.fillStyle = '#6a1224'; ctx.fillRect(x - 3, y - 2, 6, 5); ctx.fillStyle = '#ec5c4a'; ctx.fillRect(x - 2, y - 3, 4, 6); ctx.fillStyle = b ? '#fff2a8' : '#efba42'; ctx.fillRect(x - 1, y - 3, 2, 2); ctx.fillRect(x - 1, y, 2, 2); }
+      const set = G.sprites.drop[it.kind === 'en' ? 'en' : it.kind] || G.sprites.drop.missile, im = set[b], bob = Math.round(Math.sin(it.t * 0.12) * 1);
+      ctx.drawImage(im, x - (im.width >> 1), y - im.height + 4 + bob);
     }
   };
 })((window.SGS = window.SGS || {}));

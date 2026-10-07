@@ -63,6 +63,11 @@
     S.door = { blue: W1.door.map((g, i) => mkc(g, 'cobalt', 'db' + i)), red: W1.door.map((g, i) => mkc(g, 'crimson', 'dr' + i)), green: W1.door.map((g, i) => mkc(g, 'teal', 'dg' + i)), boss: W1.door.map((g, i) => mkc(g, 'gold', 'dB' + i)) };
     S.orb = {}; for (const r of ['cobalt', 'crimson', 'teal', 'gold', 'visor']) S.orb[r] = W1.orb.map((g, i) => mkc(g, r, 'orb' + r + i));
     S.tank = { energy: W1.tankEnergy.map((g) => mkc(g, 'cobalt', 'te')), missile: W1.tankMissile.map((g) => mkc(g, 'cobalt', 'tm')), super: W1.tankSuper.map((g) => mkc(g, 'cobalt', 'ts')) };
+    const IT = A.items;                                                    /* item art: icons (the object itself), tank pickups, drop icons, shrine statues */
+    S.icon = {}; for (const k in IT.icons) S.icon[k] = mkc(IT.icons[k], IT.ramps[k], 'ic' + k);
+    S.tank = { energy: IT.tanks.energy.map((g) => mkc(g, 'cobalt', 'te')), missile: IT.tanks.missile.map((g) => mkc(g, 'crimson', 'tm')), super: IT.tanks.super.map((g) => mkc(g, 'teal', 'ts')) };
+    S.drop = {}; for (const k in IT.drops) S.drop[k] = IT.drops[k].map((g, i) => mkc(g, IT.dropRamps[k], 'dr' + k + i));
+    S.statue = { big: {}, small: {} }; for (let z = 1; z <= 5; z++) { S.statue.big[z] = mkc(IT.statue.big, z === 1 ? 'world' : 'world' + z, 'stb' + z); S.statue.small[z] = mkc(IT.statue.small, z === 1 ? 'world' : 'world' + z, 'sts' + z); }
     const B1 = A.boss1, bb = (g) => both(g, 'crimson', 'boss');
     S.boss = { walk: B1.walk.map(bb), rear: bb(B1.rear), tele: B1.tele.map(bb), charge: B1.charge.map(bb), stun: B1.stun.map(bb) };
     const B2 = A.boss2, b2 = (g) => A.make(g, 'teal', 'boss2').c;

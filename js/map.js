@@ -5,6 +5,9 @@
   G.map = M;
   const DOOR = { blue: '#4cb0ff', red: '#ec5c4a', green: '#4cd2b8', boss: '#efba42', open: '#8ea2d2' };
   const zoneCol = ['#2b4fa4', '#2b4fa4'];
+  /* a shrine room has no map cells of its own: it sits at the doorway of its parent room */
+  const doorOf = (pd, id) => (pd.doors || []).find((q) => q.id === id);
+  const where = (g) => { const rd = g.room.def; if (!rd.parent) return { rd, px: g.P.x, py: g.P.y - 8 }; const pd = G.rooms[rd.parent], dr = doorOf(pd, rd.doors[0].door); return { rd: pd, px: dr.tx * 16 + 8, py: dr.ty * 16 }; };
   const known = (g, id) => g.prog.visited[id] || g.prog.mapped[id];
   /* draw all known rooms at cell size cw x ch with origin (ox, oy); returns nothing */
   M.drawWorld = function (ctx, g, ox, oy, cw, ch, time, detail) {
@@ -30,6 +33,12 @@
     }
     for (const id in G.rooms) {
       if (!known(g, id)) continue;
+      if (G.rooms[id].parent) {
+        const sd = G.rooms[id], pd = G.rooms[sd.parent], dr = pd && doorOf(pd, sd.doors[0].door); if (!dr) continue;
+        const pw = Math.ceil(pd.map[0].length / 30) * cw, ph = Math.ceil(pd.map.length / 17) * ch;
+        for (const it of sd.items || []) if (!g.prog.items[it.id] && g.prog.mapped[id]) { ctx.fillStyle = Math.floor(time * 3) & 1 ? '#fff2a8' : '#efba42'; ctx.fillRect(ox + pd.mx * cw + Math.round(dr.tx / pd.map[0].length * pw) - 1, oy + pd.my * ch + Math.round(dr.ty / pd.map.length * ph) - 1, 3, 3); }
+        continue;
+      }
       const d = G.rooms[id], w = Math.ceil(d.map[0].length / 30) * cw, h = Math.ceil(d.map.length / 17) * ch, rx = ox + d.mx * cw, ry = oy + d.my * ch;
       for (const dr of d.doors || []) {
         if (dr.color === 'open') continue;
@@ -41,7 +50,7 @@
       for (const it of d.items || []) if (!g.prog.items[it.id] && g.prog.mapped[id]) { ctx.fillStyle = Math.floor(time * 3) & 1 ? '#fff2a8' : '#efba42'; ctx.fillRect(rx + Math.round(it.tx / d.map[0].length * w) - 1, ry + Math.round(it.ty / d.map.length * h) - 1, 3, 3); }
       for (const s of d.stations || []) { ctx.fillStyle = s.type === 'save' ? '#86f0f2' : s.type === 'map' ? '#b878ff' : '#fff'; ctx.fillRect(rx + Math.round(s.tx / d.map[0].length * w) - 2, ry + Math.round(s.ty / d.map.length * h) - 2, 4, 4); }
     }
-    const p = g.P, rd = g.room.def, cx = ox + (rd.mx + p.x / 16 / 30) * cw, cy = oy + (rd.my + (p.y - 8) / 16 / 17) * ch;
+    const wh = where(g), rd = wh.rd, cx = ox + (rd.mx + wh.px / 16 / 30) * cw, cy = oy + (rd.my + wh.py / 16 / 17) * ch;
     if (Math.floor(time * 4) & 1) { ctx.fillStyle = '#fff'; ctx.fillRect(Math.round(cx) - 2, Math.round(cy) - 2, 5, 5); ctx.fillStyle = '#ec5c4a'; ctx.fillRect(Math.round(cx) - 1, Math.round(cy) - 1, 3, 3); }
   };
   M.drawScreen = function (ctx, g, time) {
@@ -63,7 +72,7 @@
   };
   /* minimap in the top-right corner: a window of cells around the current one */
   M.mini = function (ctx, g, time) {
-    const rd = g.room.def, p = g.P, cx = Math.floor(rd.mx + p.x / 16 / 30), cy = Math.floor(rd.my + p.y / 16 / 17), cw = 9, ch = 7, W = 7, H = 5, ox = 480 - 4 - W * cw, oy = 4;
+    const wh = where(g), rd = wh.rd, cx = Math.floor(rd.mx + wh.px / 16 / 30), cy = Math.floor(rd.my + wh.py / 16 / 17), cw = 9, ch = 7, W = 7, H = 5, ox = 480 - 4 - W * cw, oy = 4;
     ctx.fillStyle = 'rgba(10,14,44,0.6)'; ctx.fillRect(ox - 2, oy - 2, W * cw + 4, H * ch + 4);
     ctx.save(); ctx.beginPath(); ctx.rect(ox, oy, W * cw, H * ch); ctx.clip();
     M.drawWorld(ctx, g, ox - (cx - 3) * cw, oy - (cy - 2) * ch, cw, ch, time, false);

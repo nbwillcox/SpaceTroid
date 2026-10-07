@@ -3,7 +3,7 @@ spawns: P start, c crawler, m moth, o pod (the marker's tile row is the row whos
 import json, os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from room_kit import Room, BS
+from room_kit import Room, BS, add_shrine
 
 ROOMS = []
 
@@ -35,7 +35,7 @@ def hall():
     r.cave([(0, 31), (10, 31), (14, 29), (20, 29), (24, 32), (44, 32)], [(0, 19), (6, 21), (14, 19), (28, 19), (31, 17, 's'), (45, 17), (46, 20, 's')], y0=17, y1=33)
     for (x0, x1, y) in [(32, 36, 29), (37, 41, 26), (32, 36, 23), (37, 41, 20), (37, 39, 18)]: r.plat(x0, x1, y)
     r.fill(48, 19, 58, 30, '#')
-    r.item('tankH', 'energyTank', 56, 31)
+    add_shrine(ROOMS, r, 'dH', 57, 31, -1, 1, 'tankH', 'energyTank', 'Vigor Shrine')
     r.door('wb', 'L', 28, 'blue', 'hold', 'e')
     r.on('c', 8); r.on('c', 27); r.spawn('m', 16, 24); r.spawn('m', 42, 26); r.on('o', 22)
     r.wall(1, 18, 58, 32, ragged=False)
@@ -56,8 +56,8 @@ def shaft():
     r.door('wl', 'L', 29, 'blue', 'beacon', 'e'); r.door('el', 'R', 29, 'blue', 'cellar', 'w'); r.door('eh', 'R', 5, 'blue', 'ruins', 'w')
     for (x0, x1, y) in [(4, 8, 29), (10, 14, 26), (16, 20, 23), (22, 26, 20), (16, 20, 17), (10, 14, 14), (4, 8, 11)]: r.plat(x0, x1, y)
     r.fill(10, 8, 28, 8, '#'); r.fill(14, 9, 15, 10, '#'); r.fill(22, 9, 22, 11, '#')
-    r.fill(27, 18, 28, 18, '#'); r.fill(27, 20, 28, 20, '#'); r.g[19][27] = 'b'   # a ball-sized nook sealed by one shot block (crouch to shoot it)
-    r.item('tank1', 'energyTank', 28, 19)
+    r.fill(26, 18, 28, 18, '#'); r.fill(26, 20, 28, 20, '#'); r.g[19][26] = 'b'   # a ball-sized nook sealed by one shot block (crouch to shoot it)
+    add_shrine(ROOMS, r, 'd1', 28, 19, -1, 1, 'tank1', 'energyTank', 'Vigor Shrine')
     r.fill(1, 12, 2, 19, '#'); r.fill(1, 22, 3, 27, '#'); r.fill(26, 24, 28, 27, '#'); r.fill(25, 25, 25, 26, '#')
     r.spawn('m', 14, 18); r.spawn('m', 8, 8); r.spawn('c', 20, 31); r.spawn('c', 12, 31)
     return r
@@ -65,13 +65,12 @@ ROOMS.append(shaft())
 
 def cellar():
     r = Room('cellar', 'Root Cellar', 30, 17, 6, 1, solid=True, wall_all=True)
-    r.cave([(0, 15), (14, 13), (19, 13), (22, 15)], [(0, 3), (10, 5), (18, 4), (24, 2)])
+    r.style = ['pillars', 'glow']; r.tone = 0.75
+    r.cave([(0, 15)], [(0, 3), (5, 5), (9, 2), (21, 2), (25, 4)])
     r.door('w', 'L', 12, 'blue', 'shaft', 'el'); r.door('e', 'R', 14, 'open', 'passage', 'w', h=1)
-    r.fill(24, 12, 28, 13, '#')
-    r.item('morph', 'morph', 12, 14)
-    r.spawn('c', 8, 14); r.spawn('m', 18, 9)
-    for (x, n) in [(5, 3), (8, 5), (12, 2), (15, 4), (19, 5), (21, 2)]: r.hang(x, n, 1)
-    r.fill(6, 11, 9, 11, '=')
+    r.fill(24, 12, 28, 13, '#')                                                 # the way on is ball-sized: the statue's gift is needed to leave
+    r.statue(14, 'big', 15, 'morph', 'morph')
+    for (x, n) in [(3, 3), (6, 4), (23, 2)]: r.hang(x, n, 1)
     return r
 ROOMS.append(cellar())
 
@@ -85,18 +84,17 @@ def passage():
     r.fill(42, 14, 50, 14, '#'); r.g[14][51] = BS
     r.fill(52, 14, 58, 14, '.')
     r.fill(30, 11, 46, 11, '.'); r.fill(30, 12, 31, 12, 'B')           # an upper ball tunnel sealed by bomb blocks: bomb-jump up through them
-    r.item('mtank2', 'missileTank', 45, 11)
+    add_shrine(ROOMS, r, 'd2', 46, 11, -1, 1, 'mtank2', 'missileTank', 'Arsenal Shrine')
     return r
 ROOMS.append(passage())
 
 def cache():
     r = Room('cache', 'Missile Cache', 30, 17, 9, 2, solid=True, wall_all=True)
-    r.cave([(0, 15), (16, 12), (27, 15)], [(0, 2), (8, 4), (20, 3), (26, 2)])
+    r.style = ['panels', 'glow']; r.tone = 0.75
+    r.cave([(0, 15)], [(0, 2), (6, 4), (10, 2), (22, 2), (26, 4)])
     r.door('w', 'L', 14, 'open', 'passage', 'e', h=1)
     r.fill(1, 12, 5, 13, '#')
-    r.item('missile', 'missile', 22, 11)
-    r.on('o', 10); r.spawn('m', 12, 7)
-    r.hang(11, 3, 1); r.hang(14, 2, 2)
+    r.statue(14, 'big', 15, 'missile', 'missile')
     return r
 ROOMS.append(cache())
 
@@ -105,7 +103,7 @@ def ruins():
     r.cave([(0, 15), (31, 13), (41, 15)], [(0, 2), (30, 3), (44, 2)])
     r.door('w', 'L', 12, 'blue', 'shaft', 'eh'); r.door('e', 'R', 12, 'red', 'vault', 'w')
     r.plat(8, 12, 12); r.plat(14, 18, 9); r.plat(20, 24, 6)
-    r.item('mtank1', 'missileTank', 22, 5)
+    add_shrine(ROOMS, r, 'd1', 24, 3, -1, 3, 'mtank1', 'missileTank', 'Arsenal Shrine')
     r.plat(33, 37, 10); r.plat(46, 52, 10); r.fill(44, 7, 45, 9, '#')
     r.hang(40, 2, 2); r.hang(26, 2, 2); r.hang(52, 2, 3)
     for x in (15, 34, 44): r.on('c', x)
@@ -116,11 +114,11 @@ ROOMS.append(ruins())
 
 def vault():
     r = Room('vault', 'Bomb Vault', 30, 17, 8, 0, solid=True, wall_all=True)
-    r.cave([(0, 15), (11, 12), (19, 15)], [(0, 2)])
+    r.style = ['beams', 'glow']; r.tone = 0.75
+    r.cave([(0, 15)], [(0, 2), (4, 4), (9, 2), (21, 2), (26, 4)])
     r.door('w', 'L', 12, 'red', 'ruins', 'e'); r.door('e', 'R', 12, 'blue', 'rootfall', 'wt')
-    r.item('bombs', 'bombs', 13, 11)
-    r.on('c', 4); r.on('c', 25); r.spawn('m', 14, 6)
-    for (x, n) in [(6, 5), (10, 3), (16, 3), (21, 5)]: r.hang(x, n, 2)
+    r.statue(14, 'big', 15, 'bombs', 'bombs')
+    for (x, n) in [(5, 4), (24, 4)]: r.hang(x, n, 2)
     return r
 ROOMS.append(vault())
 
@@ -129,7 +127,7 @@ def rootfall():
     r.cave([(0, 32)], [(0, 2)])
     r.door('wt', 'L', 5, 'blue', 'vault', 'e'); r.door('el', 'R', 29, 'blue', 'cavern', 'w')
     r.fill(1, 8, 12, 8, '#'); r.fill(13, 8, 15, 9, 'B'); r.fill(16, 8, 28, 8, '#')
-    r.fill(25, 5, 25, 7, 'M'); r.fill(26, 2, 28, 4, '#'); r.item('tank2', 'energyTank', 27, 7)
+    r.fill(25, 5, 25, 7, 'M'); r.fill(26, 2, 28, 4, '#'); add_shrine(ROOMS, r, 'd2', 28, 5, -1, 3, 'tank2', 'energyTank', 'Vigor Shrine')
     for (x0, x1, y) in [(10, 17, 11), (14, 18, 14), (20, 24, 17), (14, 18, 20), (8, 12, 23), (14, 18, 26), (20, 24, 29)]: r.plat(x0, x1, y)
     r.fill(2, 31, 6, 31, '^')
     r.fill(1, 17, 3, 22, '#'); r.fill(1, 25, 2, 29, '#'); r.fill(26, 12, 28, 16, '#'); r.fill(27, 21, 28, 25, '#')
@@ -148,14 +146,14 @@ def cavern():
     # pillars two tiles apart climb to a ball tunnel in a hanging slab; its mouth is sealed with bomb blocks
     r.fill(38, 13, 40, 14, '#'); r.fill(43, 11, 45, 14, '#'); r.fill(47, 9, 50, 10, '#')   # last step floats, so the floor path to the door stays open beneath it
     r.fill(51, 2, 58, 9, '#'); r.fill(51, 8, 57, 8, '.'); r.fill(51, 8, 52, 8, 'B')
-    r.item('mtank3', 'missileTank', 56, 8)
+    add_shrine(ROOMS, r, 'd3', 57, 8, -1, 1, 'mtank3', 'missileTank', 'Arsenal Shrine')
     for x in (15, 24, 36, 49): r.on('c', x)
     r.spawn('o', 28, 11); r.spawn('m', 18, 7); r.spawn('m', 34, 6); r.spawn('m', 46, 6)
     r.wall(1, 2, 58, 16, ragged=False)
     # sump: a long cavern under the floor; the gap at x 54..56 drops into it, ledges climb back out, and a missile block seals a tank at the far west end
     r.cave([(0, 32)], [(0, 19), (4, 22), (12, 19), (20, 23), (30, 19), (42, 17, 's'), (58, 17)], y0=17, y1=33)
     r.stair(54, 56, 32)
-    r.fill(1, 19, 9, 31, '#'); r.fill(2, 29, 8, 31, '.'); r.fill(9, 29, 9, 31, 'M'); r.item('mtankS', 'missileTank', 3, 31)
+    r.fill(1, 19, 9, 31, '#'); r.fill(2, 29, 8, 31, '.'); r.fill(9, 29, 9, 31, 'M'); add_shrine(ROOMS, r, 'dS', 2, 29, 1, 3, 'mtankS', 'missileTank', 'Arsenal Shrine')
     r.on('c', 16); r.on('c', 30); r.spawn('m', 24, 26); r.spawn('m', 44, 24); r.on('o', 38)
     r.door('eb', 'R', 29, 'blue', 'outlet', 'w')
     r.wall(1, 18, 58, 32, ragged=False)
@@ -182,9 +180,10 @@ ROOMS.append(arena())
 
 def lift():
     r = Room('lift', 'Lift Shaft', 30, 17, 15, 1, solid=True, wall_all=True)
-    r.cave([(0, 15), (7, 13), (13, 15)], [(0, 2), (4, 5), (14, 3), (18, 2), (28, 5)])
+    r.style = ['pillars', 'glow']; r.tone = 0.75
+    r.cave([(0, 15)], [(0, 2), (4, 4), (14, 3), (18, 2), (28, 5)])
     r.door('w', 'L', 12, 'blue', 'arena', 'e')
-    r.item('charge', 'charge', 9, 12)
+    r.statue(8, 'big', 15, 'charge', 'charge')
     r.station('lift', 22, 14, to='gate')
     return r
 ROOMS.append(lift())
@@ -196,7 +195,7 @@ def hold():
     r.door('e', 'R', 12, 'blue', 'hall', 'wb')
     for x in (18, 36): r.fill(x, 3, x + 1, 9, '#')                                       # bulkheads with a low doorway under them
     r.fill(11, 6, 11, 14, '#'); r.g[13][11] = 'b'; r.g[14][11] = 'b'                     # a sealed locker at the west end: shoot the plate
-    r.item('mtankW', 'missileTank', 6, 14)
+    add_shrine(ROOMS, r, 'dW', 2, 12, 1, 3, 'mtankW', 'missileTank', 'Arsenal Shrine')
     r.on('c', 15); r.on('c', 28); r.on('c', 46); r.spawn('m', 24, 8); r.spawn('m', 42, 7)
     r.plat(22, 26, 11); r.plat(38, 43, 10)
     return r
@@ -208,7 +207,7 @@ def outlet():
     r.door('w', 'L', 12, 'blue', 'cavern', 'eb')
     r.fill(7, 15, 22, 15, '^')                                                                 # a spiked floor under a staircase of ledges
     r.plat(3, 6, 12); r.plat(8, 11, 9); r.plat(13, 16, 6)
-    r.fill(19, 5, 27, 5, '#'); r.item('tankO', 'energyTank', 24, 4)
+    r.fill(19, 5, 27, 5, '#'); r.statue(24, 'small', 5, 'tankO', 'energyTank')
     r.on('c', 25); r.spawn('m', 14, 10); r.spawn('m', 20, 8)
     return r
 ROOMS.append(outlet())
