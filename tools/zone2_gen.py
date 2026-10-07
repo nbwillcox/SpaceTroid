@@ -61,9 +61,9 @@ def chasm():
     r = room('chasm', 'Wisp Chasm', 60, 17, 6, 4, wall_all=True)
     r.door('w', 'L', 12, 'blue', 'gallery', 'e'); r.door('e', 'R', 12, 'blue', 'bridge', 'w')
     r.fill(9, 15, 49, 15, '^')
-    r.plat(11, 14, 12); r.plat(18, 21, 11); r.plat(26, 29, 12); r.plat(34, 37, 11); r.plat(42, 45, 12)
+    r.plat(10, 15, 12); r.plat(18, 23, 11); r.plat(26, 31, 13); r.plat(34, 39, 12); r.plat(42, 49, 13)    # gaps of two tiles; the last platform runs down to the floor at the east end
     r.fill(30, 8, 33, 8, '#'); r.item('tank3', 'energyTank', 31, 7)     # high ledge: freeze a wisp to reach it
-    r.spawn('q', 31, 11); r.spawn('q', 22, 8); r.spawn('t', 52, 14); r.spawn('f', 4, 14)
+    r.spawn('q', 28, 11); r.spawn('q', 22, 8); r.spawn('t', 52, 14); r.spawn('f', 4, 14)
     for x in (16, 24, 40): r.spawn('v', x, 2)
     return r
 chasm()
