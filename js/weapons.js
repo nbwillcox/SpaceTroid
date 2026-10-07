@@ -22,7 +22,8 @@
     p.fireCd = 10; G.audio.sfx(sup ? 'super' : 'missile');
   }
   function bomb(g, p) {
-    if (g.bombs.filter((b) => !b.big).length >= 3) return;
+    let small = 0; for (const b of g.bombs) if (!b.big) small++;
+    if (small >= 3) return;
     g.bombs.push({ x: p.x, y: p.y - 7, t: 0, fuse: 48 }); p.bombCd = 12; G.audio.sfx('bomb');
   }
   function superBomb(g, p) {
