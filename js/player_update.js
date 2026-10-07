@@ -25,7 +25,7 @@
   }
   P.update = function (g) {
     const p = g.P, I = G.input.held, D = G.input.down, room = g.room, A = g.abil;
-    if (p.dead) { p.dead++; return; }
+    if (p.dead) { if (p.dead === 14) { G.fx.boom(p.x, p.y - 20, 26); G.fx.sparkBurst(p.x, p.y - 20, '#ffffff', 14); G.audio.sfx('die'); g.shake = Math.max(g.shake, 9); } p.dead++; return; }
     p.inv = Math.max(0, p.inv - 1); p.hurt = Math.max(0, p.hurt - 1); p.fireCd = Math.max(0, p.fireCd - 1); p.bombCd = Math.max(0, p.bombCd - 1); p.dashCd = Math.max(0, p.dashCd - 1); p.landT = Math.max(0, p.landT - 1); p.spin = Math.max(0, p.spin - 1);
     if (G.grapple.update(g)) { p.anim += 0; G.weapons.playerFire(g, p, G.input.held, G.input.down); return; }
     room.scanOn = !!(A.scan && G.input.held.scan);
@@ -84,7 +84,8 @@
     PH.moveY(room, p, p.vy, p.drop);
     if (p.ground && wasAir && vyBefore > 2) { p.landT = 6; G.fx.puff(p.x, p.y, 3); }
     if (p.ground || (p.drop && PH.support(room, p, p.y - 10, p.y + 2, false) === null && p.vy > 1)) p.drop = false;
-    p.anim += Math.abs(p.vx) * (ball ? 0.16 : 0.12);
+    const an0 = Math.floor(p.anim * 0.5); p.anim += Math.abs(p.vx) * (ball ? 0.16 : 0.12);
+    if (p.ground && !ball && Math.abs(p.vx) > 0.6 && Math.floor(p.anim * 0.5) !== an0 && p.mode === 'stand') G.audio.sfx('step');
     /* dash blocks shatter when you dash into them */
     if (p.dash > 0) {
       const tx = Math.floor((p.x + p.face * (p.w / 2 + 3)) / 16);

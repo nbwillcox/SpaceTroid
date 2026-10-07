@@ -47,6 +47,7 @@
       }
     }
     if (g.room.scanOn) { ctx.fillStyle = 'rgba(40,180,200,0.10)'; ctx.fillRect(0, 0, 480, 270); for (let y = (Math.floor(time * 40) % 4); y < 270; y += 4) { ctx.fillStyle = 'rgba(134,240,242,0.06)'; ctx.fillRect(0, y, 480, 1); } }
+    if (g.P.hurt > 0 && !G.settings.reduced) { ctx.fillStyle = 'rgba(255,50,50,' + (0.16 * g.P.hurt / 14).toFixed(3) + ')'; ctx.fillRect(0, 0, 480, 270); }
     let f = 0; if (g.fade) f = g.fade.dir < 0 ? g.fade.t / g.fade.len : 1 - g.fade.t / g.fade.len;
     if (g.trans) f = g.trans.phase === 'out' ? Math.min(1, g.trans.t / 10) : 1 - Math.min(1, g.trans.t / 10);
     if (f > 0) { ctx.fillStyle = 'rgba(5,7,26,' + f + ')'; ctx.fillRect(0, 0, 480, 270); }

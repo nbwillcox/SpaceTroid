@@ -63,6 +63,13 @@
     } else if (m === 'slots') slots(ctx);
     else if (m === 'options') { txt(ctx, 'OPTIONS', 240, 40, '#a6ccff', 'c', 2); menu(ctx, U.items.options(), 80, 20, false); txt(ctx, 'LEFT / RIGHT CHANGES A VALUE', 240, 248, '#8ea2d2', 'c'); }
     else if (m === 'pause') { txt(ctx, 'PAUSED', 240, 66, '#a6ccff', 'c', 3); menu(ctx, U.items.pause(), 118, 28, true); }
+    else if (m === 'help') {
+      txt(ctx, 'CONTROLS', 240, 20, '#a6ccff', 'c', 2);
+      const rows = [['MOVE', 'ARROWS / WASD', 'STICK / D-PAD'], ['JUMP (AGAIN IN AIR = SPACE JUMP)', 'SPACE / Z / K', 'A'], ['FIRE (HOLD = AUTO)', 'LEFT CLICK / X / J', 'X / RT'], ['AIM', 'MOUSE (360)', 'RIGHT STICK'], ['MISSILE / SUPER (R SWAPS)', 'RIGHT CLICK / C / L', 'B (Y SWAPS)'], ['SPRINT (HOLD)  /  DASH (TAP)', 'SHIFT / V', 'RB'], ['CROUCH, THEN MORPH BALL', 'S / DOWN (TWICE)', 'STICK DOWN'], ['BOMB / SUPER BOMB (BALL)', 'FIRE / MISSILE', ''], ['GRAPPLE (NEAR CEILING ANCHOR)', 'Q', 'R3 (STICK CLICK)'], ['SCAN VISOR (HOLD)', 'F', 'L3 (STICK CLICK)'], ['BEAM TOGGLES', '1 2 3', ''], ['AIM LOCK', 'E', 'LB'], ['MAP / PAUSE', 'M, TAB / P, ESC', 'SELECT / START'], ['SAVE OR MAP TERMINAL', 'STAND ON IT, PRESS UP', '']];
+      txt(ctx, 'ACTION', 14, 42, '#8ea2d2'); txt(ctx, 'KEYBOARD + MOUSE', 236, 42, '#8ea2d2'); txt(ctx, 'GAMEPAD', 372, 42, '#8ea2d2');
+      rows.forEach((r, i) => { const y = 56 + i * 13; txt(ctx, r[0], 14, y, '#dde7fb'); txt(ctx, r[1], 236, y, '#fff2a8'); txt(ctx, r[2], 372, y, '#86f0f2'); });
+      txt(ctx, 'PRESS JUMP OR ESC TO GO BACK', 240, 252, '#8ea2d2', 'c');
+    }
     else if (m === 'end') ending(ctx, time, g);
   };
 })((window.SGS = window.SGS || {}));

@@ -85,6 +85,7 @@
     }
     if (Game.hitStop > 0) { Game.hitStop--; return; }
     Game.time++; Game.playTime += 1 / 60; Game.shake = Math.max(0, Game.shake - 0.5);
+    if (!p.dead && p.en < 30 && Game.time % 75 === 0) G.audio.sfx('low');
     if (Game.escape && !p.dead) {
       Game.escape.t--; Game.shake = Math.max(Game.shake, 1.2);
       if (Game.time % 70 === 0 && Game.rocks) Game.rocks.push({ x: Game.cam.x + 30 + Math.random() * 420, y: Game.cam.y - 10, vy: 0, t: 0 });
