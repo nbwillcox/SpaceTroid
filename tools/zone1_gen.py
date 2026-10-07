@@ -108,7 +108,7 @@ def ruins():
     r.plat(33, 37, 10); r.plat(46, 52, 10); r.fill(44, 7, 45, 9, '#')
     r.hang(40, 2, 2); r.hang(26, 2, 2); r.hang(52, 2, 3)
     for x in (15, 34, 44): r.on('c', x)
-    r.spawn('o', 36, 11); r.spawn('m', 22, 8); r.spawn('m', 36, 5); r.spawn('m', 52, 7)
+    r.on('o', 36); r.spawn('m', 22, 8); r.spawn('m', 36, 5); r.spawn('m', 52, 7)
     r.wall(18, 2, 36, 14)
     return r
 ROOMS.append(ruins())
@@ -148,7 +148,7 @@ def cavern():
     r.fill(38, 13, 40, 14, '#'); r.fill(43, 11, 45, 14, '#'); r.fill(47, 9, 50, 10, '#')   # last step floats, so the floor path to the door stays open beneath it
     r.fill(51, 2, 58, 9, '#'); r.fill(51, 8, 57, 8, '.'); r.fill(51, 8, 52, 8, 'B')
     r.item('mtank3', 'missileTank', 56, 8)
-    for (x, y) in [(15, 14), (24, 14), (36, 14), (41, 12)]: r.spawn('c', x, y)
+    for x in (15, 24, 36, 49): r.on('c', x)
     r.spawn('o', 28, 11); r.spawn('m', 18, 7); r.spawn('m', 34, 6); r.spawn('m', 46, 6)
     r.wall(1, 2, 58, 16, ragged=False)
     # sump: a long cavern under the floor; the gap at x 54..56 drops into it, ledges climb back out, and a missile block seals a tank at the far west end

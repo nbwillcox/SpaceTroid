@@ -23,7 +23,7 @@ def bloom():
     r.station('map', 5, 14)
     r.plat(24, 28, 11); r.plat(33, 37, 9)
     r.fill(40, 12, 43, 14, '#'); r.fill(48, 11, 56, 11, '#'); r.fill(49, 12, 55, 14, '.'); r.item('scan', 'scanVisor', 52, 10)
-    r.on('g', 8); r.on('g', 30); r.spawn('k', 15, 12); r.spawn('k', 45, 11); r.spawn('u', 26, 7); r.spawn('p', 41, 11)
+    r.on('g', 8); r.on('g', 30); r.spawn('k', 15, 12); r.on('k', 45); r.spawn('u', 26, 7); r.spawn('p', 41, 11)
     r.wall(14, 2, 46, 14)
     return r
 bloom()

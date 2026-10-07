@@ -23,7 +23,7 @@ def ik(hip, ank, L1=6.8, L2=6.8):
     a = (d * d + L1 * L1 - L2 * L2) / (2 * d); h = math.sqrt(max(0.0, L1 * L1 - a * a)); ux, uy = dx / d, dy / d
     kx, ky = hip[0] + ux * a - uy * h, hip[1] + uy * a + ux * h
     if kx < hip[0] + (ank[0] - hip[0]) / 2 - 0.1: kx, ky = hip[0] + ux * a + uy * h, hip[1] + uy * a - ux * h
-    return (int(round(kx)), int(round(ky)))
+    return (max(0, min(H.CW - 1, int(round(kx)))), max(0, min(19, int(round(ky)))))
 
 def stride(t, hx, hipy, reach=9, lift=7, ground=17):
     """leg phase t in [0,1): 0 = foot planted out in front, stance carries it back until 0.5, then swing brings it forward"""
@@ -58,6 +58,7 @@ def build():
     for i, f in enumerate(run_frames()): legs['run%d' % i] = f
     legs['skid'] = pad(legs2((20, 17), (15, 17), 6))
     legs['land'] = pad(legs2((19, 17), (6, 17), 10))
+    legs['crouch'] = pad(legs2((19, 17), (8, 17), 12))        # deep squat: hips dropped, knees pushed forward
     tops = {}
     for a in [0] + sorted(ANGLES):
         for l in LEANS: tops['%d_%d' % (a, l)] = top(a, l)

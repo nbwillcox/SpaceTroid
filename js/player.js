@@ -31,7 +31,9 @@
     if (p.aimAng !== null && p.aimAng !== undefined) e = Math.atan2(-Math.sin(p.aimAng), Math.abs(Math.cos(p.aimAng))) * 180 / Math.PI;
     let ang = 0, bd = 1e9; for (const a of ELEV) { const d = Math.abs(a - e); if (d < bd) { bd = d; ang = a; } }
     const sp = Math.abs(p.vx), t = G.game ? G.game.time : 0; let legs, lean = 2, dy = 0;
-    if (!p.ground) { legs = p.vy < 0 || p.dash > 0 ? 'jump' : 'fall'; lean = p.vy < 0 ? 2 : 1; dy = p.vy < 0 ? -1 : 0; if (sp > 2.8) lean = 4; }
+    if (p.mode === 'crouch') { legs = 'crouch'; lean = 3; dy = 12; }
+    else if (p.hurt > 0 && !p.dead) { legs = p.ground ? 'skid' : 'fall'; lean = -2; dy = p.ground ? 2 : 0; }         /* knocked back: leaning away from the hit */
+    else if (!p.ground) { legs = p.vy < 0 || p.dash > 0 ? 'jump' : 'fall'; lean = p.vy < 0 ? 2 : 1; dy = p.vy < 0 ? -1 : 0; if (sp > 2.8) lean = 4; }
     else if (p.landT > 2) { legs = 'land'; dy = 6; lean = 3; }
     else if (sp > 0.25) {
       if (Math.sign(p.vx) !== p.face && sp > 1.0) { legs = 'skid'; lean = -2; dy = 2; }
@@ -42,7 +44,7 @@
   };
   P.muzzle = function (p) {
     const f = p.face;
-    if (p.mode === 'crouch' || p.mode === 'ball') { const a = p.aim, c = p.mode === 'crouch'; if (a === 'up') return { x: p.x + 3 * f, y: p.y - (c ? 30 : 46) }; if (a === 'diagUp') return { x: p.x + 14 * f, y: p.y - (c ? 24 : 38) }; if (a === 'diagDown') return { x: p.x + 14 * f, y: p.y - 15 }; return { x: p.x + 17 * f, y: p.y - (c ? 15 : 26) }; }
+    if (p.mode === 'ball') return { x: p.x + 17 * f, y: p.y - 8 };
     if (p.spinning && !p.ground) return { x: p.x + 14 * f, y: p.y - 22 };
     const q = P.pose(p);
     return { x: p.x + f * (q.tx - 17), y: p.y - 44 + q.dy + q.ty };
@@ -66,7 +68,6 @@
   P.frame = function (p) {
     const H = G.sprites.hero[p.suit || 'cobalt'];
     if (p.mode === 'ball') return H['ball' + (((Math.floor(p.anim * 1.2) * p.face) % 4 + 4) % 4)];
-    if (p.mode === 'crouch') return H.crouch;
     if (p.spinning && !p.ground) return H['spin' + (Math.floor(p.spinT / 2.4) & 7)];
     const q = P.pose(p);
     return G.sprites.heroLayered(p.suit || 'cobalt', q.ang, q.lean, q.legs, q.dy);
