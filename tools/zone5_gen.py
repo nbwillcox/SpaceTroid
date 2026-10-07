@@ -50,6 +50,7 @@ def maw():
     for (x0, x1, y) in [(14, 17, 29), (19, 22, 26), (14, 17, 23), (9, 12, 20)]: r.fill(x0, y, x1, y, 'S')
     r.item('tankM', 'energyTank', 10, 19)
     r.on('g', 26); r.on('g', 40); r.spawn('u', 20, 22); r.spawn('u', 34, 24); r.on('p', 30); r.on('k', 8)
+    r.door('eb', 'R', 29, 'blue', 'cyst', 'w')
     r.wall(1, 18, 58, 32, ragged=False)
     return r
 maw()
@@ -144,6 +145,18 @@ def hatch():
     r.station('lift', 20, 14)
     return r
 hatch()
+
+def cyst():
+    r = room('cyst', 'The Cyst', 30, 17, 6, 11, solid=True, wall_all=True)
+    r.style = ['veins', 'glow']
+    r.cave([(0, 15)], [(0, 2), (4, 5), (12, 3), (22, 5)])
+    r.door('w', 'L', 12, 'blue', 'maw', 'eb')
+    r.fill(8, 15, 21, 15, '^')
+    for (x0, x1) in [(9, 11), (14, 16), (19, 21)]: r.fill(x0, 12, x1, 12, 'S')       # hidden stepping stones across the pit: scan to see them
+    r.fill(23, 12, 27, 14, '#'); r.item('mtankY', 'missileTank', 25, 11)
+    r.on('g', 4); r.spawn('u', 12, 8); r.spawn('u', 18, 7); r.on('p', 6)
+    return r
+cyst()
 
 if __name__ == '__main__':
     import build_world; build_world.main()

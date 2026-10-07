@@ -29,7 +29,8 @@ def ember():
     r.stair(47, 49, 32)
     r.fill(14, 31, 38, 32, 'L')
     r.fill(1, 19, 9, 31, '#'); r.fill(2, 29, 8, 31, '.'); r.fill(9, 29, 9, 31, 'D'); r.item('mtankE', 'missileTank', 3, 31)
-    r.on('n', 12); r.on('h', 41); r.spawn('z', 20, 30); r.spawn('z', 30, 30); r.on('e', 56)
+    r.on('n', 12); r.on('h', 41); r.spawn('z', 20, 30); r.spawn('z', 30, 30); r.on('e', 52)
+    r.door('eb', 'R', 29, 'blue', 'slagcell', 'w')
     r.wall(1, 18, 58, 32, ragged=False)
     return r
 ember()
@@ -135,6 +136,18 @@ def lift3():
     r.item('wave', 'waveBeam', 10, 12); r.station('lift', 22, 14, to='rgate')
     return r
 lift3()
+
+def slagcell():
+    r = room('slagcell', 'Slag Cell', 30, 17, 3, 7, solid=True, wall_all=True)
+    r.style = ['pipes', 'glow']
+    r.cave([(0, 15)], [(0, 2), (6, 5), (16, 3), (22, 5)])
+    r.door('w', 'L', 12, 'blue', 'ember', 'eb')
+    r.fill(7, 14, 13, 15, 'L'); r.plat(8, 12, 11)
+    r.fill(17, r.cl[17], 17, 14, 'D')                    # a dash block seals the rest of the cell, floor to roof
+    r.item('mtankD', 'missileTank', 24, 14)
+    r.on('n', 4); r.on('h', 21); r.spawn('z', 10, 13); r.on('n', 26)
+    return r
+slagcell()
 
 if __name__ == '__main__':
     import build_world; build_world.main()

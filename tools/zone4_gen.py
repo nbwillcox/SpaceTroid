@@ -48,6 +48,7 @@ def sluice():
     r.flood(24, 40, 28)
     r.plat(6, 15, 25); r.fill(9, 21, 12, 21, '#'); r.g[22][10] = 'G'; r.g[22][11] = 'G'; r.item('tankQ', 'energyTank', 10, 24)
     r.on('d', 22); r.spawn('j', 30, 24); r.spawn('j', 44, 22); r.on('a', 38); r.spawn('r', 46, 31)
+    r.door('eb', 'R', 29, 'blue', 'settling', 'w')
     r.wall(1, 18, 58, 32, ragged=False)
     return r
 sluice()
@@ -134,6 +135,17 @@ def lift4():
     r.fill(14, 4, 15, 7, '#')
     return r
 lift4()
+
+def settling():
+    r = room('settling', 'Settling Tank', 30, 17, 6, 9, solid=True, wall_all=True)
+    r.style = ['panels', 'pipes']
+    r.cave([(0, 15)], [(0, 2), (5, 4), (16, 2), (24, 4)])
+    r.door('w', 'L', 12, 'blue', 'sluice', 'eb')
+    r.flood(1, 28, 6)
+    r.fill(22, 12, 27, 14, '#'); r.item('tankT', 'energyTank', 25, 11)
+    r.on('a', 7); r.on('a', 13); r.on('a', 18); r.spawn('j', 10, 8); r.spawn('j', 20, 7); r.on('d', 4)
+    return r
+settling()
 
 if __name__ == '__main__':
     import build_world; build_world.main()

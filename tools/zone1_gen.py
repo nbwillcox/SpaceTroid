@@ -36,6 +36,7 @@ def hall():
     for (x0, x1, y) in [(32, 36, 29), (37, 41, 26), (32, 36, 23), (37, 41, 20), (37, 39, 18)]: r.plat(x0, x1, y)
     r.fill(48, 19, 58, 30, '#')
     r.item('tankH', 'energyTank', 56, 31)
+    r.door('wb', 'L', 28, 'blue', 'hold', 'e')
     r.on('c', 8); r.on('c', 27); r.spawn('m', 16, 24); r.spawn('m', 42, 26); r.on('o', 22)
     r.wall(1, 18, 58, 32, ragged=False)
     return r
@@ -156,6 +157,7 @@ def cavern():
     r.stair(54, 56, 32)
     r.fill(1, 19, 9, 31, '#'); r.fill(2, 29, 8, 31, '.'); r.fill(9, 29, 9, 31, 'M'); r.item('mtankS', 'missileTank', 3, 31)
     r.on('c', 16); r.on('c', 30); r.spawn('m', 24, 26); r.spawn('m', 44, 24); r.on('o', 38)
+    r.door('eb', 'R', 29, 'blue', 'outlet', 'w')
     r.wall(1, 18, 58, 32, ragged=False)
     return r
 ROOMS.append(cavern())
@@ -186,6 +188,30 @@ def lift():
     r.station('lift', 22, 14, to='gate')
     return r
 ROOMS.append(lift())
+
+def hold():
+    r = Room('hold', 'Wreck Hold', 60, 17, 0, 2, solid=True, wall_all=True)
+    r.style = ['panels', 'beams']; r.tone = 0.85
+    r.cave([(0, 15)], [(0, 2), (3, 6), (14, 3), (30, 6), (44, 3), (52, 6)])
+    r.door('e', 'R', 12, 'blue', 'hall', 'wb')
+    for x in (18, 36): r.fill(x, 3, x + 1, 9, '#')                                       # bulkheads with a low doorway under them
+    r.fill(11, 6, 11, 14, '#'); r.g[13][11] = 'b'; r.g[14][11] = 'b'                     # a sealed locker at the west end: shoot the plate
+    r.item('mtankW', 'missileTank', 6, 14)
+    r.on('c', 15); r.on('c', 28); r.on('c', 46); r.spawn('m', 24, 8); r.spawn('m', 42, 7)
+    r.plat(22, 26, 11); r.plat(38, 43, 10)
+    return r
+ROOMS.append(hold())
+
+def outlet():
+    r = Room('outlet', 'Sump Outlet', 30, 17, 12, 2, solid=True, wall_all=True)
+    r.cave([(0, 15)], [(0, 2), (14, 4), (22, 2)])
+    r.door('w', 'L', 12, 'blue', 'cavern', 'eb')
+    r.fill(7, 15, 22, 15, '^')                                                                 # a spiked floor under a staircase of ledges
+    r.plat(3, 6, 12); r.plat(8, 11, 9); r.plat(13, 16, 6)
+    r.fill(19, 5, 27, 5, '#'); r.item('tankO', 'energyTank', 24, 4)
+    r.on('c', 25); r.spawn('m', 14, 10); r.spawn('m', 20, 8)
+    return r
+ROOMS.append(outlet())
 
 if __name__ == '__main__':
     import build_world; build_world.main()

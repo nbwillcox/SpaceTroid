@@ -59,6 +59,7 @@ def icecache():
     r.cave([(0, 15), (10, 12), (18, 15)], [(0, 2), (6, 4), (10, 2), (20, 4)])
     r.door('w', 'L', 12, 'blue', 'gallery', 'n')
     r.item('ice', 'iceBeam', 12, 11)
+    r.door('e', 'R', 12, 'blue', 'shelf', 'w')
     r.on('t', 4); r.on('f', 23); r.top(13, 'v'); r.top(24, 'v')
     return r
 icecache()
@@ -92,6 +93,7 @@ def bridge():
     r.surf(2, 57)
     r.stair(22, 24, 32); r.stair(38, 40, 32)
     r.fill(1, 19, 9, 31, '#'); r.fill(2, 29, 8, 31, '.'); r.fill(9, 29, 9, 31, 'B'); r.item('mtankG', 'missileTank', 3, 31)
+    r.door('eb', 'R', 29, 'blue', 'grotto', 'w')
     r.on('f', 14); r.on('f', 30); r.on('f', 46); r.on('t', 52)
     r.wall(1, 18, 58, 32, ragged=False)
     return r
@@ -136,6 +138,32 @@ def heat():
     r.item('heat', 'heatSuit', 10, 12); r.station('lift', 22, 14, to='fgate')
     return r
 heat()
+
+def grotto():
+    r = room('grotto', 'Glimmer Grotto', 30, 17, 10, 5, solid=True, wall_all=True)
+    r.style = ['glow', 'streaks']; r.tone = 0.8
+    r.cave([(0, 15)], [(0, 2), (6, 5), (16, 3), (24, 6)])
+    r.door('w', 'L', 12, 'blue', 'bridge', 'eb')
+    r.surf(1, 28)
+    r.fill(7, 15, 10, 15, '^'); r.fill(15, 15, 18, 15, '^')                      # slippery ice between two spike pits: hop the ledges
+    r.plat(7, 10, 12); r.plat(15, 18, 12)
+    r.fill(22, 12, 27, 14, '#'); r.item('mtankF', 'missileTank', 24, 11)
+    r.on('f', 13); r.on('f', 20); r.spawn('t', 27, 11); r.top(5, 'v'); r.top(20, 'v')
+    return r
+grotto()
+
+def shelf():
+    r = room('shelf', 'Frozen Shelf', 60, 17, 6, 5, solid=True, wall_all=True)
+    r.style = ['pillars', 'streaks']
+    r.cave([(0, 15)], [(0, 2), (10, 5), (24, 3), (38, 2), (54, 4)])
+    r.door('w', 'L', 12, 'blue', 'icecache', 'e')
+    r.surf(1, 58)
+    r.plat(40, 45, 13); r.fill(44, 8, 47, 8, '#'); r.item('tankS', 'energyTank', 45, 7)       # high ledge: freeze the wisp to climb
+    r.spawn('q', 42, 11); r.on('f', 10); r.on('f', 30); r.on('t', 54)
+    for x in (14, 28, 36): r.top(x, 'v')
+    r.hang(20, 3, 2); r.hang(50, 2, 1)
+    return r
+shelf()
 
 if __name__ == '__main__':
     import build_world; build_world.main()

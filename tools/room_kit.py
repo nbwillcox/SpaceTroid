@@ -49,6 +49,8 @@ class Room:
         if s.wall_all: s.wall(1, 2, s.w - 2, s.h - 3, ragged=False)
         rows = [''.join(r) for r in s.g]
         d = {'id': s.id, 'name': s.name, 'zone': s.zone, 'mx': s.mx, 'my': s.my, 'map': rows, 'doors': s.doors, 'items': s.items, 'stations': s.stations, 'decor': s.decor, 'movers': s.movers, 'pressure': s.pressure}
+        if getattr(s, 'style', None): d['style'] = s.style
+        if getattr(s, 'tone', None) is not None: d['tone'] = s.tone
         return d
     # ---- terrain kit: carve organic caves from solid rock (floor and ceiling profiles) ----
     def cave(s, floor, ceil=None, surf='#', y0=0, y1=None):

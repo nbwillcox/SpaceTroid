@@ -1,8 +1,8 @@
 # SpaceTroid
 
-A free, original, non-commercial exploration platformer in hand-authored hi-bit pixel art (480x270): five zones, upgrades that open the map, bosses and an escape. **Work in progress: all five zones (Crash Site, Cryo Vaults, Magma Forge, Drowned Reactor and Hive Core) are playable from the title screen: 62 rooms, doors, save points, a map, items, five bosses, a timed escape and three endings.**
+A free, original, non-commercial exploration platformer in hand-authored hi-bit pixel art (480x270): five zones, upgrades that open the map, bosses and an escape. **Work in progress: all five zones (Crash Site, Cryo Vaults, Magma Forge, Drowned Reactor and Hive Core) are playable from the title screen: 69 rooms (including two-level caverns with hidden tanks), doors, save points, a serpentine world map with elevators, items, five bosses, a timed escape and three endings.**
 
-The art is authored as palette-indexed character grids (see `tools/hero_gen.py` and `js/art/`), compiled to canvases at start-up; there are no image files. Preview the current art at `sheet.html`.
+The art is authored as palette-indexed character grids (see `tools/hero_gen.py` and `js/art/`), compiled to canvases at start-up; there are no image files. Preview the current art at `sheet.html`. Rooms are authored with a small terrain kit (`tools/room_kit.py`, one `tools/zoneN_gen.py` per zone, `tools/build_world.py` writes and places them) that carves caves from solid rock; each room's back wall is dressed with its own seeded mix of pillars, beams, panels, pipes, veins and glows (`js/walldeco.js`), and each zone has its own ambient particles (`js/atmos.js`).
 
 ## License and attribution
 
@@ -39,5 +39,7 @@ Doors: **blue** opens with any shot, **red** needs a missile, **green** a super 
 ## Progress notes
 
 Zone 1 gives you the morph ball, missiles and bombs (and the charge beam after its boss). Zone 2 adds ice floors, falling icicles, frost wisps you can freeze into stepping stones with the ice beam, and the heat suit. Zone 3 adds lava (wadeable with the heat suit), moving platforms, dash blocks and wave-crystal blocks, space jump, dash boots and the wave beam. Zone 4 floods the map: water, crushing pressure without the aqua suit, grapple anchors, electric arcs, the grapple beam and super missiles. Zone 5 adds hidden scan blocks (toggle the scan visor with F), the plasma beam, a three-phase final boss and a collapsing-base escape. The ending changes with how many items you found (under 50%, 50-89%, 90% and up).
+
+The world is a serpentine: zone 1 runs east, its lift drops to zone 2, which runs west, and so on; the map screen draws the elevator shafts. Every zone also has side rooms and caverns under the floor that hold extra tanks, sealed by shot blocks, bomb blocks, dash blocks, scan blocks or a grapple climb.
 
 Extra controls: **Q** grapple (near a ceiling anchor), **F** toggle the scan visor.
