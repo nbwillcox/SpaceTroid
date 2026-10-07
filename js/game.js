@@ -54,7 +54,7 @@
       p.x = d.side === 'L' ? 30 : room.pw - 30; p.y = (d.ty + h) * 16; p.face = d.side === 'L' ? 1 : -1;
       if (h === 1) setMode('ball');
     } else if (sx !== undefined && sx !== null) { p.x = sx; p.y = sy; }
-    else if (start) { p.x = start.x; p.y = start.y; } else { p.x = 40; p.y = 40; }
+    else if (start) { p.x = start.x; p.y = start.y; p.face = start.x > room.pw / 2 ? -1 : 1; } else { p.x = 40; p.y = 40; }
     p.ground = false;
     G.render.bake(room); G.render.camera(Game, true); if (G.atmos) G.atmos.reset(Game);
     if (G.bosses) G.bosses.setup(Game, room);

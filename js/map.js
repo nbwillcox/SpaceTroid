@@ -19,6 +19,15 @@
       if (!same(-1, 0)) ctx.fillRect(px, py, 1, ch); if (!same(1, 0)) ctx.fillRect(px + cw - 1, py, 1, ch);
     }
     if (!detail) return;
+    ctx.fillStyle = '#5a78c8';                                              /* elevator shafts between zones: a dotted line from each lift room down to where it lands */
+    for (const id in G.rooms) {
+      const d = G.rooms[id]; if (!known(g, id)) continue;
+      for (const s of d.stations || []) {
+        if (s.type !== 'lift' || !s.to || !G.rooms[s.to] || !known(g, s.to)) continue;
+        const e = G.rooms[s.to], x0 = ox + (d.mx + 0.5) * cw, y0 = oy + (d.my + 1) * ch, x1 = ox + (e.mx + 0.5) * cw, y1 = oy + e.my * ch;
+        for (let t = 0; t <= 1; t += 2 / Math.max(4, Math.abs(y1 - y0) + Math.abs(x1 - x0))) ctx.fillRect(Math.round(x0 + (x1 - x0) * t), Math.round(y0 + (y1 - y0) * t), 1, 1);
+      }
+    }
     for (const id in G.rooms) {
       if (!known(g, id)) continue;
       const d = G.rooms[id], w = Math.ceil(d.map[0].length / 30) * cw, h = Math.ceil(d.map.length / 17) * ch, rx = ox + d.mx * cw, ry = oy + d.my * ch;
