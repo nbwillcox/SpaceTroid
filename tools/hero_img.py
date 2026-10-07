@@ -169,7 +169,18 @@ def build():
         if th is not None:
             dx_, dy_ = math.cos(math.radians(th)), -math.sin(math.radians(th)); sh = (ax - 2, ay - 0.62 * bh)
             keep = ys < ay - (0.10 if th < -60 else 0.28) * bh
-            if keep.any():
+            rr, gg, bb = arr[..., 0].astype(int)[ys, xs], arr[..., 1].astype(int)[ys, xs], arr[..., 2].astype(int)[ys, xs]
+            gun = ((np.minimum(np.minimum(rr, gg), bb) >= 120) & (np.maximum(np.maximum(rr, gg), bb) - np.minimum(np.minimum(rr, gg), bb) <= 70)) | ((gg > 190) & (bb > 205) & (rr < 190))   # the barrel is silver / white with a cyan muzzle: legs and armour are saturated blue or tan
+            gm = np.zeros(al.shape, bool); gm[ys[keep & gun], xs[keep & gun]] = True
+            gd = gm.copy(); gd[1:, :] |= gm[:-1, :]; gd[:-1, :] |= gm[1:, :]; gd[:, 1:] |= gm[:, :-1]; gd[:, :-1] |= gm[:, 1:]; gd &= al          # bridge the barrel's highlights
+            cs = [c for c in components(gd) if c['n'] >= 6]
+            if cs:
+                c = max(cs, key=lambda c: c['n']); pts = np.array([(px, py) for (py, px) in c['pts'] if gm[py, px]], float)
+                if len(pts) < 3: pts = np.array([(px, py) for (py, px) in c['pts']], float)
+                mu = pts.mean(axis=0); u, sv, vt = np.linalg.svd(pts - mu, full_matrices=False); ax_ = vt[0]
+                if ax_[0] * dx_ + ax_[1] * dy_ < 0: ax_ = -ax_
+                k = int(((pts - mu) @ ax_).argmax()); tip = (float(pts[k][0]) - ax, float(pts[k][1]) - ay)
+            elif keep.any():
                 kx, ky = xs[keep], ys[keep]; k = int(((kx - sh[0]) * dx_ + (ky - sh[1]) * dy_).argmax()); tip = (float(kx[k]) - ax, float(ky[k]) - ay)
         fr = {'u': png64(im2), 'w': im2.width, 'h': im2.height, 'ax': round(ax), 'ay': round(ay)}
         if tip: fr['tx'] = round(tip[0]); fr['ty'] = round(tip[1])
