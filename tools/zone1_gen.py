@@ -7,6 +7,7 @@ from room_kit import Room, BS
 
 ROOMS = []
 
+
 def crash():
     r = Room('crash', 'Crash Site', 60, 17, 0, 1, solid=True)
     r.cave([(0, 12), (14, 15), (34, 12), (38, 10), (50, 12)], [(0, 2), (36, 4), (47, 2)])
@@ -21,15 +22,22 @@ def crash():
 ROOMS.append(crash())
 
 def hall():
-    r = Room('hall', 'Overgrown Hall', 60, 17, 2, 1, solid=True)
-    r.cave([(0, 12), (12, 15), (44, 15), (48, 12)], [(0, 2), (17, 5), (22, 6), (38, 5), (45, 2)])
+    r = Room('hall', 'Overgrown Hall', 60, 34, 2, 1, solid=True)
+    up = r.cave([(0, 12), (12, 15), (35, 15), (37, 17, 's'), (40, 15, 's'), (44, 15), (48, 12)], [(0, 2), (17, 5), (22, 6), (38, 5), (45, 2)], y1=16)
     r.door('w', 'L', 9, 'blue', 'crash', 'e'); r.door('e', 'R', 9, 'blue', 'beacon', 'w')
     r.station('map', 6, 11)
     r.fill(24, 15, 26, 15, '^')
     r.plat(21, 28, 11); r.plat(50, 55, 8)
     r.hang(26, 3, 1); r.hang(31, 2, 2); r.hang(34, 4, 1); r.hang(20, 2, 1)
-    r.on('c', 16); r.on('c', 34); r.on('o', 40); r.spawn('m', 30, 8); r.spawn('m', 52, 6)
+    r.on('c', 16); r.on('c', 33); r.on('o', 43); r.spawn('m', 30, 8); r.spawn('m', 52, 6)
     r.wall(14, 2, 46, 14)
+    # undercroft: a cavern under the floor, reached through the gap at x 37..39 and climbed back out by ledges; a ball tunnel at the east end holds a tank
+    r.cave([(0, 31), (10, 31), (14, 29), (20, 29), (24, 32), (44, 32)], [(0, 19), (6, 21), (14, 19), (28, 19), (31, 17, 's'), (45, 17), (46, 20, 's')], y0=17, y1=33)
+    for (x0, x1, y) in [(32, 36, 29), (37, 41, 26), (32, 36, 23), (37, 41, 20), (37, 39, 18)]: r.plat(x0, x1, y)
+    r.fill(48, 19, 58, 30, '#')
+    r.item('tankH', 'energyTank', 56, 31)
+    r.on('c', 8); r.on('c', 27); r.spawn('m', 16, 24); r.spawn('m', 42, 26); r.on('o', 22)
+    r.wall(1, 18, 58, 32, ragged=False)
     return r
 ROOMS.append(hall())
 
@@ -129,8 +137,8 @@ def rootfall():
 ROOMS.append(rootfall())
 
 def cavern():
-    r = Room('cavern', 'Deep Cavern', 60, 17, 10, 1, solid=True, wall_all=True)
-    r.cave([(0, 15)], [(0, 2), (5, 5), (14, 3), (28, 6), (36, 3), (50, 2)])
+    r = Room('cavern', 'Deep Cavern', 60, 34, 10, 1, solid=True, wall_all=True)
+    r.cave([(0, 15), (54, 17, 's'), (57, 15, 's')], [(0, 2), (5, 5), (14, 3), (28, 6), (36, 3), (50, 2)], y1=16)
     r.door('w', 'L', 12, 'blue', 'rootfall', 'el'); r.door('e', 'R', 12, 'blue', 'approach', 'w')
     r.fill(10, 15, 13, 15, '^'); r.plat(9, 14, 12)
     r.ramp(16, 15, 2, True); r.fill(18, 13, 20, 14, '#'); r.ramp(21, 15, 2, False)
@@ -142,6 +150,13 @@ def cavern():
     r.item('mtank3', 'missileTank', 56, 8)
     for (x, y) in [(15, 14), (24, 14), (36, 14), (41, 12)]: r.spawn('c', x, y)
     r.spawn('o', 28, 11); r.spawn('m', 18, 7); r.spawn('m', 34, 6); r.spawn('m', 46, 6)
+    r.wall(1, 2, 58, 16, ragged=False)
+    # sump: a long cavern under the floor; the gap at x 54..56 drops into it, ledges climb back out, and a missile block seals a tank at the far west end
+    r.cave([(0, 32)], [(0, 19), (4, 22), (12, 19), (20, 23), (30, 19), (42, 17, 's'), (58, 17)], y0=17, y1=33)
+    r.stair(54, 56, 32)
+    r.fill(1, 19, 9, 31, '#'); r.fill(2, 29, 8, 31, '.'); r.fill(9, 29, 9, 31, 'M'); r.item('mtankS', 'missileTank', 3, 31)
+    r.on('c', 16); r.on('c', 30); r.spawn('m', 24, 26); r.spawn('m', 44, 24); r.on('o', 38)
+    r.wall(1, 18, 58, 32, ragged=False)
     return r
 ROOMS.append(cavern())
 

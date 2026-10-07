@@ -36,12 +36,19 @@ def beacon4():
 beacon4()
 
 def sluice():
-    r = room('sluice', 'Sluice Gate', 60, 17, 4, 8, solid=True, wall_all=True)
-    r.cave([(0, 15), (4, 13), (8, 15), (52, 13), (56, 15)], [(0, 2), (8, 5), (24, 3), (34, 3), (48, 5), (54, 2)])
+    r = room('sluice', 'Sluice Gate', 60, 34, 4, 8, solid=True, wall_all=True)
+    r.cave([(0, 15), (4, 13), (8, 15), (51, 17, 's'), (54, 15, 's')], [(0, 2), (8, 5), (24, 3), (34, 3), (48, 5), (54, 2)], y1=16)
     r.door('w', 'L', 12, 'blue', 'beacon4', 'e'); r.door('e', 'R', 12, 'blue', 'pump', 'w')
     r.flood(8, 23, 11); r.flood(35, 50, 11); r.fill(26, 12, 32, 14, '#')
     r.spawn('a', 24, 14); r.spawn('a', 34, 14); r.spawn('r', 29, 11); r.spawn('j', 12, 9); r.spawn('j', 44, 9); r.on('d', 57)
     r.g[14][26] = 'b'; r.fill(27, 14, 29, 14, '.'); r.item('tank5', 'energyTank', 29, 14)      # a ball nook in the pillar, sealed by a shot block
+    # pumphouse: under the east bank (gap at x 51..53); a grapple ledge on the west side holds a tank
+    r.cave([(0, 32)], [(0, 19), (4, 17), (22, 19), (30, 19), (44, 17, 's'), (58, 17)], y0=17, y1=33)
+    r.stair(51, 53, 32)
+    r.flood(24, 40, 28)
+    r.plat(6, 15, 25); r.fill(9, 21, 12, 21, '#'); r.g[22][10] = 'G'; r.g[22][11] = 'G'; r.item('tankQ', 'energyTank', 10, 24)
+    r.on('d', 22); r.spawn('j', 30, 24); r.spawn('j', 44, 22); r.on('a', 38); r.spawn('r', 46, 31)
+    r.wall(1, 18, 58, 32, ragged=False)
     return r
 sluice()
 

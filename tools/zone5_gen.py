@@ -37,13 +37,20 @@ def beacon5():
 beacon5()
 
 def maw():
-    r = room('maw', 'The Maw', 60, 17, 4, 10, solid=True, wall_all=True)
-    r.cave([(0, 15), (5, 13), (10, 15), (52, 13), (56, 15)], [(0, 2)])
+    r = room('maw', 'The Maw', 60, 34, 4, 10, solid=True, wall_all=True)
+    r.cave([(0, 15), (5, 13), (10, 15), (47, 17, 's'), (50, 15, 's'), (53, 13), (56, 15)], [(0, 2)], y1=16)
     r.door('w', 'L', 12, 'blue', 'beacon5', 'e'); r.door('e', 'R', 12, 'blue', 'ascent', 'wl')
     r.fill(12, 15, 46, 15, '^'); r.plat(14, 17, 12); r.plat(21, 24, 11); r.plat(28, 31, 12); r.plat(35, 38, 11); r.plat(42, 45, 12)
     r.fill(26, 8, 29, 8, 'S'); r.item('mtank8', 'missileTank', 27, 7)         # hidden stepping stones above the pit: scan to see them
     for x in (14, 18, 22, 34, 38, 42, 46): r.hang(x, 3, 1)                    # teeth
     r.spawn('u', 20, 7); r.spawn('u', 38, 6); r.on('g', 6); r.on('g', 52); r.on('p', 57)
+    # gullet: the gap at x 47..49 drops into a hive cavern; a staircase of hidden scan blocks climbs to a tank on the west wall
+    r.cave([(0, 32), (6, 30), (12, 32)], [(0, 19), (4, 17), (24, 20), (36, 17, 's'), (58, 17)], y0=17, y1=33)
+    r.stair(47, 49, 32)
+    for (x0, x1, y) in [(14, 17, 29), (19, 22, 26), (14, 17, 23), (9, 12, 20)]: r.fill(x0, y, x1, y, 'S')
+    r.item('tankM', 'energyTank', 10, 19)
+    r.on('g', 26); r.on('g', 40); r.spawn('u', 20, 22); r.spawn('u', 34, 24); r.on('p', 30); r.on('k', 8)
+    r.wall(1, 18, 58, 32, ragged=False)
     return r
 maw()
 

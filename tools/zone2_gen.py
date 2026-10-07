@@ -77,15 +77,23 @@ def chasm():
 chasm()
 
 def bridge():
-    r = room('bridge', 'Frozen Bridge', 60, 17, 8, 4, solid=True, wall_all=True)
-    r.cave([(0, 15)], [(0, 2), (6, 5), (12, 3), (24, 6), (36, 3), (44, 5), (52, 2)])
+    r = room('bridge', 'Frozen Bridge', 60, 34, 8, 4, solid=True, wall_all=True)
+    r.cave([(0, 15), (22, 17, 's'), (25, 15, 's'), (38, 17, 's'), (41, 15, 's')], [(0, 2), (6, 5), (12, 3), (24, 6), (36, 3), (44, 5), (52, 2)], y1=16)
     r.door('w', 'L', 12, 'blue', 'chasm', 'e'); r.door('e', 'R', 12, 'blue', 'shaft2', 'wl')
     r.surf(2, 57)
     r.ramp(12, 15, 2, True); r.fill(14, 13, 16, 14, '#'); r.ramp(17, 15, 2, False)
     r.fill(30, 12, 32, 14, '#')
     r.ramp(44, 15, 2, True); r.fill(46, 13, 48, 14, '#'); r.ramp(49, 15, 2, False)
-    r.spawn('t', 15, 12); r.spawn('t', 31, 11); r.spawn('t', 47, 12); r.on('f', 22); r.on('f', 38)
+    r.spawn('t', 15, 12); r.spawn('t', 31, 11); r.spawn('t', 47, 12); r.on('f', 20); r.on('f', 35)
     r.g[14][30] = 'B'; r.g[14][31] = '.'; r.item('mtank5', 'missileTank', 31, 14)      # a ball nook in the middle pillar, sealed by a bomb block
+    r.wall(1, 2, 58, 16, ragged=False)
+    # gorge: the deck has two gaps (x 22..24 and 38..40); the cavern below is lined with ice, and ledges climb back out through either gap
+    r.cave([(0, 32)], [(0, 19), (4, 22), (12, 19), (15, 17, 's'), (47, 19, 's'), (50, 22), (56, 19)], y0=17, y1=33)
+    r.surf(2, 57)
+    r.stair(22, 24, 32); r.stair(38, 40, 32)
+    r.fill(1, 19, 9, 31, '#'); r.fill(2, 29, 8, 31, '.'); r.fill(9, 29, 9, 31, 'B'); r.item('mtankG', 'missileTank', 3, 31)
+    r.on('f', 14); r.on('f', 30); r.on('f', 46); r.on('t', 52)
+    r.wall(1, 18, 58, 32, ragged=False)
     return r
 bridge()
 

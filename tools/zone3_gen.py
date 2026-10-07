@@ -17,13 +17,20 @@ def fgate():
 fgate()
 
 def ember():
-    r = room('ember', 'Ember Hall', 60, 17, 1, 6, solid=True)
-    r.cave([(0, 15), (10, 13), (18, 15), (36, 13), (44, 15)], [(0, 2), (8, 5), (18, 3), (24, 6), (32, 3), (40, 5), (48, 2)])
+    r = room('ember', 'Ember Hall', 60, 34, 1, 6, solid=True)
+    r.cave([(0, 15), (10, 13), (18, 15), (36, 13), (44, 15), (47, 17, 's'), (50, 15, 's')], [(0, 2), (8, 5), (18, 3), (24, 6), (32, 3), (40, 5), (48, 2)], y1=16)
     r.door('w', 'L', 12, 'blue', 'fgate', 'e'); r.door('e', 'R', 12, 'blue', 'beacon3', 'w')
     r.station('map', 5, 14)
     r.fill(20, 14, 33, 15, 'L'); r.plat(22, 26, 11); r.plat(29, 33, 11)
-    r.on('n', 7); r.on('n', 50); r.on('h', 46); r.spawn('z', 27, 13); r.spawn('z', 31, 13); r.on('e', 39)
+    r.on('n', 7); r.on('n', 54); r.on('h', 56); r.spawn('z', 27, 13); r.spawn('z', 31, 13); r.on('e', 39)
     r.wall(12, 2, 44, 14)
+    # forge cellar: reached through the gap at x 47..49; lava runs along the west half, and a wall of dash blocks seals a tank at the far end
+    r.cave([(0, 32)], [(0, 19), (4, 22), (12, 19), (20, 22), (28, 19), (41, 17, 's'), (53, 17), (54, 19, 's'), (58, 21)], y0=17, y1=33)
+    r.stair(47, 49, 32)
+    r.fill(14, 31, 38, 32, 'L')
+    r.fill(1, 19, 9, 31, '#'); r.fill(2, 29, 8, 31, '.'); r.fill(9, 29, 9, 31, 'D'); r.item('mtankE', 'missileTank', 3, 31)
+    r.on('n', 12); r.on('h', 41); r.spawn('z', 20, 30); r.spawn('z', 30, 30); r.on('e', 56)
+    r.wall(1, 18, 58, 32, ragged=False)
     return r
 ember()
 

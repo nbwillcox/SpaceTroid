@@ -12,10 +12,17 @@
     const c = room.baked && room.baked.width === room.pw && room.baked.height === room.ph ? room.baked : document.createElement('canvas');
     c.width = room.pw; c.height = room.ph;
     const x = c.getContext('2d'); x.imageSmoothingEnabled = false; x.clearRect(0, 0, c.width, c.height);
-    for (let ty = 0; ty < room.h; ty++) for (let tx = 0; tx < room.w; tx++) if (room.wall[ty * room.w + tx]) {
-      const h = hash(tx, ty), v = h % 11 === 0 ? 3 : (tx + ty * 2) % 3;
-      x.drawImage(tile.wall[v], tx * T, ty * T);
+    if (!room.wallLayer) {                                                  /* the back wall (tiles plus this room's own dressing) is built once per room entry */
+      const wl = document.createElement('canvas'); wl.width = room.pw; wl.height = room.ph;
+      const wx = wl.getContext('2d'); wx.imageSmoothingEnabled = false;
+      for (let ty = 0; ty < room.h; ty++) for (let tx = 0; tx < room.w; tx++) if (room.wall[ty * room.w + tx]) {
+        const h = hash(tx, ty), v = h % 11 === 0 ? 3 : (tx + ty * 2) % 3;
+        wx.drawImage(tile.wall[v], tx * T, ty * T);
+      }
+      if (G.walldeco) G.walldeco.apply(wx, room, TS);
+      room.wallLayer = wl;
     }
+    x.drawImage(room.wallLayer, 0, 0);
     for (let ty = 0; ty < room.h; ty++) for (let tx = 0; tx < room.w; tx++) {
       const k = RM.at(room, tx, ty), h = hash(tx, ty), px = tx * T, py = ty * T;
       if (k === 1) {

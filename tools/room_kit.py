@@ -51,20 +51,24 @@ class Room:
         d = {'id': s.id, 'name': s.name, 'zone': s.zone, 'mx': s.mx, 'my': s.my, 'map': rows, 'doors': s.doors, 'items': s.items, 'stations': s.stations, 'decor': s.decor, 'movers': s.movers, 'pressure': s.pressure}
         return d
     # ---- terrain kit: carve organic caves from solid rock (floor and ceiling profiles) ----
-    def cave(s, floor, ceil=None, surf='#'):
+    def cave(s, floor, ceil=None, surf='#', y0=0, y1=None):
         """floor / ceil: knot lists [(x, row)] or [(x, row, 's')] ('s' forces a vertical step). floor row = the surface cell row (hero stands on its top edge);
-        ceil row = first open row. Level changes up to 3 rows get 45-degree ramps ending at the knot x. Call before placing platforms, doors, spawns."""
+        ceil row = first open row. Level changes up to 3 rows get 45-degree ramps ending at the knot x. Call before placing platforms, doors, spawns.
+        y0..y1 limits the carve to a band of rows (a second cave() below the first makes a two-level room); a floor row below y1 leaves the band open underneath."""
         w, h = s.w, s.h
+        y1 = h - 1 if y1 is None else y1
         fr, fk = s._profile(floor, True)
-        cl, _ = s._profile(ceil or [(0, 2)], False)
+        cl, _ = s._profile(ceil or [(0, y0 + 2)], False)
         s.fr, s.fk, s.cl = fr, fk, cl
         for x in range(w):
-            for y in range(h):
+            for y in range(y0, y1 + 1):
                 if y < cl[x]: s.g[y][x] = '#'
                 elif y < fr[x]: s.g[y][x] = '.'
                 elif y == fr[x]: s.g[y][x] = fk[x] if fk[x] != '#' else surf
                 else: s.g[y][x] = '#'
-        for y in range(h): s.g[y][0] = '#'; s.g[y][w - 1] = '#'
+        for y in range(y0, y1 + 1): s.g[y][0] = '#'; s.g[y][w - 1] = '#'
+        return (fr, fk, cl)
+    def use(s, b): s.fr, s.fk, s.cl = b
     def _profile(s, knots, ramps):
         w = s.w; ks = sorted(knots, key=lambda k: k[0]); lvl = [ks[0][1]] * w; kind = [None] * w
         for i in range(1, len(ks)):
@@ -116,3 +120,6 @@ class Room:
         for x in range(x0, x1 + 1):
             for y in range(top, s.fr[x]):
                 if s.g[y][x] in '.w': s.g[y][x] = c
+    def stair(s, hx0, hx1, fr):
+        """ledges that climb from a cavern floor (row fr) back up through a gap in the floor above at hx0..hx1"""
+        for (x0, x1, y) in [(hx0 - 5, hx0 - 1, fr - 3), (hx0, hx0 + 4, fr - 6), (hx0 - 5, hx0 - 1, fr - 9), (hx0, hx0 + 4, fr - 12), (hx0, hx1, fr - 14)]: s.plat(x0, x1, y)
