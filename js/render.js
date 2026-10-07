@@ -15,7 +15,7 @@
     if (!room.wallLayer) {                                                  /* the back wall (tiles plus this room's own dressing) is built once per room entry */
       const wl = document.createElement('canvas'); wl.width = room.pw; wl.height = room.ph;
       const wx = wl.getContext('2d'); wx.imageSmoothingEnabled = false;
-      for (let ty = 0; ty < room.h; ty++) for (let tx = 0; tx < room.w; tx++) if (room.wall[ty * room.w + tx]) {
+      for (let ty = 0; ty < room.h; ty++) for (let tx = 0; tx < room.w; tx++) if (room.wall[ty * room.w + tx] || room.t[ty * room.w + tx] !== 1) {      /* layering: black space, then the room's back wall in EVERY non-rock cell (no gaps), then everything else on top */
         const h = hash(tx, ty), v = h % 11 === 0 ? 3 : (tx + ty * 2) % 3;
         wx.drawImage(tile.wall[v], tx * T, ty * T);
       }
@@ -111,12 +111,7 @@
     let ox = Math.round(cam.x), oy = Math.round(cam.y);
     if (sh > 0.3) { ox += Math.round((Math.random() - 0.5) * sh); oy += Math.round((Math.random() - 0.5) * sh); }
     /* parallax (horizontal only) */
-    const bg = S.bgs[room.zone || 1], fx = -Math.floor(cam.x * 0.12) % 480, mx = -Math.floor(cam.x * 0.4) % 480;
-    ctx.fillStyle = '#05071a'; ctx.fillRect(0, 0, 480, 270);
-    const rx0 = Math.max(0, -ox), rx1 = Math.min(480, room.pw - ox), ry0 = Math.max(0, -oy), ry1 = Math.min(270, room.ph - oy);
-    ctx.save(); ctx.beginPath(); ctx.rect(rx0, ry0, rx1 - rx0, ry1 - ry0); ctx.clip();
-    for (const [img, o] of [[bg.far, fx], [bg.mid, mx]]) { const a = o < 0 ? o : o - 480; ctx.drawImage(img, a, 0); ctx.drawImage(img, a + 480, 0); }
-    ctx.restore();
+    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, 480, 270);                     /* the black universe behind everything */
     ctx.translate(-ox, -oy);
     ctx.drawImage(room.baked, 0, 0);
     for (const d of room.decor || []) { if (d.statue) R.shaft(ctx, d, room, time); ctx.drawImage(d.img, d.x, d.y); }

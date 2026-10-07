@@ -52,7 +52,7 @@
       return t;
     };
     S.tilesets = { 1: tileset('world', 1), 2: tileset('world2', 2), 3: tileset('world3', 3), 4: tileset('world4', 4), 5: tileset('world5', 5) }; S.tile = S.tilesets[1].tile || S.tilesets[1]; S.deco = S.tilesets[1].deco;
-    S.bgs = { 1: A.buildZone1Bg(), 2: A.buildZone2Bg(), 3: A.buildZone3Bg(), 4: A.buildZone4Bg(), 5: A.buildZone5Bg() }; S.bg1 = S.bgs[1];
+    S.bg1 = A.buildZone1Bg();                                                  /* only the title screen still uses a parallax backdrop; rooms are black space + back wall */
     const F = A.zone1foes;
     const F2 = A.zone2foes;
     const F3 = A.zone3foes, glow = (rows) => rows.map((r) => r.replace(/[Eeh]/g, (c) => ({ E: 'Y', e: 'y', h: 'w' })[c]));
