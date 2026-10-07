@@ -146,7 +146,7 @@
     /* hero */
     const dying = p.dead > 0 && p.dead < 16;                                 /* a short white-flash collapse before the explosion */
     if (dying || (!p.dead && !(p.inv > 0 && Math.floor(time * 20) % 2 && p.hurt === 0))) {
-      const fr = G.player.frame(p), c0 = p.face >= 0 ? fr.r : fr.l, c = dying && (p.dead & 2) ? S.whiteOf(c0) : c0;
+      const fr = G.player.frame(p), c0 = p.face >= 0 || (p.mode === 'ball' && !g.getAnim) ? fr.r : fr.l, c = dying && (p.dead & 2) ? S.whiteOf(c0) : c0;
       if (p.mode === 'ball' && !g.getAnim) ctx.drawImage(c, Math.round(p.x - 8), Math.round(p.y - 16));
       else if (p.spinning && !p.ground && !g.getAnim) ctx.drawImage(c, Math.round(p.x - 24), Math.round(p.y - 22 - 24));
       else ctx.drawImage(c, Math.round(p.x - S.heroAx), Math.round(p.y - (fr.ay || S.heroAy)));

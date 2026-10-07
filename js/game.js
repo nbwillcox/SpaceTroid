@@ -19,7 +19,9 @@
     Game.fade = { dir: -1, t: 14, len: 14 };
   };
   Game.enterRoom = function (id, doorId, sx, sy) {
+    if (Game.room && Game.room.broken && Game.roomId) (Game.prog.broken = Game.prog.broken || {})[Game.roomId] = Game.room.broken;
     const def = G.rooms[id], room = RM.build(def), p = Game.P;
+    const bl = Game.prog.broken && Game.prog.broken[id]; if (bl) { for (const i of bl) room.t[i] = 0; room.broken = bl.slice(); }
     Game.room = room; Game.roomId = id; Game.shots = []; Game.bombs = []; Game.foes = []; Game.items = []; Game.spores = []; Game.boss = null; G.fx.reset();
     G.world.setup(Game, room); G.movers.setup(Game, def); Game.frozenRects = []; Game.buildDyn();
     if (doorId) { const dd = Game.doors.find((q) => q.id === doorId); if (dd && !dd.sealed) { dd.state = 'open'; dd.idle = 0; G.world.applyDoor(room, dd); } }

@@ -85,7 +85,7 @@
     PH.moveY(room, p, p.vy, p.drop);
     if (p.ground && wasAir && vyBefore > 2) { p.landT = 6; G.fx.puff(p.x, p.y, 3); }
     if (p.ground || (p.drop && PH.support(room, p, p.y - 10, p.y + 2, false) === null && p.vy > 1)) p.drop = false;
-    const an0 = Math.floor(p.anim * 0.4); p.anim += Math.abs(p.vx) * (ball ? 0.16 : 0.12);
+    const an0 = Math.floor(p.anim * 0.4); p.anim += Math.abs(p.vx) * (ball ? 0.16 : 0.12); if (ball) p.ballRot = (p.ballRot || 0) + p.vx * 0.19;
     if (p.ground && !ball && Math.abs(p.vx) > 0.6 && Math.floor(p.anim * 0.4) !== an0 && p.mode === 'stand') G.audio.sfx('step');
     /* dash blocks shatter when you dash into them */
     if (p.dash > 0) {

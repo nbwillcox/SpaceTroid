@@ -33,7 +33,13 @@
   R.at = (room, tx, ty) => (ty < 0 ? 0 : tx < 0 || tx >= room.w || ty >= room.h ? 1 : room.t[ty * room.w + tx]);
   R.isSolid = (k) => k === 1 || k === 5 || k === 6 || k === 7 || k === 9 || k === 10 || k === 12 || k === 13;
   R.solidAt = (room, tx, ty) => { const k = R.at(room, tx, ty); return k === 16 ? !!room.scanOn : R.isSolid(k); };
-  R.set = (room, tx, ty, k) => { if (tx >= 0 && ty >= 0 && tx < room.w && ty < room.h) { room.t[ty * room.w + tx] = k; room.dirty = true; } };
+  R.set = (room, tx, ty, k) => {
+    if (tx >= 0 && ty >= 0 && tx < room.w && ty < room.h) {
+      const i = ty * room.w + tx, o = room.t[i];
+      if (k === 0 && (o === 5 || o === 6 || o === 7 || o === 12 || o === 13)) (room.broken = room.broken || []).push(i);       /* remembered, so a broken wall stays broken when you come back (e.g. from a shrine) */
+      room.t[i] = k; room.dirty = true;
+    }
+  };
   /* y of the walkable surface of a tile at local pixel column lx (0..15), or null */
   R.surface = (k, ty, lx) => (k === 1 || k === 5 || k === 6 || k === 7 || k === 9 || k === 10 || k === 12 || k === 13 || k === 2 ? ty * T : k === 3 ? ty * T + 16 - lx : k === 4 ? ty * T + 1 + lx : null);
 })((window.SGS = window.SGS || {}));
