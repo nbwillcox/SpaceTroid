@@ -159,7 +159,22 @@ ICONS = {'morph': (morph, 'teal'), 'missile': (lambda: missile(False, '1234'), '
          'grapple': (grapple, 'cobalt'), 'superMissile': (lambda: missile(True, '1234'), 'teal'), 'scanVisor': (scan, 'teal'), 'plasmaBeam': (lambda: flame('1234', 'YwW'), 'crimson')}
 
 # ---------------------------------------------------------------- tank pickups (20x22, two glint frames)
+def pack(kind, frame):
+    """missile / super expansion: a bundle of three missiles tied with a gold strap (so the pickup reads as ammo, not a box)"""
+    cv = Cv(20, 22)
+    for (cx, top, bot) in ((4.5, 7, 19), (15.5, 7, 19), (10, 2.5, 20.5)):
+        x0, x1 = cx - 2.5, cx + 2.5
+        cv.shape(poly([(x0, top + 5), (x1, top + 5), (x1 + 2.5, bot - 0.5), (x1 + 2.5, bot + 1), (x0 - 2.5, bot + 1), (x0 - 2.5, bot - 0.5)]), '1234', 'z') if False else None
+        cv.shape(box(x0, top + 4, x1, bot - 2), 'MmlL', 'z')
+        cv.shape(poly([(x0, top + 4.5), (x1, top + 4.5), (cx, top - 0.5)]), '1234', 'z')
+        cv.shape(poly([(x0, bot - 5), (x0, bot), (x0 - 2.2, bot + 0.5), (x0 - 2.2, bot - 3)]), '1234', 'z')
+        cv.shape(poly([(x1, bot - 5), (x1, bot), (x1 + 2.2, bot + 0.5), (x1 + 2.2, bot - 3)]), '1234', 'z')
+    cv.rect(3, 12, 17, 13, 'y'); cv.rect(3, 12, 17, 12, 'Y'); cv.rect(3, 14, 17, 14, 'k')
+    if frame: cv.rect(9, 5, 10, 6, 'w'); cv.put(6, 10, 'W')
+    return cv.rows()
+
 def tank(kind, frame):
+    if kind != 'energy': return pack(kind, frame)
     cv = Cv(20, 22)
     body = {'energy': '1234', 'missile': '1234', 'super': '1234'}[kind]
     cv.shape(box(3.5, 3.5, 16.5, 19.5), body, 'o')                       # glass body
