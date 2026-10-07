@@ -6,33 +6,37 @@
   const flipC = (c) => { const o = document.createElement('canvas'); o.width = c.width; o.height = c.height; const x = o.getContext('2d'); x.translate(c.width, 0); x.scale(-1, 1); x.drawImage(c, 0, 0); return o; };
   const both = (rows, armor, name) => { const s = A.make(rows, armor, name); return { r: s.c, l: flipC(s.c), w: s.w, h: s.h }; };
   S.flipC = flipC;
-  /* layered hero: torso (per aim angle and lean) over legs (per pose), composed once per distinct combination and cached */
-  const h2 = { grids: new Map(), frames: new Map() };
-  const gridCanvas = (suit, kind, key) => { const k = suit + kind + key; let c = h2.grids.get(k); if (!c) { c = A.make(A.hero2[kind][key], suit, 'h2' + k).c; h2.grids.set(k, c); } return c; };
-  S.heroFront = function (suit) {                                              /* the front-facing pose used while saving */
-    const k = suit + '|front'; let f = h2.frames.get(k);
-    if (!f) { const c = A.make(A.hero2.front, suit, 'h2front' + suit).c; f = { r: c, l: c, w: 34, h: 47, ay: 46 }; h2.frames.set(k, f); }
-    return f;
-  };
-  S.heroLayered = function (suit, ang, lean, legs, dy) {
-    const k = suit + '|' + ang + '|' + lean + '|' + legs + '|' + dy; let f = h2.frames.get(k);
-    if (!f) {
-      const c = document.createElement('canvas'); c.width = 34; c.height = 47; const x = c.getContext('2d'); x.imageSmoothingEnabled = false;
-      const lg = gridCanvas(suit, 'legs', legs);
-      x.drawImage(lg, 0, 0, 34, 1, 0, 2 + 24, 34, 1);            /* a skirt row under the belt so an upward bob never leaves a seam */
-      x.drawImage(lg, 0, 2 + 25);
-      x.drawImage(gridCanvas(suit, 'top', ang + '_' + lean), 0, 2 + dy);
-      f = { r: c, l: flipC(c), w: 34, h: 47, ay: 46 }; h2.frames.set(k, f);
-    }
-    return f;
-  };
   S.build = function () {
-    S.hero = {}; S.heroAx = 17; S.heroAy = 44;
-    const hp = Object.assign({}, A.heroParts, A.ballParts);
-    for (const suit of ['cobalt', 'crimson', 'teal']) {
-      const o = {}; for (const k in hp) o[k] = both(hp[k], suit, k);
-      S.hero[suit] = o;
-    }
+    /* the hero is painted frames (PNG data URIs in art/heroimg.js, facing right): canvases fill in when each image decodes; the crimson and teal suits are hue-shifted copies.
+       ax/axl = feet-centre x for the right/left-facing canvas, ay = feet y, tx/ty = cannon muzzle relative to the feet (right-facing) */
+    const HI = A.heroimg, shift = { cobalt: 0, crimson: 150, teal: -48 };
+    const recolor = (c, dh) => {
+      const x = c.getContext('2d'), d = x.getImageData(0, 0, c.width, c.height), a = d.data;
+      for (let i = 0; i < a.length; i += 4) {
+        if (!a[i + 3]) continue;
+        const r = a[i] / 255, g = a[i + 1] / 255, b = a[i + 2] / 255, mx = Math.max(r, g, b), mn = Math.min(r, g, b), df = mx - mn, l = (mx + mn) / 2;
+        if (df < 0.12) continue;
+        let h = mx === r ? ((g - b) / df + 6) % 6 : mx === g ? (b - r) / df + 2 : (r - g) / df + 4; h *= 60;
+        if (h < 185 || h > 262) continue;                                  /* only the blue armour; orange trim and the visor keep their colours */
+        const sat = df / (1 - Math.abs(2 * l - 1)); h = (h + dh + 360) % 360;
+        const q = sat * (1 - Math.abs(2 * l - 1)), xx = q * (1 - Math.abs((h / 60) % 2 - 1)), m = l - q / 2; let rr, gg, bb;
+        if (h < 60) { rr = q; gg = xx; bb = 0; } else if (h < 120) { rr = xx; gg = q; bb = 0; } else if (h < 180) { rr = 0; gg = q; bb = xx; } else if (h < 240) { rr = 0; gg = xx; bb = q; } else if (h < 300) { rr = xx; gg = 0; bb = q; } else { rr = q; gg = 0; bb = xx; }
+        a[i] = (rr + m) * 255; a[i + 1] = (gg + m) * 255; a[i + 2] = (bb + m) * 255;
+      }
+      x.putImageData(d, 0, 0);
+    };
+    const heroFrame = (spec, dh) => {
+      const mk = () => { const c = document.createElement('canvas'); c.width = spec.w; c.height = spec.h; return c; };
+      const f = { r: mk(), l: mk(), w: spec.w, h: spec.h, ax: spec.ax, axl: spec.w - spec.ax, ay: spec.ay, tx: spec.tx || 0, ty: spec.ty || 0 }, im = new Image();
+      im.onload = () => {
+        f.r.getContext('2d').drawImage(im, 0, 0); if (dh) recolor(f.r, dh);
+        const x = f.l.getContext('2d'); x.translate(spec.w, 0); x.scale(-1, 1); x.drawImage(f.r, 0, 0);
+      };
+      im.src = spec.u;
+      return f;
+    };
+    S.hero = {};
+    for (const suit in shift) { const o = {}; for (const k in HI) if (k.indexOf('suit_') !== 0) o[k] = heroFrame(HI[k], shift[suit]); o.idle = o.aim_0; S.hero[suit] = o; }
     const Z = A.zone1, M = A.zone1misc, D = A.zone1deco;
     /* one tileset per zone: the same hand-drawn grids, compiled with that zone's palette (plus zone-specific extras) */
     const tileset = (key, zone) => {

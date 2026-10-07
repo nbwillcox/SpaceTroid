@@ -1,10 +1,11 @@
-<!DOCTYPE html><html><body style="margin:0;background:#1a1d2b;color:#9fb;font:12px monospace"><p style="margin:8px">SpaceTroid art sheet (work in progress): hero poses at 5x, run cycle animating top right.</p><canvas id="c" width="1200" height="760"></canvas>
-<script src="js/util.js"></script><script src="js/px.js"></script><script src="js/palette.js"></script><script src="js/art.js"></script><script src="js/art/hero.js"></script><script src="js/art/ball.js"></script>
+<!DOCTYPE html><html><body style="margin:0;background:#1a1d2b;color:#9fb;font:12px monospace"><p style="margin:8px">SpaceTroid hero art sheet: every painted frame at 4x (green dot = cannon muzzle, red dot = feet anchor); run cycle animating bottom right.</p><canvas id="c" width="1200" height="640"></canvas>
+<script src="js/art/heroimg.js"></script>
 <script>
-const G=SGS, ctx=document.getElementById('c').getContext('2d'); ctx.imageSmoothingEnabled=false;
-const hp=Object.assign({},G.art.heroParts,G.art.ballParts); let x=10, y=10, n=0;
-for (const k in hp) { const s=G.art.make(hp[k],'cobalt',k); ctx.fillStyle='#2a3050'; ctx.fillRect(x,y,s.w*4,s.h*4); ctx.drawImage(s.c,x,y,s.w*4,s.h*4); ctx.fillStyle='#9fb'; ctx.fillText(k,x,y+s.h*4+12); x+=s.w*4+14; if(++n%8===0){x=10;y+=s.h*4+30;} }
-
-const names=Object.keys(hp).filter(k=>k.startsWith('run')), spr=names.map(k=>G.art.make(hp[k],'cobalt',k)); const an=document.createElement('canvas'); an.width=300; an.height=260; an.style.cssText='position:fixed;right:10px;bottom:10px;background:#2a3050'; document.body.append(an); const ax=an.getContext('2d'); ax.imageSmoothingEnabled=false;
-setInterval(()=>{ const f=Math.floor(Date.now()/85)%spr.length; ax.clearRect(0,0,300,260); ax.drawImage(spr[f].c,40,10,28*8,45*5.5); },40);
+const F=SGS.art.heroimg, ctx=document.getElementById('c').getContext('2d'); ctx.imageSmoothingEnabled=false;
+const names=Object.keys(F).filter(k=>k.indexOf('suit_')!==0), img={}; let x=10, y=10, rowH=0, left=names.length;
+const draw=()=>{ x=10; y=10; rowH=0; for(const k of names){ const f=F[k], w=f.w*4, h=f.h*4; if(x+w>1190){x=10;y+=rowH+22;rowH=0;} ctx.fillStyle='#2a3050'; ctx.fillRect(x,y,w,h); ctx.drawImage(img[k],x,y,w,h);
+  ctx.fillStyle='#f55'; ctx.fillRect(x+f.ax*4-2,y+f.ay*4-2,4,4); if(f.tx!==undefined){ ctx.fillStyle='#5f5'; ctx.fillRect(x+(f.ax+f.tx)*4-2,y+(f.ay+f.ty)*4-2,4,4); } ctx.fillStyle='#9fb'; ctx.fillText(k,x,y+h+12); x+=w+12; rowH=Math.max(rowH,h); } };
+for(const k of names){ const i=new Image(); i.onload=()=>{ img[k]=i; if(--left===0) draw(); }; i.src=F[k].u; }
+const an=document.createElement('canvas'); an.width=200; an.height=220; an.style.cssText='position:fixed;right:10px;bottom:10px;background:#2a3050'; document.body.append(an); const ax=an.getContext('2d'); ax.imageSmoothingEnabled=false;
+setInterval(()=>{ const k='run'+(Math.floor(Date.now()/85)%8), f=F[k], i=img[k]; if(!i) return; ax.clearRect(0,0,200,220); ax.drawImage(i,100-f.ax*4,200-f.ay*4,f.w*4,f.h*4); },40);
 </script></body></html>

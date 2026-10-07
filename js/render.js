@@ -141,11 +141,10 @@
     /* hero */
     const dying = p.dead > 0 && p.dead < 16;                                 /* a short white-flash collapse before the explosion */
     if (dying || (!p.dead && !(p.inv > 0 && Math.floor(time * 20) % 2 && p.hurt === 0))) {
-      const fr = G.player.frame(p), c0 = p.face >= 0 || (p.mode === 'ball' && !g.getAnim) ? fr.r : fr.l, c = dying && (p.dead & 2) ? S.whiteOf(c0) : c0;
-      if (p.mode === 'ball' && !g.getAnim) ctx.drawImage(c, Math.round(p.x - 8), Math.round(p.y - 16));
-      else if (p.spinning && !p.ground && !g.getAnim) ctx.drawImage(c, Math.round(p.x - 24), Math.round(p.y - 22 - 24));
-      else ctx.drawImage(c, Math.round(p.x - S.heroAx), Math.round(p.y - (fr.ay || S.heroAy)));
-      if (g.saveAnim && g.saveAnim.t > 30 && g.saveAnim.t < 56) { ctx.globalAlpha = 0.75 * (1 - Math.abs(g.saveAnim.t - 42) / 12); ctx.drawImage(S.whiteOf(c0), Math.round(p.x - S.heroAx), Math.round(p.y - (fr.ay || S.heroAy))); ctx.globalAlpha = 1; }
+      const fr = G.player.frame(p), ball = p.mode === 'ball' && !g.getAnim, right = p.face >= 0 || ball, c0 = right ? fr.r : fr.l, c = dying && (p.dead & 2) ? S.whiteOf(c0) : c0;
+      const spin = p.spinning && !p.ground && !g.getAnim, hx = Math.round(p.x - (right ? fr.ax : fr.axl)), hy = Math.round(p.y - (spin ? 22 : 0) - fr.ay + (ball || spin || g.getAnim || g.saveAnim ? 0 : G.player.pose(p).dy));
+      ctx.drawImage(c, hx, hy);
+      if (g.saveAnim && g.saveAnim.t > 30 && g.saveAnim.t < 56) { ctx.globalAlpha = 0.75 * (1 - Math.abs(g.saveAnim.t - 42) / 12); ctx.drawImage(S.whiteOf(c0), hx, hy); ctx.globalAlpha = 1; }
       if (p.charge > 0) { const m = G.player.muzzle(p), r = 1 + Math.floor(p.charge / 14); ctx.fillStyle = p.charge >= 50 ? '#fff' : '#ffd24a'; ctx.fillRect(Math.round(m.x) - r, Math.round(m.y) - r, r * 2, r * 2); if (Math.floor(time * 30) & 1) { ctx.fillStyle = '#fff6a0'; ctx.fillRect(Math.round(m.x) - r - 1, Math.round(m.y), 1, 1); ctx.fillRect(Math.round(m.x) + r, Math.round(m.y), 1, 1); } }
     }
     if (g.saveAnim) R.saveLight(ctx, g.saveAnim, true);
