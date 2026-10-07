@@ -127,7 +127,7 @@ def build():
     raw = {}
     for name, x0, x1, y0, y1 in CELLS:
         sub = mask[y0:y1 + 1, x0:x1 + 1] if not name.startswith('ball') else (np.abs(a - bg).sum(2) > 130)[y0:y1 + 1, x0:x1 + 1]; comps = components(sub)
-        comps = [c for c in comps if not (c['y1'] - c['y0'] < 4 and c['x1'] - c['x0'] > 12)]          # drop stray rules
+        comps = [c for c in comps if not (c['y1'] - c['y0'] < 4 and c['x1'] - c['x0'] > 12) and not (c['x1'] - c['x0'] < 4 and c['y1'] - c['y0'] > 12)]          # drop stray cell-border rules (horizontal and vertical)
         big = max(c['n'] for c in comps); body = [c for c in comps if c['n'] >= 0.03 * big]
         if not name.startswith(('spin', 'ball')):                                                       # the painted floor line under the feet: clear any long run in the bottom rows
             yb = max(c['y1'] for c in body); sub = sub.copy()

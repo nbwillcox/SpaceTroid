@@ -38,7 +38,7 @@
         if ((m & 4) && !(m & 8) && !(m & 2) && h % 7 === 0) { const [im, ox] = tile.hang[h % tile.hang.length]; x.drawImage(im, px + ox, py + 16); }
       } else if (k === 3) x.drawImage(tile.slopeR, px, py);
       else if (k === 4) x.drawImage(tile.slopeL, px, py);
-      else if (k === 2) { x.drawImage(tile.wall[(tx + ty * 2) % 3], px, py); x.drawImage(tile.ledge, px, py); }
+      else if (k === 2) { x.drawImage(tile.edge[1][h % 3], 0, 6, 16, 6, px, py + 5, 16, 6); x.drawImage(tile.ledge, px, py); }      /* one-way ledge: a thin slab of the zone's own brick under the pale cap */
       else if (k === 5) x.drawImage(tile.shot, px, py);
       else if (k === 6) x.drawImage(tile.bomb, px, py);
       else if (k === 7) x.drawImage(tile.missile, px, py);
