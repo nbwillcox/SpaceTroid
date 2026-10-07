@@ -23,12 +23,29 @@
     p.mode = mode; p.w = SZ[mode][0]; p.h = SZ[mode][1]; p.crouchT = 0;
     return true;
   };
+  /* pose: which aim-angle torso, lean, leg frame and bob the hero shows right now (shared by drawing and the muzzle position) */
+  const ELEV = [-75, -45, -20, 0, 20, 45, 70, 90], lsh = (y, l) => Math.trunc(l * (25 - y) / 25 + 0.5);
+  const TIPS = { 90: [15, 2], 70: [19, 3], 45: [25, 7], 20: [27, 13], 0: [27, 18], '-20': [27, 22], '-45': [26, 23], '-75': [19, 24] };
+  P.pose = function (p) {
+    let e = p.aim === 'up' ? 90 : p.aim === 'diagUp' ? 45 : p.aim === 'diagDown' ? -45 : 0;
+    if (p.aimAng !== null && p.aimAng !== undefined) e = Math.atan2(-Math.sin(p.aimAng), Math.abs(Math.cos(p.aimAng))) * 180 / Math.PI;
+    let ang = 0, bd = 1e9; for (const a of ELEV) { const d = Math.abs(a - e); if (d < bd) { bd = d; ang = a; } }
+    const sp = Math.abs(p.vx), t = G.game ? G.game.time : 0; let legs, lean = 2, dy = 0;
+    if (!p.ground) { legs = p.vy < 0 || p.dash > 0 ? 'jump' : 'fall'; lean = p.vy < 0 ? 2 : 1; dy = p.vy < 0 ? -1 : 0; if (sp > 2.8) lean = 4; }
+    else if (p.landT > 2) { legs = 'land'; dy = 6; lean = 3; }
+    else if (sp > 0.25) {
+      if (Math.sign(p.vx) !== p.face && sp > 1.0) { legs = 'skid'; lean = -2; dy = 2; }
+      else { const i = Math.floor(p.anim * 2) % 10; legs = 'run' + i; lean = sp > 2.1 ? 6 : sp > 1.4 ? 5 : 3; dy = 3 + Math.round(0.9 * Math.cos(2 * Math.PI * i / 5)); }
+    } else { legs = 'idle'; dy = (Math.floor(t / 40) & 1) ? 1 : 0; }
+    const tip = TIPS[ang];
+    return { ang, lean, legs, dy, tx: tip[0] + 1 + lsh(tip[1], lean), ty: tip[1] };
+  };
   P.muzzle = function (p) {
-    const f = p.face, c = p.mode === 'crouch', a = p.aim;
-    if (a === 'up') return { x: p.x + 3 * f, y: p.y - (c ? 30 : 46) };
-    if (a === 'diagUp') return { x: p.x + 14 * f, y: p.y - (c ? 24 : 38) };
-    if (a === 'diagDown') return { x: p.x + 14 * f, y: p.y - 15 };
-    return { x: p.x + 17 * f, y: p.y - (c ? 15 : 26) };
+    const f = p.face;
+    if (p.mode === 'crouch' || p.mode === 'ball') { const a = p.aim, c = p.mode === 'crouch'; if (a === 'up') return { x: p.x + 3 * f, y: p.y - (c ? 30 : 46) }; if (a === 'diagUp') return { x: p.x + 14 * f, y: p.y - (c ? 24 : 38) }; if (a === 'diagDown') return { x: p.x + 14 * f, y: p.y - 15 }; return { x: p.x + 17 * f, y: p.y - (c ? 15 : 26) }; }
+    if (p.spinning && !p.ground) return { x: p.x + 14 * f, y: p.y - 22 };
+    const q = P.pose(p);
+    return { x: p.x + f * (q.tx - 17), y: p.y - 44 + q.dy + q.ty };
   };
   P.aimVec = function (p) {
     if (p.aimAng !== null && p.aimAng !== undefined) return { x: Math.cos(p.aimAng), y: Math.sin(p.aimAng) };
@@ -51,9 +68,7 @@
     if (p.mode === 'ball') return H['ball' + (((Math.floor(p.anim * 1.2) * p.face) % 4 + 4) % 4)];
     if (p.mode === 'crouch') return H.crouch;
     if (p.spinning && !p.ground) return H['spin' + (Math.floor(p.spinT / 2.4) & 7)];
-    const up = p.aim === 'up' || p.aim === 'diagUp';
-    if (!p.ground) return up ? H.jumpUp : p.vy < 0 || p.dash > 0 ? H.jump : H.fall;
-    if (Math.abs(p.vx) > 0.25) return up ? H.runUp : H['run' + (Math.floor(p.anim) & 7)];
-    return p.aim === 'up' ? H.aimUp : p.aim === 'diagUp' ? H.aimDiagUp : p.aim === 'diagDown' ? H.aimDiagDown : H.idle;
+    const q = P.pose(p);
+    return G.sprites.heroLayered(p.suit || 'cobalt', q.ang, q.lean, q.legs, q.dy);
   };
 })((window.SGS = window.SGS || {}));

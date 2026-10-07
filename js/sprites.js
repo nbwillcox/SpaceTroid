@@ -6,6 +6,21 @@
   const flipC = (c) => { const o = document.createElement('canvas'); o.width = c.width; o.height = c.height; const x = o.getContext('2d'); x.translate(c.width, 0); x.scale(-1, 1); x.drawImage(c, 0, 0); return o; };
   const both = (rows, armor, name) => { const s = A.make(rows, armor, name); return { r: s.c, l: flipC(s.c), w: s.w, h: s.h }; };
   S.flipC = flipC;
+  /* layered hero: torso (per aim angle and lean) over legs (per pose), composed once per distinct combination and cached */
+  const h2 = { grids: new Map(), frames: new Map() };
+  const gridCanvas = (suit, kind, key) => { const k = suit + kind + key; let c = h2.grids.get(k); if (!c) { c = A.make(A.hero2[kind][key], suit, 'h2' + k).c; h2.grids.set(k, c); } return c; };
+  S.heroLayered = function (suit, ang, lean, legs, dy) {
+    const k = suit + '|' + ang + '|' + lean + '|' + legs + '|' + dy; let f = h2.frames.get(k);
+    if (!f) {
+      const c = document.createElement('canvas'); c.width = 34; c.height = 47; const x = c.getContext('2d'); x.imageSmoothingEnabled = false;
+      const lg = gridCanvas(suit, 'legs', legs);
+      x.drawImage(lg, 0, 0, 34, 1, 0, 2 + 24, 34, 1);            /* a skirt row under the belt so an upward bob never leaves a seam */
+      x.drawImage(lg, 0, 2 + 25);
+      x.drawImage(gridCanvas(suit, 'top', ang + '_' + lean), 0, 2 + dy);
+      f = { r: c, l: flipC(c), w: 34, h: 47, ay: 46 }; h2.frames.set(k, f);
+    }
+    return f;
+  };
   S.build = function () {
     S.hero = {}; S.heroAx = 17; S.heroAy = 44;
     const hp = Object.assign({}, A.heroParts, A.ballParts);

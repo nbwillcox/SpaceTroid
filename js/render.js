@@ -93,7 +93,7 @@
       const fr = G.player.frame(p), c0 = p.face >= 0 ? fr.r : fr.l, c = dying && (p.dead & 2) ? S.whiteOf(c0) : c0;
       if (p.mode === 'ball') ctx.drawImage(c, Math.round(p.x - 8), Math.round(p.y - 16));
       else if (p.spinning && !p.ground) ctx.drawImage(c, Math.round(p.x - 24), Math.round(p.y - 22 - 24));
-      else ctx.drawImage(c, Math.round(p.x - S.heroAx), Math.round(p.y - S.heroAy));
+      else ctx.drawImage(c, Math.round(p.x - S.heroAx), Math.round(p.y - (fr.ay || S.heroAy)));
       if (p.charge > 0) { const m = G.player.muzzle(p), r = 1 + Math.floor(p.charge / 14); ctx.fillStyle = p.charge >= 50 ? '#fff' : '#ffd24a'; ctx.fillRect(Math.round(m.x) - r, Math.round(m.y) - r, r * 2, r * 2); if (Math.floor(time * 30) & 1) { ctx.fillStyle = '#fff6a0'; ctx.fillRect(Math.round(m.x) - r - 1, Math.round(m.y), 1, 1); ctx.fillRect(Math.round(m.x) + r, Math.round(m.y), 1, 1); } }
     }
     if (room.lava.length) { ctx.globalAlpha = 0.5; lavaPass(); ctx.globalAlpha = 1; }
