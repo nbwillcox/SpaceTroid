@@ -17,6 +17,14 @@
     room.water = []; for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (room.t[y * w + x] === 14) room.water.push({ tx: x, ty: y, top: y === 0 || room.t[(y - 1) * w + x] !== 14 });
     room.anchors = []; for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (room.t[y * w + x] === 15) room.anchors.push({ x: x * T + 8, y: y * T + 8, tx: x, ty: y });
     room.lava = []; for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (room.t[y * w + x] === 11) room.lava.push({ tx: x, ty: y, top: y === 0 || room.t[(y - 1) * w + x] !== 11 });
+    /* cells that sit inside a back-wall region (hidden scan blocks, anchors, water, lava, spawn markers) get the same wall tile behind them, so nothing shows through as a gap */
+    const cand = new Uint8Array(w * h);
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { const c = rows[y][x] || '.'; if (c === 'S' || c === 'G' || c === 'W' || c === 'L' || (!(c in CH) && c !== 'w' && c !== ' ')) cand[y * w + x] = 1; }
+    for (let pass = 0; pass < 2; pass++) for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      const i = y * w + x; if (!cand[i] || room.wall[i]) continue;
+      let n = 0; for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { if (!dx && !dy) continue; const xx = x + dx, yy = y + dy; if (xx >= 0 && yy >= 0 && xx < w && yy < h && room.wall[yy * w + xx]) n++; }
+      if (n >= 5) room.wall[i] = 1;
+    }
     /* back wall: any marked 'w' cell, or every air cell when def.wallAll is set */
     if (def.wallAll) for (let i = 0; i < w * h; i++) if (!room.t[i]) room.wall[i] = 1;
     return room;

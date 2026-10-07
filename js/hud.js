@@ -46,6 +46,7 @@
         if (bn.t > 50 && Math.floor(time * 2) % 2) txt(ctx, 'PRESS JUMP', 240, 172, '#8ea2d2', 'c');
       }
     }
+    if (g.room.scanOn) { PX.text(ctx, 'SCAN', 206, 24, { s: 1, c: Math.floor(time * 2) & 1 ? '#f2ffff' : '#86f0f2', o: '#0a0e2c' }); }
     if (g.room.scanOn) { ctx.fillStyle = 'rgba(40,180,200,0.10)'; ctx.fillRect(0, 0, 480, 270); for (let y = (Math.floor(time * 40) % 4); y < 270; y += 4) { ctx.fillStyle = 'rgba(134,240,242,0.06)'; ctx.fillRect(0, y, 480, 1); } }
     if (g.P.hurt > 0 && !G.settings.reduced) { ctx.fillStyle = 'rgba(255,50,50,' + (0.16 * g.P.hurt / 14).toFixed(3) + ')'; ctx.fillRect(0, 0, 480, 270); }
     let f = 0; if (g.fade) f = g.fade.dir < 0 ? g.fade.t / g.fade.len : 1 - g.fade.t / g.fade.len;

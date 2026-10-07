@@ -28,7 +28,8 @@
     if (p.dead) { if (p.dead === 14) { G.fx.boom(p.x, p.y - 20, 26); G.fx.sparkBurst(p.x, p.y - 20, '#ffffff', 14); G.audio.sfx('die'); g.shake = Math.max(g.shake, 9); } p.dead++; return; }
     p.inv = Math.max(0, p.inv - 1); p.hurt = Math.max(0, p.hurt - 1); p.fireCd = Math.max(0, p.fireCd - 1); p.bombCd = Math.max(0, p.bombCd - 1); p.dashCd = Math.max(0, p.dashCd - 1); p.landT = Math.max(0, p.landT - 1); p.spin = Math.max(0, p.spin - 1);
     if (G.grapple.update(g)) { p.anim += 0; G.weapons.playerFire(g, p, G.input.held, G.input.down); return; }
-    room.scanOn = !!(A.scan && G.input.held.scan);
+    if (A.scan && D.scan) { p.scanning = !p.scanning; G.audio.sfx(p.scanning ? 'pickup' : 'hit'); }          /* the scan visor is a toggle, not a hold */
+    room.scanOn = !!(A.scan && p.scanning);
     const lock = p.hurt > 0;
     const dir = lock ? 0 : (I.r ? 1 : 0) - (I.l ? 1 : 0);
     if (D.jump) p.jbuf = 7; else p.jbuf = Math.max(0, p.jbuf - 1);
