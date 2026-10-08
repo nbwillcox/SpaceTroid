@@ -2,7 +2,7 @@
 (function (G) {
   'use strict';
   const T = 16;
-  const CH = { '.': 0, '#': 1, '=': 2, '/': 3, '\\': 4, 'b': 5, 'B': 6, 'M': 7, '^': 8, 'i': 10, 'L': 11, 'x': 12, 'D': 13, 'W': 14, 'G': 15, 'S': 16 };
+  const CH = { '.': 0, '#': 1, '=': 2, '/': 3, '\\': 4, 'b': 5, 'B': 6, 'M': 7, '^': 8, 'i': 10, 'L': 11, 'x': 12, 'D': 13, 'W': 14, 'G': 15, 'S': 16, 'O': 17 };
   const R = { T: { AIR: 0, SOLID: 1, LEDGE: 2, SLR: 3, SLL: 4, SHOT: 5, BOMB: 6, MISSILE: 7, SPIKE: 8 } };
   G.room = R;
   R.build = function (def) {
@@ -36,15 +36,15 @@
   };
   /* tile type at tile coords; outside left/right/bottom counts as solid, above the top as air */
   R.at = (room, tx, ty) => (ty < 0 ? 0 : tx < 0 || tx >= room.w || ty >= room.h ? 1 : room.t[ty * room.w + tx]);
-  R.isSolid = (k) => k === 1 || k === 5 || k === 6 || k === 7 || k === 9 || k === 10 || k === 12 || k === 13;
+  R.isSolid = (k) => k === 1 || k === 5 || k === 6 || k === 7 || k === 9 || k === 10 || k === 12 || k === 13 || k === 17;
   R.solidAt = (room, tx, ty) => { const k = R.at(room, tx, ty); return k === 16 ? !!room.scanOn : R.isSolid(k); };
   R.set = (room, tx, ty, k) => {
     if (tx >= 0 && ty >= 0 && tx < room.w && ty < room.h) {
       const i = ty * room.w + tx, o = room.t[i];
-      if (k === 0 && (o === 5 || o === 6 || o === 7 || o === 12 || o === 13)) (room.broken = room.broken || []).push(i);       /* remembered, so a broken wall stays broken when you come back (e.g. from a shrine) */
+      if (k === 0 && (o === 5 || o === 6 || o === 7 || o === 12 || o === 13 || o === 17)) (room.broken = room.broken || []).push(i);       /* remembered, so a broken wall stays broken when you come back (e.g. from a shrine) */
       room.t[i] = k; room.dirty = true;
     }
   };
   /* y of the walkable surface of a tile at local pixel column lx (0..15), or null */
-  R.surface = (k, ty, lx) => (k === 1 || k === 5 || k === 6 || k === 7 || k === 9 || k === 10 || k === 12 || k === 13 || k === 2 ? ty * T : k === 3 ? ty * T + 16 - lx : k === 4 ? ty * T + 1 + lx : null);
+  R.surface = (k, ty, lx) => (k === 1 || k === 5 || k === 6 || k === 7 || k === 9 || k === 10 || k === 12 || k === 13 || k === 17 || k === 2 ? ty * T : k === 3 ? ty * T + 16 - lx : k === 4 ? ty * T + 1 + lx : null);
 })((window.SGS = window.SGS || {}));

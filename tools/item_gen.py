@@ -99,6 +99,19 @@ def charge():
     cv.put(6, 6, 'w'); cv.put(7, 6, 'w')
     return cv.rows()
 
+def spinflip():
+    """a core orb with two swoosh arcs chasing each other round it"""
+    import math
+    cv = Cv(20, 20)
+    cv.shape(ell(10, 10, 3.8, 3.8), 'gehE', 'o')
+    for base in (0.3, 3.44):
+        pts = [(10 + 7.9 * math.cos(base + k * 0.24), 10 + 7.9 * math.sin(base + k * 0.24)) for k in range(0, 9)]
+        for (a, b) in zip(pts, pts[1:]): cv.line(round(a[0]), round(a[1]), round(b[0]), round(b[1]), '3', 2)
+        ang = base + 8 * 0.24 + math.pi / 2; hx, hy = pts[-1]
+        cv.shape(poly([(hx + 3.2 * math.cos(ang), hy + 3.2 * math.sin(ang)), (hx - 3.2 * math.cos(ang), hy - 3.2 * math.sin(ang)), (hx + 3.6 * math.cos(ang - math.pi / 2), hy + 3.6 * math.sin(ang - math.pi / 2))]), '1234', 'o')
+    cv.put(9, 9, 'w'); cv.put(10, 9, 'w')
+    return cv.rows()
+
 def ice():
     cv = Cv(20, 20)
     for (a, b, c, d) in [(9.5, 1, 9.5, 18), (2, 5.5, 17, 14), (2, 14, 17, 5.5)]: cv.line(round(a), round(b), round(c), round(d), '3', 2)
@@ -154,7 +167,7 @@ def scan():
     cv.rect(9, 9, 10, 10, 'W'); cv.put(8, 8, 'W')
     return cv.rows()
 
-ICONS = {'morph': (morph, 'teal'), 'missile': (lambda: missile(False, '1234'), 'crimson'), 'bombs': (bomb, 'cobalt'), 'charge': (charge, 'cobalt'), 'iceBeam': (ice, 'cobalt'),
+ICONS = {'morph': (morph, 'teal'), 'missile': (lambda: missile(False, '1234'), 'crimson'), 'bombs': (bomb, 'cobalt'), 'charge': (charge, 'cobalt'), 'spinFlip': (spinflip, 'teal'), 'iceBeam': (ice, 'cobalt'),
          'heatSuit': (lambda: flame('1234', 'yYw'), 'crimson'), 'spaceJump': (space, 'teal'), 'dashBoots': (dash, 'cobalt'), 'waveBeam': (wave, 'visor'), 'aquaSuit': (aqua, 'teal'),
          'grapple': (grapple, 'cobalt'), 'superMissile': (lambda: missile(True, '1234'), 'teal'), 'scanVisor': (scan, 'teal'), 'plasmaBeam': (lambda: flame('1234', 'YwW'), 'crimson')}
 

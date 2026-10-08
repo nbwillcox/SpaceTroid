@@ -62,7 +62,7 @@
       for (const d in Z.diag) t.diag[d] = mk(Z.diag[d], 'd' + d);
       t.wall = D.bgWall.map((g, i) => mk(g, 'w' + i)); t.ledge = mk(D.ledge, 'ledge');
       const deco = { rune: D.rune.map((g, i) => mk(g, 'r' + i)), vine: D.vine.map((g, i) => mk(g, 'v' + i)), tuft: mk(D.tuft, 'tuft'), fern: mk(D.fern, 'fern'), rubble: mk(D.rubble, 'rub'), pillar: mk(D.pillar, 'pil') };
-      t.wave = mk(A.zone3.wave, 'wave'); t.dashblock = mk(A.zone3.dashblock, 'dblk');
+      t.mega = mk(M.blockMega, 'mega'); t.wave = mk(A.zone3.wave, 'wave'); t.dashblock = mk(A.zone3.dashblock, 'dblk');
       t.deco = deco; t.top = [[deco.tuft, 3, 7], [deco.fern, 0, 11], [deco.rubble, 0, 7]]; t.hang = deco.vine.map((v) => [v, 4]);
       if (zone === 2) {
         const Z2 = A.zone2; t.ice = mk(Z2.ice, 'ice');

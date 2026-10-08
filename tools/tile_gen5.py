@@ -73,9 +73,29 @@ def block_missile():
             g[5 + k][x] = 'Y'; g[6 + k][x] = 'y'
     return [''.join(r) for r in g]
 
+def block_mega():
+    """overcharge wall: stone split by glowing energy cracks with a pale core, so it reads as 'something strong will break this'"""
+    g = [list(r) for r in fill_tile(1)]
+    for k in range(16):                                   # a ring of dark studs round the edge
+        for (x, y) in [(k, 0), (k, 15), (0, k), (15, k)]:
+            if k % 3 == 0: g[y][x] = '5'
+    crack = [(2, 1), (3, 3), (5, 4), (5, 6), (7, 7), (8, 9), (10, 10), (10, 12), (12, 13), (13, 14)]
+    branch = [(13, 3), (12, 5), (10, 6), (9, 7)]
+    for pts in (crack, branch):
+        for (x, y), (x2, y2) in zip(pts, pts[1:]):
+            n = max(abs(x2 - x), abs(y2 - y), 1)
+            for i in range(n + 1):
+                cx, cy = round(x + (x2 - x) * i / n), round(y + (y2 - y) * i / n)
+                g[cy][cx] = 'h'
+                for (dx, dy) in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                    nx, ny = cx + dx, cy + dy
+                    if 0 <= nx < 16 and 0 <= ny < 16 and g[ny][nx] != 'h': g[ny][nx] = 'e' if (nx + ny) % 2 else 'E'
+    for (x, y) in [(8, 8), (7, 7), (8, 9)]: g[y][x] = 'w'
+    return [''.join(r) for r in g]
+
 if __name__ == '__main__':
     sl, sr = slope(True), slope(False)
-    out = {'slopeR': sl, 'slopeL': sr, 'spikes': SPIKES, 'blockShot': block_shot(), 'blockBomb': block_bomb(), 'blockMissile': block_missile()}
+    out = {'slopeR': sl, 'slopeL': sr, 'spikes': SPIKES, 'blockShot': block_shot(), 'blockBomb': block_bomb(), 'blockMissile': block_missile(), 'blockMega': block_mega()}
     for k, v in out.items():
         assert all(len(r) == 16 for r in v) and len(v) == 16, k
     path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'js', 'art', 'zone1misc.js')

@@ -1,6 +1,6 @@
 # SpaceTroid
 
-A free, original, non-commercial exploration platformer in hand-authored hi-bit pixel art (480x270): five zones, upgrades that open the map, bosses and an escape. **Work in progress: all five zones (Crash Site, Cryo Vaults, Magma Forge, Drowned Reactor and Hive Core) are playable from the title screen: 92 rooms (including two-level caverns and 23 tiny item shrines), doors, save points, a serpentine world map with elevators, items, five bosses, a timed escape and three endings.**
+A free, original, non-commercial exploration platformer in hand-authored hi-bit pixel art (480x270): five zones, upgrades that open the map, bosses and an escape. **Work in progress: all five zones (Crash Site, Cryo Vaults, Magma Forge, Drowned Reactor and Hive Core) are playable from the title screen: 93 rooms (including two-level caverns and 24 tiny item shrines), doors, save points, a serpentine world map with elevators, items, five bosses, a timed escape and three endings.**
 
 The tiles, enemies and items are authored as palette-indexed character grids (see `js/art/`), compiled to canvases at start-up. The hero is a painted torso for each aim angle (`tools/hero_img.py` cuts the supplied artwork sheet into `js/art/heroimg.js`) standing on drawn leg poses (`tools/hero_parts.py`: idle, walk and run cycles, skid, jump, fall, landing, crouch), composed in the game so the head and cannon never jump when the legs change; the red and teal suits are hue-shifted at start-up and the five bosses (`tools/boss_img.py` into `js/art/bossimg.js`) are painted frames embedded as data URIs, so there are no image files. The hero and boss artwork was generated with AI image tools and then cut into game frames by the scripts above. Preview the hero frames at `sheet.html`. Rooms are authored with a small terrain kit (`tools/room_kit.py`, one `tools/zoneN_gen.py` per zone, `tools/build_world.py` writes and places them) that carves caves from solid rock; each room's back wall is dressed with its own seeded mix of pillars, beams, panels, pipes, veins and glows (`js/walldeco.js`), and each zone has its own ambient particles (`js/atmos.js`).
 
@@ -32,6 +32,7 @@ This is an original game inspired by classic exploration platformers. It uses no
 | Map | M or Tab |
 | Pause | P or Esc |
 | Save / use map terminal | stand on the pad and press Up |
+| Spinflip (after the Spinflip Drive) | overcharge, then run and jump and keep Fire held: you flip as a weapon, hurting everything you touch and taking no damage until you land or let go |
 | Charge beam | hold Fire: release early for a partial shot, at full charge for a piercing blast, keep holding for an overcharge |
 | Fast travel | stand on a save pad and press M: pick any save pad you have visited (Left / Right), Jump to warp |
 | Menus | Up / Down, Left / Right to change values, Jump or Enter to select |

@@ -3,7 +3,7 @@ spawns: P start, c crawler, m moth, o pod (the marker's tile row is the row whos
 import json, os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from room_kit import Room, BS, add_shrine
+from room_kit import Room, BS, add_shrine, add_big_shrine
 
 ROOMS = []
 
@@ -187,6 +187,9 @@ def lift():
     r.door('w', 'L', 12, 'blue', 'arena', 'e')
     r.statue(8, 'big', 15, 'charge', 'charge')
     r.station('lift', 22, 14, to='gate')
+    # the Spinflip alcove: a cracked overcharge wall, which only a fully charged shot (or the spinflip itself) breaks, seals a doorway in the east end of the room
+    r.fill(24, 5, 28, 11, '#'); r.fill(26, 12, 28, 14, '.'); r.fill(24, 12, 25, 14, 'O')
+    add_big_shrine(ROOMS, r, 'dF', 27, 12, -1, 3, 'spin', 'spinFlip', 'Shrine of Momentum', arr=72)
     return r
 ROOMS.append(lift())
 

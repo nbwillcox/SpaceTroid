@@ -22,6 +22,7 @@
   const SFX = {
     jump: () => tone(300, 620, 0.12, 'square', 0.12), spacejump: () => { tone(500, 1100, 0.14, 'triangle', 0.16); tone(700, 1500, 0.1, 'sine', 0.1, 0.05); },
     low: () => tone(1320, 1320, 0.07, 'square', 0.07), land: () => noise(0.06, 0.1, 700), step: () => noise(0.025, 0.035, 1100), shot: () => tone(1200, 400, 0.07, 'square', 0.1), charged: () => { tone(300, 1600, 0.2, 'sawtooth', 0.14); noise(0.12, 0.08, 3000); },
+    spinStart: () => { tone(180, 900, 0.3, 'sawtooth', 0.12); noise(0.2, 0.1, 3000); }, spinLoop: () => { tone(420, 620, 0.1, 'triangle', 0.05); noise(0.06, 0.04, 2500); },
     chargeStart: () => tone(200, 500, 0.3, 'sine', 0.05), chargeFull: () => { tone(520, 1040, 0.12, 'square', 0.07); tone(780, 1560, 0.14, 'triangle', 0.08, 0.05); }, chargeMega: () => { tone(260, 1500, 0.45, 'sawtooth', 0.1); tone(130, 700, 0.45, 'square', 0.06); noise(0.2, 0.08, 3500); }, mega: () => { tone(90, 28, 0.6, 'sawtooth', 0.2); tone(500, 2200, 0.35, 'sawtooth', 0.12); noise(0.45, 0.2, 2500); }, missile: () => { tone(220, 90, 0.25, 'sawtooth', 0.14); noise(0.18, 0.1, 1500); }, super: () => { tone(160, 60, 0.4, 'sawtooth', 0.18); noise(0.3, 0.14, 1200); },
     bomb: () => tone(180, 140, 0.08, 'triangle', 0.14), boom: () => { noise(0.35, 0.3, 900); tone(120, 40, 0.3, 'square', 0.12); }, break: () => noise(0.14, 0.18, 2500),
     hurt: () => { tone(260, 90, 0.25, 'sawtooth', 0.2); noise(0.15, 0.12, 1800); }, pickup: () => { tone(700, 1400, 0.09, 'square', 0.1); tone(1000, 1800, 0.12, 'square', 0.1, 0.07); },

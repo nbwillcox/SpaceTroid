@@ -32,6 +32,12 @@
     const c = core(b);
     if (U.dist2(x, y, c.x, c.y) < (r + 26) * (r + 26)) B.damage(g, b, kind === 'super' ? 24 : kind === 'bomb2' ? 20 : kind === 'bomb' ? 4 : 8);
   };
+  /* the spinflip attack against a boss: only its weak point counts, so it has to be exposed; 40 at most per hit and one hit every 30 ticks */
+  B.spinHit = function (g, dmg) {
+    const b = g.boss, p = g.P; if (!b || b.dead || b.state === 'wait' || b.state === 'dying' || g.time - (b.spinHit || -99) < 30) return;
+    if (![[p.x, p.y - 20], [p.x - 12, p.y - 20], [p.x + 12, p.y - 20], [p.x, p.y - 34]].some(([x, y]) => inCore(b, x, y))) return;
+    b.spinHit = g.time; if (B.damage(g, b, Math.min(dmg, 40))) G.fx.sparkBurst(b.x, b.y, '#ffffff', 8);
+  };
   function rocks(g, n) { const ice = g.boss && g.boss.kind === 'moth'; for (let i = 0; i < n; i++) g.rocks.push({ x: 40 + Math.random() * (g.room.pw - 80), y: 20 - Math.random() * 60, vy: 0, t: 0, ice }); }
   function volley(g, b) {
     const n = b.phase >= 2 ? 5 : 3;

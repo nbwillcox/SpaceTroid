@@ -60,8 +60,9 @@
   };
   W.breakAt = function (g, tx, ty, kind) {
     const k = RM.at(g.room, tx, ty);
-    const ok = k === 5 || (k === 12 && kind === 'wave') || (k === 6 && (kind === 'bomb')) || (k === 7 && (kind === 'missile' || kind === 'super' || kind === 'bomb2'));
+    const ok = k === 5 || (k === 17 && (kind === 'mega' || kind === 'megawave')) || (k === 12 && (kind === 'wave' || kind === 'megawave')) || (k === 6 && (kind === 'bomb')) || (k === 7 && (kind === 'missile' || kind === 'super' || kind === 'bomb2'));
     if (!ok) return false;
+    if (k === 17) { const q = [[tx, ty]]; while (q.length) { const [x, y] = q.pop(); if (RM.at(g.room, x, y) !== 17) continue; RM.set(g.room, x, y, 0); G.fx.debris(x * T + 8, y * T + 8, ['#8ad8f0', '#d8f6ff', '#52627a']); q.push([x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]); } G.audio.sfx('break'); G.audio.sfx('boom'); g.shake = Math.max(g.shake, 4); return true; }
     RM.set(g.room, tx, ty, 0); G.fx.debris(tx * T + 8, ty * T + 8, k === 5 ? ['#8a5a40', '#b88454', '#5c3a34'] : ['#52627a', '#7f8c96', '#33405e']); G.audio.sfx('break');
     return true;
   };
@@ -72,8 +73,31 @@
     if (G.bosses) G.bosses.blast(g, x, y, r, kind);
     g.shake = Math.max(g.shake, r > 20 ? 3 : 1.5);
   }
+  /* spinflip attack: while the hero is overcharged and flipping through the air (see player_update) the whole body is a weapon. Every enemy it touches takes the overcharge damage (20 per beam upgrade, 100 with ice + wave + plasma),
+     it breaks shot blocks and overcharge walls (wave blocks too with the wave beam), and ice freezes what it hits. Per enemy a hit lands every 8 ticks; bosses take at most 40 every 30 ticks. */
+  W.spinAttack = function (g) {
+    const p = g.P;
+    if (!p.spinAtk) { p.spinAtkT = 0; g.spinTrail = null; return; }
+    p.spinAtkT = (p.spinAtkT || 0) + 1;
+    const B = W.beam(g.abil), dmg = B.cdmg * 20, now = g.time, x0 = p.x - 15, x1 = p.x + 15, y0 = p.y - 42, y1 = p.y + 2;
+    const fake = { ice: B.ice, wave: B.wave, pierce: true, kind: 'beam', dmg, tier: 3, col: B.col, hit: new Set() };
+    if (p.spinAtkT === 1) { G.audio.sfx('spinStart'); G.fx.ring(p.x, p.y - 20); g.shake = Math.max(g.shake, 2); }
+    else if (p.spinAtkT % 12 === 0) G.audio.sfx('spinLoop');
+    for (const f of g.foes) {
+      if (f.dead || f.ghost) continue;
+      if (x1 > f.x - f.w / 2 && x0 < f.x + f.w / 2 && y1 > f.y - f.h && y0 < f.y && now - (f.spinHit === undefined ? -99 : f.spinHit) >= 8) {
+        f.spinHit = now; G.enemies.damage(g, f, dmg, 'beam', fake); G.fx.sparkBurst(f.x, f.y - f.h / 2, B.col[1], 7); g.shake = Math.max(g.shake, 1.5);
+      }
+    }
+    if (G.bosses && G.bosses.spinHit && g.boss) G.bosses.spinHit(g, dmg);
+    const kind = B.wave ? 'megawave' : 'mega';
+    for (let ty = Math.floor(y0 / T); ty <= Math.floor(y1 / T); ty++) for (let tx = Math.floor(x0 / T); tx <= Math.floor(x1 / T); tx++) { const k = RM.at(g.room, tx, ty); if (k === 5 || k === 17 || (k === 12 && B.wave)) W.breakAt(g, tx, ty, kind); }
+    if (p.spinAtkT % 2 === 0) G.fx.spark(p.x + (Math.random() - 0.5) * 34, p.y - 20 + (Math.random() - 0.5) * 44, B.col[Math.random() < 0.5 ? 0 : 1]);
+    const tr = g.spinTrail = g.spinTrail || []; tr.unshift({ x: p.x, y: p.y, fr: G.player.frame(p), face: p.face }); if (tr.length > 6) tr.pop();
+  };
   W.update = function (g) {
     const room = g.room, p = g.P;
+    W.spinAttack(g);
     for (const s of g.shots) {
       s.t++;
       if (s.kind === 'missile' || s.kind === 'super') { s.spd = Math.min(s.kind === 'super' ? 5 : 5.5, s.spd + 0.18); s.vx = s.dx * s.spd; s.vy = s.dy * s.spd; if (s.t % 2 === 0) G.fx.spark(s.x - s.dx * 3, s.y - s.dy * 3, '#ffd2a0'); }
@@ -81,7 +105,7 @@
       s.x += s.vx; s.y += s.vy; s.life--;
       const tx = Math.floor(s.x / T), ty = Math.floor(s.y / T), k = RM.at(room, tx, ty);
       if (RM.isSolid(k) || ((k === 3 || k === 4) && s.y >= RM.surface(k, ty, Math.floor(s.x) - tx * T))) {
-        const brk = W.breakAt(g, tx, ty, s.kind === 'beam' ? (s.wave ? 'wave' : 'shot') : s.kind);
+        const brk = W.breakAt(g, tx, ty, s.kind === 'beam' ? (s.tier === 3 ? (s.wave ? 'megawave' : 'mega') : s.wave ? 'wave' : 'shot') : s.kind);
         if (k === 9) G.world.shotDoor(g, tx, ty, s.kind === 'beam' ? 'shot' : s.kind);
         if (k === 5 && s.kind === 'beam') { s.dead = true; G.fx.spark(s.x, s.y, '#fff'); }
         else if (s.wave && s.kind === 'beam') { /* wave passes walls */ }

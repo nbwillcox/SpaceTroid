@@ -60,7 +60,7 @@
     return p.aim === 'up' ? { x: 0, y: -1 } : p.aim === 'diagUp' ? { x: f * r, y: -r } : p.aim === 'diagDown' ? { x: f * r, y: r } : { x: f, y: 0 };
   };
   P.hurt = function (g, p, dmg, fromX) {
-    if (p.inv > 0 || p.dead) return false;
+    if (p.inv > 0 || p.dead || p.spinAtk) return false;
     if (G.settings.hard) dmg = Math.round(dmg * 1.6);
     p.en -= dmg; p.inv = 75; p.hurt = 14; p.charge = 0;
     const d = p.x >= fromX ? 1 : -1;

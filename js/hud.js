@@ -18,6 +18,7 @@
       const CH = G.weapons.CHARGE, c = p.charge >= CH.mega ? (Math.floor(time * 12) & 1 ? '#ffffff' : '#ff9ad8') : p.charge >= CH.full ? '#ffffff' : p.charge >= CH.min ? '#ffd24a' : '#8a7a40';
       ctx.fillStyle = '#10142e'; ctx.fillRect(100, 22, 40, 5); ctx.fillStyle = c; ctx.fillRect(101, 23, Math.round(38 * p.charge / CH.max), 3);
       ctx.fillStyle = '#566cac'; for (const th of [CH.min, CH.full, CH.mega]) ctx.fillRect(101 + Math.round(38 * th / CH.max), 22, 1, 1);
+      if (p.spinAtk) txt(ctx, 'SPINFLIP', 100, 29, Math.floor(time * 12) & 1 ? '#ffffff' : '#86f0f2');
     }
     const B = g.abil.beams; let x = 102; for (const [k, c, n] of [['ice', '#7ad8ff', 'I'], ['wave', '#b878ff', 'W'], ['plasma', '#ff7a2a', 'P']]) if (g.abil['has' + n.replace('I', 'Ice').replace('W', 'Wave').replace('P', 'Plasma')]) { ctx.fillStyle = B[k] ? c : '#2a3050'; ctx.fillRect(x, 31, 6, 3); x += 8; }
     if (p.dead > 30) { ctx.fillStyle = 'rgba(10,14,44,' + Math.min(0.8, (p.dead - 30) / 60) + ')'; ctx.fillRect(0, 0, 480, 270); if (p.dead > 60) PX.text(ctx, 'SIGNAL LOST', 240, 128, { s: 2, c: '#ec5c4a', o: '#0a0e2c', a: 'c' }); }

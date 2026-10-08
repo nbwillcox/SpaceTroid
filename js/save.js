@@ -9,7 +9,7 @@
   S.erase = function (n) { try { localStorage.removeItem(KEY(n)); } catch (e) { /* ignore */ } };
   /* a fresh progress record */
   S.fresh = function () {
-    return { v: 1, room: 'crash', door: null, x: null, y: null, abil: { morph: false, bombs: false, sbombs: false, missiles: false, supers: false, spacejump: false, dash: false, charge: false, hasIce: false, hasWave: false, hasPlasma: false, beams: { ice: false, wave: false, plasma: false } },
+    return { v: 1, room: 'crash', door: null, x: null, y: null, abil: { morph: false, bombs: false, sbombs: false, missiles: false, supers: false, spinflip: false, spacejump: false, dash: false, charge: false, hasIce: false, hasWave: false, hasPlasma: false, beams: { ice: false, wave: false, plasma: false } },
       hero: { tanks: 0, missileMax: 0, missiles: 0, sbombMax: 0, sbombs: 0, superMax: 0, supers: 0 }, items: {}, doors: {}, flags: {}, visited: {}, mapped: {}, time: 0, saves: 0 };
   };
   /* snapshot of live game state -> save record */

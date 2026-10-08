@@ -30,7 +30,7 @@
     if (G.grapple.update(g)) { p.anim += 0; G.weapons.playerFire(g, p, G.input.held, G.input.down); return; }
     if (A.scan && D.scan) { p.scanning = !p.scanning; G.audio.sfx(p.scanning ? 'pickup' : 'hit'); }          /* the scan visor is a toggle, not a hold */
     room.scanOn = !!(A.scan && p.scanning);
-    const lock = p.hurt > 0;
+    const lock = p.hurt > 0, oc = !!(A.spinflip && I.fire && p.charge >= G.weapons.CHARGE.mega);
     const dir = lock ? 0 : (I.r ? 1 : 0) - (I.l ? 1 : 0);
     if (D.jump) p.jbuf = 7; else p.jbuf = Math.max(0, p.jbuf - 1);
     if (p.ground) { p.coyote = 5; p.airJumps = A.spacejump ? 1 : 0; p.dashAir = true; } else p.coyote = Math.max(0, p.coyote - 1);
@@ -66,15 +66,16 @@
       else if (p.coyote > 0) {
         if (p.dash > 0) { p.vx = p.face * K.dash; p.dash = 0; p.dashCd = 10; }
         p.vy = -K.jump; p.jbuf = 0; p.coyote = 0; p.ground = false; G.audio.sfx('jump'); p.jumping = true;
-        p.spinning = (Math.abs(p.vx) > 0.8 || dir !== 0) && !I.u && !I.fire; p.spinT = 0; p.noSpin = false;
+        p.spinning = (Math.abs(p.vx) > 0.8 || dir !== 0) && !I.u && (!I.fire || oc); p.spinT = 0; p.noSpin = false;
       }
       else if (!p.ground && p.airJumps > 0 && A.spacejump) { p.vy = -K.airJump; p.airJumps--; p.jbuf = 0; p.spin = 16; p.jumping = true; if (!p.noSpin) { p.spinning = true; p.spinT = 0; } G.fx.ring(p.x, p.y - 16); G.audio.sfx('spacejump'); }
     }
     if (p.ground || p.vy >= 0) p.jumping = false;
     if (!I.jump && p.jumping && p.vy < -K.cut && !p.dash && !lock) p.vy = -K.cut;
     if (p.ground || ball || lock || p.mode !== 'stand') { p.spinning = false; p.noSpin = false; }
-    else if (p.spinning && (I.fire || I.u || D.missile)) { p.spinning = false; p.noSpin = true; }
-    if (p.spinning) p.spinT++;
+    else if (p.spinning && ((I.fire && !oc) || I.u || D.missile)) { p.spinning = false; p.noSpin = true; }
+    p.spinAtk = !!(p.spinning && oc && !p.ground && p.mode === 'stand' && !lock);            /* overcharged and flipping with Fire held: the spinflip attack */
+    if (p.spinning) p.spinT += p.spinAtk ? 1.8 : 1;
     /* ---- gravity + collision ---- */
     if (wet && D.jump && p.swimCd === 0 && !ball && !lock) { p.vy = aqua ? -4.4 : -2.6; p.swimCd = aqua ? 9 : 15; p.jbuf = 0; p.ground = false; G.fx.puff(p.x, p.y - 20, 2); }
     p.swimCd = Math.max(0, (p.swimCd || 0) - 1);

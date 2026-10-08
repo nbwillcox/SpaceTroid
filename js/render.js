@@ -4,7 +4,7 @@
   const S = G.sprites, RM = G.room, T = 16, U = G.U, W = G.world;
   const R = {};
   G.render = R;
-  const solidish = (room, tx, ty) => { const k = RM.at(room, tx, ty); return k === 1 || k === 3 || k === 4 || k === 5 || k === 6 || k === 7 || k === 9 || k === 10 || k === 12 || k === 13; };
+  const solidish = (room, tx, ty) => { const k = RM.at(room, tx, ty); return k === 1 || k === 3 || k === 4 || k === 5 || k === 6 || k === 7 || k === 9 || k === 10 || k === 12 || k === 13 || k === 17; };
   const hash = (a, b) => ((a * 73856093) ^ (b * 19349663)) >>> 0;
   /* bake the static layers of a room into one canvas (re-run when blocks break) */
   R.bake = function (room) {
@@ -46,6 +46,7 @@
       else if (k === 10) x.drawImage(tile.ice, px, py);
       else if (k === 12) x.drawImage(tile.wave, px, py);
       else if (k === 13) x.drawImage(tile.dashblock, px, py);
+      else if (k === 17) x.drawImage(tile.mega, px, py);
     }
     room.baked = c; room.dirty = false;
   };
@@ -130,6 +131,12 @@
       if (g.abil.scan && room.scanOn) { ctx.fillStyle = '#10305a'; ctx.fillRect(px, py, 16, 16); ctx.fillStyle = '#38c0b0'; ctx.fillRect(px, py, 16, 1); ctx.fillRect(px, py + 15, 16, 1); ctx.fillRect(px, py, 1, 16); ctx.fillRect(px + 15, py, 1, 16); ctx.fillStyle = '#86f0f2'; ctx.fillRect(px + 3, py + 3, 10, 1); ctx.fillRect(px + 3, py + 3, 1, 10); ctx.fillStyle = '#244850'; ctx.fillRect(px + 5, py + 6, 6, 5); }
       else if (g.abil.scan && (sx * 5 + sy * 3 + Math.floor(time * 2)) % 11 === 0) { ctx.fillStyle = 'rgba(134,240,242,0.45)'; ctx.fillRect(px + 2 + (sx % 3) * 4, py + 1 + (sy % 3) * 4, 1, 1); }
     }
+    if (room.megaTiles === undefined) { room.megaTiles = []; for (let y = 0; y < room.h; y++) for (let x = 0; x < room.w; x++) if (room.t[y * room.w + x] === 17) room.megaTiles.push([x, y]); }
+    for (const [mx, my] of room.megaTiles) {                              /* overcharge walls pulse softly, so they are worth a second look */
+      if (room.t[my * room.w + mx] !== 17) continue;
+      ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = 0.1 + 0.08 * Math.sin(time * 3 + mx + my); ctx.fillStyle = '#7ae0ff'; ctx.fillRect(mx * T + 1, my * T + 1, 14, 14); ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1;
+      if ((mx * 7 + my * 5 + Math.floor(time * 4)) % 13 === 0) { ctx.fillStyle = '#ffffff'; ctx.fillRect(mx * T + 3 + (mx * 5 + my * 3) % 9, my * T + 3 + (mx * 3 + my * 7) % 9, 1, 1); }
+    }
     G.movers.draw(ctx, g); G.world.drawFront(ctx, g, time);
     for (const b of g.bombs) {
       const fl = Math.floor(b.t / (b.t > 30 ? 3 : 6)) & 1, r = b.big ? 7 : 4, bx = Math.round(b.x), by = Math.round(b.y);
@@ -143,7 +150,9 @@
     if (dying || (!p.dead && !(p.inv > 0 && Math.floor(time * 20) % 2 && p.hurt === 0))) {
       const fr = G.player.frame(p), ball = p.mode === 'ball' && !g.getAnim, right = p.face >= 0 || ball, c0 = right ? fr.r : fr.l, c = dying && (p.dead & 2) ? S.whiteOf(c0) : c0;
       const spin = p.spinning && !p.ground && !g.getAnim, hx = Math.round(p.x - (right ? fr.ax : fr.axl)), hy = Math.round(p.y - (spin ? 22 : 0) - fr.ay);
+      if (p.spinAtk) R.spinAura(ctx, g, p, time, false);
       ctx.drawImage(c, hx, hy);
+      if (p.spinAtk) R.spinAura(ctx, g, p, time, true);
       if (g.saveAnim && g.saveAnim.t > 30 && g.saveAnim.t < 56) { ctx.globalAlpha = 0.75 * (1 - Math.abs(g.saveAnim.t - 42) / 12); ctx.drawImage(S.whiteOf(c0), hx, hy); ctx.globalAlpha = 1; }
       R.chargeFx(ctx, g, p, time);
     }
@@ -234,8 +243,35 @@
       ctx.globalAlpha = 1;
     },
   };
+  /* the spinflip attack aura, one look per beam: gold star + rings | ice snowflake + shards | wave ripples | plasma fire. back = behind the hero (glow, afterimages, the beam's shape), front = sparks and accents over it */
+  R.spinAura = function (ctx, g, p, time, front) {
+    const S = G.sprites, sty = styleOf(g.abil), st = STY[sty], mods = modsOf(g.abil, sty), t = Math.floor(time * 60), cx = Math.round(p.x), cy = Math.round(p.y - 22);
+    ctx.save();
+    if (front) {
+      const k = 7; for (let i = 0; i < k; i++) { const a = t * 0.42 + i * 6.2832 / k, d = 20 + Math.sin(t * 0.3 + i) * 2; ctx.fillStyle = i & 1 ? '#ffffff' : st.c1; ctx.fillRect(Math.round(cx + Math.cos(a) * d) - 1, Math.round(cy + Math.sin(a) * d) - 1, 3, 3); }
+      accents(ctx, cx, cy, 15, mods, t, 3); ctx.restore(); return;
+    }
+    const tr = g.spinTrail || [];
+    ctx.globalCompositeOperation = 'lighter';
+    for (let i = 1; i < tr.length; i++) { const gh = tr[i], fr = gh.fr, c = gh.face >= 0 ? fr.r : fr.l; ctx.globalAlpha = 0.3 * (1 - i / 6); ctx.drawImage(S.whiteOf(c), Math.round(gh.x - (gh.face >= 0 ? fr.ax : fr.axl)), Math.round(gh.y - 22 - fr.ay)); }
+    ctx.fillStyle = st.c0; ctx.globalAlpha = 0.2 + 0.07 * Math.sin(t * 0.5); disc(ctx, cx, cy, 23); ctx.globalAlpha = 0.18; disc(ctx, cx, cy, 17);
+    ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1;
+    if (sty === 'base') {
+      ctx.fillStyle = st.c1; ctx.globalAlpha = 0.7; for (let k = 0; k < 4; k++) spike(ctx, cx, cy, t * 0.1 + k * 0.7854, 13, 25);
+      for (let i = 0; i < 2; i++) { const q = ((t * 0.5 + i * 7) % 14) / 14; ctx.globalAlpha = 0.7 * (1 - q); ringPx(ctx, cx, cy, Math.round(15 + q * 13)); }
+    } else if (sty === 'ice') {
+      ctx.fillStyle = st.c1; ctx.globalAlpha = 0.85; snow(ctx, cx, cy, t * 0.07, 24, true); ctx.globalAlpha = 1;
+      for (let i = 0; i < 4; i++) { const a = -t * 0.2 + i * 1.5708; ctx.fillStyle = i & 1 ? '#ffffff' : st.c0; rhombus(ctx, cx + Math.cos(a) * 19, cy + Math.sin(a) * 19, Math.cos(a + 1.57), Math.sin(a + 1.57), 4, 1.8); }
+    } else if (sty === 'wave') {
+      for (let i = 0; i < 3; i++) { const q = ((t * 0.55 + i * 9) % 27) / 27; ctx.globalAlpha = 0.9 * (1 - q); ctx.fillStyle = i & 1 ? st.c1 : st.c0; ringPx(ctx, cx, cy, Math.round(14 + q * 26)); ctx.fillStyle = '#ff7ad8'; ringPx(ctx, cx + 1, cy, Math.round(14 + q * 26)); ctx.fillStyle = '#7ae0ff'; ringPx(ctx, cx - 1, cy, Math.round(14 + q * 26)); }
+    } else {
+      tongues(ctx, cx, cy, 15, 11, t, 13, st);
+      for (let i = 0; i < 8; i++) { const q = ((t * 1.1 + i * 5) % 26) / 26; ctx.globalAlpha = 1 - q; ctx.fillStyle = q < 0.35 ? st.c1 : q < 0.7 ? st.c0 : st.dk; ctx.fillRect(Math.round(cx + Math.sin(i * 2.9 + t * 0.1) * 18), Math.round(cy + 10 - q * 40), 1, 1); }
+    }
+    ctx.restore();
+  };
   R.chargeFx = function (ctx, g, p, time) {
-    const ch = p.charge; if (!(ch > 0)) return;
+    const ch = p.charge; if (!(ch > 0) || p.spinAtk) return;
     const CH = G.weapons.CHARGE, m = G.player.muzzle(p), mx = Math.round(m.x), my = Math.round(m.y), sty = styleOf(g.abil), st = STY[sty], mods = modsOf(g.abil, sty), t = Math.floor(time * 60);
     const tier = ch >= CH.mega ? 3 : ch >= CH.full ? 2 : ch >= CH.min ? 1 : 0, f = Math.min(1, ch / CH.full), pul = Math.sin(t * 0.55);
     ctx.save();
