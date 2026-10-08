@@ -32,6 +32,7 @@ This is an original game inspired by classic exploration platformers. It uses no
 | Map | M or Tab |
 | Pause | P or Esc |
 | Save / use map terminal | stand on the pad and press Up |
+| Charge beam | hold Fire: release early for a partial shot, at full charge for a piercing blast, keep holding for an overcharge |
 | Fast travel | stand on a save pad and press M: pick any save pad you have visited (Left / Right), Jump to warp |
 | Menus | Up / Down, Left / Right to change values, Jump or Enter to select |
 

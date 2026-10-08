@@ -15,8 +15,11 @@
   window.addEventListener('blur', () => { I.k = {}; });
   const cv = () => document.getElementById('game');
   window.addEventListener('pointermove', (e) => { const c = cv(); if (!c || e.target !== c) return; const r = c.getBoundingClientRect(); I.mouse.on = true; I.mouse.t = performance.now(); I.mouse.x = (e.clientX - r.left) / r.width * 480; I.mouse.y = (e.clientY - r.top) / r.height * 270; });
+  /* holding the mouse button to charge must never start a browser drag of the canvas (it behaves like an image) or select text */
+  for (const ev of ['dragstart', 'selectstart', 'mousedown']) window.addEventListener(ev, (e) => { if (e.target === cv()) e.preventDefault(); });
   window.addEventListener('pointerdown', (e) => {
     if (e.target !== cv()) return;
+    e.preventDefault(); try { cv().setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
     const c = cv(), r = c.getBoundingClientRect(); I.mouse.on = true; I.mouse.t = performance.now(); I.mouse.x = (e.clientX - r.left) / r.width * 480; I.mouse.y = (e.clientY - r.top) / r.height * 270;
     if (e.button === 0) { if (!I.k.fire) I.lt.fire = true; I.k.fire = true; I.mouse.fire = true; I.any = true; }
     else if (e.button === 2) { if (!I.k.missile) I.lt.missile = true; I.k.missile = true; I.mouse.missile = true; }

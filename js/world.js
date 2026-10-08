@@ -7,7 +7,7 @@
     morph: { name: 'MORPH BALL', ramp: 'teal', lines: ['Curl into a ball to roll through tunnels.', 'Crouch, then press Down again.'], apply: (g) => { g.abil.morph = true; } },
     missile: { name: 'MISSILES', ramp: 'crimson', lines: ['Opens red doors and breaks missile blocks.', 'Right click or C to fire.'], apply: (g) => { g.abil.missiles = true; g.P.missileMax = Math.max(g.P.missileMax, 5); g.P.missiles = g.P.missileMax; } },
     bombs: { name: 'BOMBS', ramp: 'gold', lines: ['In ball form, Fire lays a bomb.', 'Bombs break bomb blocks and bounce you up.'], apply: (g) => { g.abil.bombs = true; } },
-    charge: { name: 'CHARGE BEAM', ramp: 'cobalt', lines: ['Hold Fire to charge a heavy shot.', 'Release at full charge.'], apply: (g) => { g.abil.charge = true; } },
+    charge: { name: 'CHARGE BEAM', ramp: 'cobalt', lines: ['Hold Fire to charge: release early for a partial shot,', 'at full charge for a piercing blast, or keep holding for an overcharge.'], apply: (g) => { g.abil.charge = true; } },
     iceBeam: { name: 'ICE BEAM', ramp: 'cobalt', lines: ['Freezes enemies solid for a while.', 'Frozen enemies make stepping stones. Toggle: 1'], apply: (g) => { g.abil.hasIce = true; g.abil.beams.ice = true; } },
     heatSuit: { name: 'HEAT SUIT', ramp: 'crimson', lines: ['Shrugs off extreme heat.', 'Magma will hurt far less.'], apply: (g) => { g.abil.suitHeat = true; g.P.suit = 'crimson'; } },
     spaceJump: { name: 'SPACE JUMP', ramp: 'teal', lines: ['Press Jump again in mid-air to flip higher.', 'Chain it to climb tall shafts.'], apply: (g) => { g.abil.spacejump = true; } },

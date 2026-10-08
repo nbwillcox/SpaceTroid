@@ -145,7 +145,7 @@
       const spin = p.spinning && !p.ground && !g.getAnim, hx = Math.round(p.x - (right ? fr.ax : fr.axl)), hy = Math.round(p.y - (spin ? 22 : 0) - fr.ay + (ball || spin || g.getAnim || g.saveAnim ? 0 : G.player.pose(p).dy));
       ctx.drawImage(c, hx, hy);
       if (g.saveAnim && g.saveAnim.t > 30 && g.saveAnim.t < 56) { ctx.globalAlpha = 0.75 * (1 - Math.abs(g.saveAnim.t - 42) / 12); ctx.drawImage(S.whiteOf(c0), hx, hy); ctx.globalAlpha = 1; }
-      if (p.charge > 0) { const m = G.player.muzzle(p), r = 1 + Math.floor(p.charge / 14); ctx.fillStyle = p.charge >= 50 ? '#fff' : '#ffd24a'; ctx.fillRect(Math.round(m.x) - r, Math.round(m.y) - r, r * 2, r * 2); if (Math.floor(time * 30) & 1) { ctx.fillStyle = '#fff6a0'; ctx.fillRect(Math.round(m.x) - r - 1, Math.round(m.y), 1, 1); ctx.fillRect(Math.round(m.x) + r, Math.round(m.y), 1, 1); } }
+      R.chargeFx(ctx, g, p, time);
     }
     if (g.saveAnim) R.saveLight(ctx, g.saveAnim, true);
     if (g.getAnim) R.getFx(ctx, g, time);
@@ -159,9 +159,58 @@
     if (g.getAnim && g.getAnim.t < 12) { ctx.globalAlpha = (g.getAnim.big ? 0.55 : 0.3) * (1 - g.getAnim.t / 12); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, 480, 270); ctx.globalAlpha = 1; }
     if (G.atmos) G.atmos.vignette(ctx);
   };
+  /* ---- charge beam art: the build-up orb at the muzzle (4 stages) and the shots it fires (partial / full / overcharge) ---- */
+  const disc = (ctx, x, y, r) => { for (let dy = -r; dy <= r; dy++) { const w = Math.floor(Math.sqrt(r * r + r - dy * dy + 0.25)); ctx.fillRect(x - w, y + dy, 2 * w + 1, 1); } };
+  const ringPx = (ctx, x, y, r) => { const n = Math.max(12, r * 6); for (let i = 0; i < n; i++) { const a = i / n * 6.2832; ctx.fillRect(Math.round(x + Math.cos(a) * r), Math.round(y + Math.sin(a) * r), 1, 1); } };
+  const flare = (ctx, x, y, L, diag) => {
+    ctx.fillRect(x - L, y, 2 * L + 1, 1); ctx.fillRect(x, y - L, 1, 2 * L + 1);
+    if (diag) for (let i = 1; i <= diag; i++) { ctx.fillRect(x + i, y + i, 1, 1); ctx.fillRect(x - i, y + i, 1, 1); ctx.fillRect(x + i, y - i, 1, 1); ctx.fillRect(x - i, y - i, 1, 1); }
+  };
+  const HOT = ['#ffffff', '#ffe9a0', '#9fe8ff', '#ff9ad8'];
+  R.chargeFx = function (ctx, g, p, time) {
+    const ch = p.charge; if (!(ch > 0)) return;
+    const CH = G.weapons.CHARGE, m = G.player.muzzle(p), mx = Math.round(m.x), my = Math.round(m.y), B = G.weapons.beam(g.abil), t = Math.floor(time * 60);
+    const tier = ch >= CH.mega ? 3 : ch >= CH.full ? 2 : ch >= CH.min ? 1 : 0, f = Math.min(1, ch / CH.full), pul = Math.sin(t * 0.55);
+    ctx.save();
+    if (tier >= 2) {                                                          /* the hero glows once the shot is ready */
+      ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = B.col[0]; ctx.globalAlpha = (tier === 3 ? 0.2 : 0.11) + 0.05 * pul;
+      disc(ctx, Math.round(p.x), Math.round(p.y - 32), 13); disc(ctx, Math.round(p.x), Math.round(p.y - 14), 13); ctx.globalCompositeOperation = 'source-over';
+    }
+    const n = tier === 0 ? 2 : tier === 1 ? 4 : tier === 2 ? 6 : 9;           /* energy streaming in toward the muzzle */
+    for (let i = 0; i < n; i++) { const ph = ((t + i * 5) % 20) / 20, a = i * 2.399 + t * 0.07, d = (1 - ph) * (9 + tier * 6); ctx.fillStyle = ph > 0.65 ? B.col[1] : B.col[0]; ctx.globalAlpha = 0.35 + 0.65 * ph; ctx.fillRect(Math.round(mx + Math.cos(a) * d), Math.round(my + Math.sin(a) * d), 1, 1); }
+    ctx.globalAlpha = 1;
+    const r = tier === 0 ? 1 : tier === 1 ? 2 + Math.round(f * 3) : tier === 2 ? 6 : 9 + (pul > 0 ? 1 : 0);
+    if (tier >= 1) { ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = B.col[0]; ctx.globalAlpha = 0.16 + 0.05 * tier; disc(ctx, mx, my, r + 3 + tier); ctx.globalAlpha = 0.22; disc(ctx, mx, my, r + 1); ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1; }
+    ctx.fillStyle = tier === 3 ? HOT[(t >> 1) & 3] : B.col[0]; disc(ctx, mx, my, r);
+    if (r >= 3) { ctx.fillStyle = tier === 3 ? '#ffffff' : B.col[1]; disc(ctx, mx, my, Math.max(1, r - 2)); }
+    if (tier >= 2) { ctx.fillStyle = '#ffffff'; disc(ctx, mx, my, tier === 3 ? 3 : 2); }
+    if (tier >= 2) {                                                          /* flare, orbiting sparks and arcs */
+      ctx.fillStyle = B.col[1]; ctx.globalAlpha = 0.85; flare(ctx, mx, my, r + 3 + ((t >> 1) & 1) * 2, tier === 3 ? r + 2 : 0); ctx.globalAlpha = 1;
+      const k = tier === 3 ? 7 : 3; for (let i = 0; i < k; i++) { const a = t * (tier === 3 ? 0.3 : 0.2) + i * 6.2832 / k; ctx.fillStyle = tier === 3 && (i & 1) ? '#ffffff' : B.col[1]; ctx.fillRect(Math.round(mx + Math.cos(a) * (r + 5)) - 1, Math.round(my + Math.sin(a) * (r + 5)) - 1, tier === 3 ? 3 : 2, tier === 3 ? 3 : 2); }
+      if (t % 3 === 0) { ctx.fillStyle = '#ffffff'; let ax = mx, ay = my; const a = Math.random() * 6.28, L = 8 + Math.random() * 8; for (let i = 0; i < L; i++) { ax += Math.cos(a) + (Math.random() - 0.5) * 1.6; ay += Math.sin(a) + (Math.random() - 0.5) * 1.6; ctx.fillRect(Math.round(ax), Math.round(ay), 1, 1); } }
+    }
+    for (const th of [CH.full, CH.mega]) if (ch >= th && ch < th + 9) { ctx.fillStyle = '#ffffff'; ctx.globalAlpha = 1 - (ch - th) / 9; ringPx(ctx, mx, my, 6 + (ch - th) * 3); ringPx(ctx, mx, my, 5 + (ch - th) * 3); ctx.globalAlpha = 1; }   /* a ring bursts out as each level is reached */
+    ctx.restore();
+  };
+  R.chargedShot = function (ctx, s, time) {
+    const x = Math.round(s.x), y = Math.round(s.y), sp = Math.hypot(s.vx, s.vy) || 1, ux = s.vx / sp, uy = s.vy / sp, tier = s.tier, t = s.t, c0 = s.col[0], c1 = s.col[1];
+    ctx.save();
+    const nT = tier === 1 ? 5 : tier === 2 ? 8 : 13, gap = tier === 1 ? 2.6 : tier === 2 ? 3 : 3.4;
+    ctx.globalCompositeOperation = 'lighter';
+    for (let i = nT; i >= 1; i--) { const k = 1 - i / (nT + 1), rr = Math.max(1, Math.round(s.r * k * 0.95)); ctx.globalAlpha = 0.5 * k; ctx.fillStyle = c0; disc(ctx, Math.round(s.x - ux * i * gap), Math.round(s.y - uy * i * gap), rr); }
+    ctx.globalAlpha = 0.2 + (tier === 3 ? 0.08 * Math.sin(t * 0.6) : 0); ctx.fillStyle = c0; disc(ctx, x, y, s.r + 3 + tier);
+    ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1;
+    ctx.fillStyle = tier === 3 ? HOT[(t >> 1) & 3] : c0; disc(ctx, x, y, s.r);
+    ctx.fillStyle = tier === 3 ? '#ffffff' : c1; disc(ctx, x, y, Math.max(1, s.r - 2));
+    if (tier >= 2) { ctx.fillStyle = '#ffffff'; disc(ctx, x, y, tier === 3 ? 4 : 2); ctx.fillStyle = c1; flare(ctx, x, y, s.r + 3 + (t & 1) * 2, tier === 3 ? s.r + 1 : 0); }
+    if (tier === 3) { for (let i = 0; i < 6; i++) { const a = t * 0.34 + i * 1.0472, d = s.r + 4 + Math.sin(t * 0.5 + i) * 1.5; ctx.fillStyle = i & 1 ? '#ffffff' : c1; ctx.fillRect(Math.round(x + Math.cos(a) * d) - 1, Math.round(y + Math.sin(a) * d) - 1, 3, 3); } }
+    if (tier >= 2) for (let i = 0; i < (tier === 3 ? 4 : 2); i++) { const d = (t * 1.7 + i * 9) % 22, off = ((i * 7 + t) % 5 - 2) * (tier === 3 ? 2.2 : 1.4); ctx.fillStyle = i & 1 ? c1 : '#ffffff'; ctx.fillRect(Math.round(s.x - ux * (s.r + d) - uy * off), Math.round(s.y - uy * (s.r + d) + ux * off), 1, 1); }
+    ctx.restore();
+  };
   R.shot = function (ctx, s, time) {
     const x = Math.round(s.x), y = Math.round(s.y);
     if (s.kind === 'beam') {
+      if (s.tier >= 1) return R.chargedShot(ctx, s, time);
       if (s.big) { ctx.fillStyle = s.col[0]; ctx.fillRect(x - 5, y - 3, 10, 6); ctx.fillRect(x - 3, y - 5, 6, 10); ctx.fillStyle = s.col[1]; ctx.fillRect(x - 3, y - 2, 6, 4); ctx.fillRect(x - 2, y - 3, 4, 6); return; }
       const sp = Math.hypot(s.vx, s.vy) || 1, ux = s.vx / sp, uy = s.vy / sp;      /* a short streak along the true direction of travel */
       for (let i = 5; i >= 0; i--) { const px = Math.round(s.x - ux * i * 1.8), py = Math.round(s.y - uy * i * 1.8); ctx.fillStyle = i === 0 ? s.col[1] : i < 3 ? s.col[0] : s.col[0]; ctx.globalAlpha = i > 3 ? 0.55 : 1; ctx.fillRect(px - 1, py - 1, i === 0 ? 3 : 2, i === 0 ? 3 : 2); } ctx.globalAlpha = 1;
