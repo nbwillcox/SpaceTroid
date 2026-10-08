@@ -16,12 +16,12 @@
     room.spawns = room.spawns.filter((q) => q.ch !== 'K');
   };
   const core = (b) => (b.kind === 'heart' ? { x: b.x, y: b.y } : b.kind === 'jelly' ? { x: b.x, y: b.y + 2 } : b.kind === 'wyrm' ? { x: b.x, y: b.y } : b.kind === 'moth' ? { x: b.x, y: b.y + 6 } : { x: b.x - b.face * G.sprites.boss.core.dx, y: b.y - G.sprites.boss.core.dy });
-  const vulnerable = (b) => (b.kind === 'heart' ? !!b.open && b.phase >= 2 : b.kind === 'jelly' ? !!b.open : b.kind === 'wyrm' ? !!b.open && b.state === 'attack' : b.state === 'stun');
+  const vulnerable = (b) => (b.kind === 'heart' ? !!b.open && (b.phase === 2 || b.phase === 4) : b.kind === 'jelly' ? !!b.open : b.kind === 'wyrm' ? !!b.open && b.state === 'attack' : b.state === 'stun');
   const inCore = (b, x, y) => { const c = core(b); return b.kind === 'heart' ? Math.abs(x - c.x) < 40 && Math.abs(y - c.y) < 40 : b.kind === 'jelly' ? Math.abs(x - c.x) < 30 && Math.abs(y - c.y) < 26 : b.kind === 'wyrm' ? Math.abs(x - c.x) < 34 && Math.abs(y - c.y) < 28 : b.kind === 'moth' ? Math.abs(x - c.x) < 24 && Math.abs(y - c.y) < 26 : Math.abs(x - c.x) < 30 && y > b.y - 76 && y < b.y - 28; };
   B.damage = function (g, b, dmg) {
     if (!vulnerable(b) || b.dead) return false;
     b.hp -= dmg; b.flash = 4; G.audio.sfx('hit');
-    if (b.kind === 'heart') { if (b.phase === 2 && b.hp <= b.hpMax * 0.45) b.phase = 3; }
+    if (b.kind === 'heart') { if (b.phase === 2 && b.hp <= b.hpMax * 0.6) { b.phase = 3; b.reshield = true; b.open = false; } }
     else { if (b.hp <= b.hpMax * 0.6 && b.phase < 2) b.phase = 2; if (b.hp <= b.hpMax * 0.28 && b.phase < 3) b.phase = 3; }
     if (b.hp <= 0) { b.dead = true; b.state = 'dying'; b.t = 0; G.audio.sfx('boom'); g.shake = 10; }
     return true;

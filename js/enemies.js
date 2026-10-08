@@ -81,7 +81,7 @@
     for (const s of g.spores) {
       s.t++; if (s.kind !== 'shard' && s.kind !== 'bolt') s.vy += 0.13; s.x += s.vx; s.y += s.vy;
       if (PH.boxSolid(g.room, s.x - 1, s.y - 1, s.x + 1, s.y + 1) || s.t > 200) s.dead = true;
-      if (!p.dead && Math.abs(p.x - s.x) < p.w / 2 + 2 && s.y > p.y - p.h && s.y < p.y) { s.dead = true; if (G.player.hurt(g, p, 8, s.x)) G.audio.sfx('hurt'); }
+      if (!p.dead && Math.abs(p.x - s.x) < p.w / 2 + 2 && s.y > p.y - p.h && s.y < p.y) { s.dead = true; if (G.player.hurt(g, p, s.dmg || 8, s.x)) G.audio.sfx('hurt'); }
       for (const sh of g.shots) if (!sh.dead && Math.abs(sh.x - s.x) < 5 && Math.abs(sh.y - s.y) < 5) { s.dead = true; if (!sh.pierce) sh.dead = true; G.fx.sparkBurst(s.x, s.y, '#ff7ac6', 4); }
       if (s.dead) G.fx.sparkBurst(s.x, s.y, '#ec5c4a', 3);
     }
