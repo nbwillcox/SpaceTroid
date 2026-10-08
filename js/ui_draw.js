@@ -15,7 +15,7 @@
     const bg = G.sprites.bg1, o = -Math.floor(time * 6) % 480, o2 = -Math.floor(time * 18) % 480;
     ctx.drawImage(bg.far, o, 0); ctx.drawImage(bg.far, o + 480, 0); ctx.drawImage(bg.mid, o2, 0); ctx.drawImage(bg.mid, o2 + 480, 0);
     ctx.fillStyle = 'rgba(6,8,26,0.35)'; ctx.fillRect(0, 0, 480, 270);
-    ctx.drawImage(G.sprites.hero.cobalt.idle.r, 72, 224 - 44);
+    { const h = G.sprites.hero.cobalt.idle; ctx.drawImage(h.r, 88 - h.ax, 224 - h.ay); }
   }
   function slots(ctx) {
     txt(ctx, U.slotMode === 'cont' ? 'CONTINUE' : 'CHOOSE A SLOT', 240, 50, '#a6ccff', 'c', 2);
@@ -35,7 +35,7 @@
     const sky = ctx.createLinearGradient(0, 0, 0, 160); sky.addColorStop(0, '#0a0e2c'); sky.addColorStop(1, tier === 2 ? '#d86a8a' : tier === 1 ? '#e8802c' : '#566cac'); ctx.fillStyle = sky; ctx.fillRect(0, 0, 480, 170);
     for (let i = 0; i < 40; i++) { ctx.fillStyle = '#fff'; ctx.fillRect((i * 97) % 480, (i * 53) % 110, 1, 1); }
     ctx.fillStyle = '#1b2c66'; ctx.fillRect(0, 170, 480, 100); ctx.fillStyle = '#2b4fa4'; ctx.fillRect(0, 170, 480, 2);
-    const sh = G.sprites.hero[tier === 2 ? 'cobalt' : 'cobalt'].idle.r; ctx.drawImage(sh, 150, 170 - 44);
+    { const h = G.sprites.hero.cobalt.idle; ctx.drawImage(h.r, 167 - h.ax, 170 - h.ay); }
     const t = Math.floor(time * 2) % 2; ctx.fillStyle = '#e8ecf8'; ctx.fillRect(300, 150 - ((time * 12) % 150), 3, 14); ctx.fillStyle = '#ffd24a'; ctx.fillRect(300, 164 - ((time * 12) % 150), 3, 3 + t);
     txt(ctx, ['MISSION COMPLETE', 'VICTORY', 'PERFECT VICTORY'][tier], 240, 24, '#fff2a8', 'c', 3);
     txt(ctx, ['THE HIVE IS GONE, BUT THE GALAXY KEEPS ITS SECRETS.', 'THE HIVE FALLS SILENT. THE LONG WAY HOME BEGINS.', 'EVERY LAST SECRET RECOVERED. THE SIGNAL FADES, AT PEACE.'][tier], 240, 72, '#dde7fb', 'c');

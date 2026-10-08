@@ -23,11 +23,9 @@
     p.mode = mode; p.w = SZ[mode][0]; p.h = SZ[mode][1]; p.crouchT = 0;
     return true;
   };
-  /* pose: which painted frame the hero shows right now (shared by drawing and the muzzle position); e = aim elevation in degrees (up positive) */
-  const AIM = [['aim_90', 90], ['aim_70', 70], ['aim_45', 45], ['aim_20', 20], ['aim_0', 0], ['aim_m20', -20], ['aim_m45', -45], ['aim_m90', -90]];
-  const CROUCH = [['crouch_up', 90], ['crouch_45', 45], ['crouch_0', 0], ['crouch_down', -45]];
-  const RUN = [['run_u90', 90], ['run_u45', 45], ['run_f', 0], ['run_d45', -45]];                  /* 8-frame run cycles per aim angle */
-  const AIR = [['air_u90', 90], ['air_u45', 45], ['air_0', 0], ['air_d45', -45]];
+  /* pose: a painted torso (chosen by the aim angle) on a leg pose (chosen by what the legs are doing), plus a small torso offset (lean, breathing).
+     Shared by drawing and the muzzle, so the shot always leaves the cannon tip. e = aim elevation in degrees (up positive) */
+  const AIM = [['90', 90], ['70', 70], ['45', 45], ['20', 20], ['0', 0], ['m20', -20], ['m45', -45], ['m90', -90]];
   const nearest = (list, e) => { let n = list[0][0], bd = 1e9; for (const [k, a] of list) { const d = Math.abs(a - e); if (d < bd) { bd = d; n = k; } } return n; };
   P.elev = function (p) {
     let e = p.aim === 'up' ? 90 : p.aim === 'diagUp' ? 45 : p.aim === 'diagDown' ? -45 : 0;
@@ -35,25 +33,26 @@
     return e;
   };
   P.pose = function (p) {
-    if (G.game && G.game.getAnim) return { n: 'aim_90', dy: 0 };                                       /* victory stance: cannon arm raised */
-    const e = P.elev(p), sp = Math.abs(p.vx), t = G.game ? G.game.time : 0;
-    if (p.mode === 'crouch') return { n: nearest(CROUCH, e), dy: 0 };
-    if (p.hurt > 0 && !p.dead) return { n: p.ground ? 'aim_0' : 'air_0', dy: 0 };                       /* knocked back */
-    if (!p.ground) return { n: nearest(AIR, e), dy: 0 };
-    if (p.landT > 2) return { n: 'crouch_0', dy: 0 };
+    if (G.game && G.game.getAnim) return { tor: '90', leg: 'idle', ox: 0, oy: 0 };                      /* victory stance: cannon arm raised */
+    const e = P.elev(p), sp = Math.abs(p.vx), t = G.game ? G.game.time : 0, tor = nearest(AIM, e);
+    if (p.mode === 'crouch') return { tor, leg: 'crouch', ox: 2, oy: 0 };
+    if (p.hurt > 0 && !p.dead) return p.ground ? { tor, leg: 'skid', ox: -2, oy: 0 } : { tor, leg: 'fall', ox: -1, oy: 0 };       /* knocked back */
+    if (!p.ground) return { tor, leg: p.vy < -3.5 ? 'rise' : p.vy < 1.2 ? 'apex' : 'fall', ox: p.vx ? p.face * Math.sign(p.vx) : 0, oy: p.vy < -3.5 ? -1 : 0 };
+    if (p.landT > 0) return { tor, leg: p.landT > 4 ? 'land2' : p.landT > 2 ? 'land1' : 'idle', ox: 1, oy: 0 };
     if (sp > 0.25) {
-      if (Math.sign(p.vx) !== p.face && sp > 1.0) return { n: 'aim_0', dy: 0 };                         /* skidding round */
-      const i = Math.floor(p.anim * 1.6) % 8, r = nearest(RUN, e);
-      return { n: r + i, dy: 0 };
+      if (Math.sign(p.vx) !== p.face && sp > 1.0) return { tor, leg: 'skid', ox: -2, oy: 0 };          /* skidding round */
+      const i = Math.floor(p.anim * 1.6) % 8;
+      return { tor, leg: (sp < 0.9 ? 'w' : sp < 1.5 ? 'm' : 'r') + i, ox: sp > 2.1 ? 2 : 1, oy: 0 };
     }
-    return { n: nearest(AIM, e), dy: (Math.floor(t / 40) & 1) ? 1 : 0 };
+    if (p.anim > 0) return { tor, leg: 'w' + (Math.floor(p.anim * 1.6) % 8), ox: 1, oy: 0 };              /* settling into the stand */
+    return { tor, leg: 'idle', ox: 0, oy: Math.floor(t / 50) & 1 };                                      /* breathing moves the torso only */
   };
   P.muzzle = function (p) {
     const f = p.face;
     if (p.mode === 'ball') return { x: p.x + 17 * f, y: p.y - 8 };
     if (p.spinning && !p.ground) return { x: p.x + 14 * f, y: p.y - 22 };
-    const q = P.pose(p), fr = G.sprites.hero[p.suit || 'cobalt'][q.n];
-    return { x: p.x + f * fr.tx, y: p.y + fr.ty + q.dy };
+    const q = P.pose(p), SP = G.sprites.heroSpec, T = SP['tor_' + q.tor], g = SP['leg_' + q.leg].g;
+    return { x: p.x + f * (T.tx + q.ox), y: p.y + T.ty + q.oy - g };
   };
   P.aimVec = function (p) {
     if (p.aimAng !== null && p.aimAng !== undefined) return { x: Math.cos(p.aimAng), y: Math.sin(p.aimAng) };
@@ -73,10 +72,10 @@
   /* which sprite frame to draw */
   P.frame = function (p) {
     const H = G.sprites.hero[p.suit || 'cobalt'];
-    if (G.game && G.game.getAnim) return H.aim_90;
+    if (G.game && G.game.getAnim) return G.sprites.heroPose(p.suit || 'cobalt', '90', 'idle', 0, 0);
     if (p.mode === 'ball') return H['ball' + ((Math.floor(p.ballRot || 0) % 4 + 4) % 4)];          /* spins the way it rolls (the sprite is never mirrored) */
     if (p.spinning && !p.ground) return H['spin' + (Math.floor(p.spinT / 2.4) & 7)];
     if (G.game && G.game.saveAnim) return H.front;
-    return H[P.pose(p).n];
+    const q = P.pose(p); return G.sprites.heroPose(p.suit || 'cobalt', q.tor, q.leg, q.ox, q.oy);
   };
 })((window.SGS = window.SGS || {}));

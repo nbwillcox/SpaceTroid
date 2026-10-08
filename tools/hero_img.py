@@ -12,10 +12,7 @@ HERO_H = 43.0                      # standing forward-aim head-to-feet height in
 CW, C2 = 132.25, 264.5             # cell widths (8 across / 4 across); the grid starts at x = 13
 def row(names, y0, y1, x0=13.0, w=CW): return [(n, int(x0 + i * w) + 3, int(x0 + (i + 1) * w) - 2, y0, y1) for i, n in enumerate(names)]
 CELLS = []
-for pre, y0, y1 in (('run_f', 64, 181), ('run_u45', 234, 354), ('run_u90', 407, 543), ('run_d45', 597, 709)): CELLS += row([pre + str(i) for i in range(8)], y0, y1)
-CELLS += row(['air_0', 'air_u45', 'air_u90', 'air_d45'], 792, 924, w=C2)
 CELLS += row(['aim_90', 'aim_70', 'aim_45', 'aim_20', 'aim_0', 'aim_m20', 'aim_m45', 'aim_m90'], 992, 1132)
-CELLS += row(['crouch_0', 'crouch_45', 'crouch_up', 'crouch_down'], 1195, 1270, w=C2)
 CELLS += row(['ball0', 'ball1', 'ball2', 'ball3'], 1322, 1407, x0=14.0, w=98.5)
 CELLS += row(['spin%d' % i for i in range(8)], 1322, 1407, x0=420.0, w=81.5)
 def theta(n):
@@ -81,11 +78,12 @@ def _seg(dr, p0, p1, w0, w1, col):
 def _band(dr, P, Q, t, w, col):
     x, y = P[0] + (Q[0] - P[0]) * t, P[1] + (Q[1] - P[1]) * t; dx, dy = Q[0] - P[0], Q[1] - P[1]; d = math.hypot(dx, dy) or 1.0; nx, ny = -dy / d * w / 2, dx / d * w / 2
     _seg(dr, (x - nx, y - ny), (x + nx, y + ny), 1.4, 1.4, col)
-def _leg(dr, hip, p, G, f, L=11.2):
+def _leg(dr, hip, p, G, f, L=11.2, amp=1.0, foot=None):
     """one leg of the run cycle: stance (foot slides back along the ground) then swing (foot lifts and carries forward)"""
     beta = 0.0
-    if p < 0.5: fx = 9.0 - 19.0 * (p / 0.5); lift = 0.0
-    else: u = (p - 0.5) / 0.5; beta = (1.1 * math.sin(math.pi * u) if u < 0.5 else -0.35 * math.sin(math.pi * u)); sm = u * u * (3 - 2 * u); fx = -10.0 + 19.0 * sm; lift = 8.0 * math.sin(math.pi * u) ** 0.8
+    if foot: fx, lift, beta = foot                                          # an explicit pose (standing, jumping, crouching ...)
+    elif p < 0.5: fx = amp * (9.0 - 19.0 * (p / 0.5)); lift = 0.0
+    else: u = (p - 0.5) / 0.5; beta = (1.1 * math.sin(math.pi * u) if u < 0.5 else -0.35 * math.sin(math.pi * u)); sm = u * u * (3 - 2 * u); fx = amp * (-10.0 + 19.0 * sm); lift = (3.0 + 5.0 * amp) * math.sin(math.pi * u) ** 0.8
     fy = G - 2.4 - lift; n0 = math.hypot(fx, fy); d = min(n0, 2 * L - 0.4); ux, uy = fx / n0, fy / n0
     h = math.sqrt(max(0.1, L * L - (d / 2) ** 2)); H = hip; K = (hip[0] + ux * d / 2 + uy * h, hip[1] + uy * d / 2 - ux * h); A = (hip[0] + ux * d, hip[1] + uy * d)
     o, m, l, dk, tan = [_shade(LEG[k], f) for k in ('out', 'mid', 'lite', 'dark', 'tan')]
@@ -102,24 +100,6 @@ def _leg(dr, hip, p, G, f, L=11.2):
     _band(dr, H, K, 0.45, 6.0, tan); _band(dr, K, A, 0.72, 5.0, tan)
     dr.ellipse([(K[0] + 0.5 - 1.9) * SS, (K[1] - 0.3 - 1.9) * SS, (K[0] + 0.5 + 1.9) * SS, (K[1] - 0.3 + 1.9) * SS], fill=tan); dr.ellipse([(K[0] - 0.2) * SS, (K[1] - 1.4) * SS, (K[0] + 1.0) * SS, (K[1] - 0.4) * SS], fill=l)
     dr.polygon([(x * SS, y * SS) for x, y in rot([(A[0] + 1.0, A[1] - 0.4), (A[0] + 3.4, A[1] - 0.4), (A[0] + 3.4, A[1] + 0.6), (A[0] + 1.0, A[1] + 0.6)])], fill=tan)
-
-def run_legs(im2, i):
-    """swap the painted legs of a run frame for drawn ones that really alternate: the painted torso stays (cut under the belt), two legs 180 degrees apart are drawn under it"""
-    a = np.asarray(im2); H, W = a.shape[:2]; al = a[..., 3] > 0; old_ay = int(np.nonzero(al.any(axis=1))[0].max()) + 1
-    r, g, b = a[..., 0].astype(int), a[..., 1].astype(int), a[..., 2].astype(int); tan = al & (r > 150) & (g > 100) & (b < 150) & (r > b + 40)
-    lo, hi = int(H * 0.35), int(H * 0.66); cnt = tan[lo:hi, int(W * 0.12):int(W * 0.7)].sum(axis=1); belt = lo + int(cnt.argmax()) if cnt.max() > 1 else int(H * 0.52)
-    cut = belt + 2; Gd = 20.5; oy = old_ay - (belt + 1 + int(Gd)); cols = np.nonzero(al[belt - 1:belt + 2].any(axis=0))[0]; ax = float(cols.mean()) if len(cols) else W / 2.0
-    bob = (0, 1, 0, 1, 0, 1, 0, 1)[i] * 0 + round(0.9 * (1 - math.cos(4 * math.pi * i / 8)) / 2)
-    can = Image.new('RGBA', (W, H + 4), (0, 0, 0, 0)); can.paste(im2.crop((0, 0, W, cut)), (0, oy + bob))
-    big = Image.new('RGBA', (W * SS, (H + 4) * SS), (0, 0, 0, 0)); dr = ImageDraw.Draw(big)
-    hip = (ax, oy + belt + 1 + bob); G = Gd - bob
-    _leg(dr, hip, ((i / 8.0) + 0.5) % 1.0, G, 0.62)                                         # far leg (darker) first
-    _leg(dr, hip, (i / 8.0) % 1.0, G, 1.0)                                                  # near leg
-    legs = big.resize((W, H + 4), Image.BOX); la = np.asarray(legs).copy(); la[..., 3] = np.where(la[..., 3] > 120, 255, 0); legs = Image.fromarray(la, 'RGBA')
-    can.alpha_composite(legs); can.alpha_composite(Image.new('RGBA', can.size, (0, 0, 0, 0)))
-    # torso over the legs (the belt hides the hip joint)
-    t = Image.new('RGBA', can.size, (0, 0, 0, 0)); t.paste(im2.crop((0, 0, W, cut)), (0, oy + bob)); can.alpha_composite(t)
-    return can, ax
 
 def build():
     im = Image.open(SRC).convert('RGB'); a = np.asarray(im).astype(int)
@@ -153,9 +133,9 @@ def build():
     ref = raw['aim_0']; s = HERO_H / ref.height
     frames = {}
     for name, img in raw.items():
+        if name.startswith('aim_'): continue                                      # the standing aim frames only supply torsos (tools/hero_parts.py)
         sc = 16.0 / max(img.width, img.height) if name.startswith('ball') else s
         im2 = scale(img, sc); axo = None
-        if name.startswith('run_'): im2, axo = run_legs(im2, int(name[-1]))
         im2 = quant(im2); arr = np.asarray(im2); al = arr[..., 3] > 0
         ys, xs = np.nonzero(al); my0, my1, mx0, mx1 = ys.min(), ys.max(), xs.min(), xs.max()
         if name.startswith('spin'): ax, ay = (mx0 + mx1) / 2.0, (my0 + my1) / 2.0
@@ -185,6 +165,8 @@ def build():
         fr = {'u': png64(im2), 'w': im2.width, 'h': im2.height, 'ax': round(ax), 'ay': round(ay)}
         if tip: fr['tx'] = round(tip[0]); fr['ty'] = round(tip[1])
         frames[name] = fr
+    import hero_parts
+    frames.update(hero_parts.make(raw, s))
     old = json.load(open(os.path.join(HERE, 'hero_old_frames.json')))
     frames['front'] = old['front']                                   # the sheet has no camera-facing pose: the save animation keeps the earlier one
     return frames
@@ -195,4 +177,4 @@ if __name__ == '__main__':
     src = "/* GENERATED by tools/hero_img.py from the supplied hero artwork: PNG data URIs with anchors (feet) and cannon-tip offsets. */\n(function (G) {\n  G.art = G.art || {};\n  G.art.heroimg = " + json.dumps(fr, separators=(',', ':')) + ";\n})((window.SGS = window.SGS || {}));\n"
     open(path, 'w', encoding='utf-8').write(src)
     print('wrote', len(src))
-    for k, v in fr.items(): print(k, v['w'], v['h'], 'anchor', v['ax'], v['ay'], 'tip', v.get('tx'), v.get('ty'))
+    for k, v in fr.items(): print(k, v['w'], v['h'], 'anchor', v.get('ax', v.get('hx')), v.get('ay', v.get('hy')), 'tip', v.get('tx'), v.get('ty'))

@@ -35,8 +35,25 @@
       im.src = spec.u;
       return f;
     };
-    S.hero = {};
-    for (const suit in shift) { const o = {}; for (const k in HI) if (k.indexOf('suit_') !== 0) o[k] = heroFrame(HI[k], shift[suit]); o.idle = o.aim_0; S.hero[suit] = o; }
+    S.hero = {}; S.heroSpec = HI; S.heroParts = {};
+    /* the hero is a painted torso (one per aim angle) on a drawn leg pose: both parts are loaded per suit and composed on demand into one cached frame, so the head, arms and cannon never jump when the legs change */
+    const part = (spec, dh) => { const c = document.createElement('canvas'); c.width = spec.w; c.height = spec.h; const f = { c, spec, ok: false }, im = new Image(); im.onload = () => { c.getContext('2d').drawImage(im, 0, 0); if (dh) recolor(c, dh); f.ok = true; }; im.src = spec.u; return f; };
+    const CW = 80, CH = 96, HX = 40, HY = 64, poseCache = new Map(), blank = document.createElement('canvas'); blank.width = CW; blank.height = CH;
+    S.heroPose = function (suit, tor, leg, ox, oy) {
+      const k = suit + '|' + tor + '|' + leg + '|' + ox + '|' + oy, hit = poseCache.get(k); if (hit) return hit;
+      const P = S.heroParts[suit], T = P['tor_' + tor], L = P['leg_' + leg], g = L.spec.g, ay = HY + g;
+      if (!T.ok || !L.ok) return { r: blank, l: blank, w: CW, h: CH, ax: HX, axl: CW - HX, ay, tx: 0, ty: 0 };           /* still decoding: draw nothing this frame */
+      const r = document.createElement('canvas'), l = document.createElement('canvas'); r.width = l.width = CW; r.height = l.height = CH;
+      const x = r.getContext('2d'); x.drawImage(L.c, Math.round(HX - L.spec.hx), Math.round(HY - L.spec.hy)); x.drawImage(T.c, Math.round(HX + ox - T.spec.hx), Math.round(HY + oy - T.spec.hy));
+      const y = l.getContext('2d'); y.translate(CW, 0); y.scale(-1, 1); y.drawImage(r, 0, 0);
+      const f = { r, l, w: CW, h: CH, ax: HX, axl: CW - HX, ay, tx: T.spec.tx + ox, ty: T.spec.ty + oy - g }; poseCache.set(k, f); return f;
+    };
+    for (const suit in shift) {
+      const o = {}, P = S.heroParts[suit] = {};
+      for (const k in HI) { if (k.indexOf('tor_') === 0 || k.indexOf('leg_') === 0) P[k] = part(HI[k], shift[suit]); else if (k.indexOf('suit_') !== 0) o[k] = heroFrame(HI[k], shift[suit]); }
+      Object.defineProperty(o, 'idle', { get: () => S.heroPose(suit, '0', 'idle', 0, 0) });
+      S.hero[suit] = o;
+    }
     const Z = A.zone1, M = A.zone1misc, D = A.zone1deco;
     /* one tileset per zone: the same hand-drawn grids, compiled with that zone's palette (plus zone-specific extras) */
     const tileset = (key, zone) => {
