@@ -6,7 +6,8 @@
   G.weapons = W;
   W.beam = function (A) {
     const b = A.beams || {}, col = b.plasma ? ['#ff7a2a', '#fff6a0'] : b.wave ? ['#b878ff', '#f2e0ff'] : b.ice ? ['#7ad8ff', '#ffffff'] : ['#ffd24a', '#fff6a0'];
-    return { dmg: 1 + (b.wave ? 1 : 0) + (b.plasma ? 2 : 0), cdmg: 1 + (b.wave ? 1 : 0) + (b.ice ? 1 : 0) + (b.plasma ? 2 : 0), ice: !!b.ice, wave: !!b.wave, pierce: !!b.plasma, col };
+    const style = b.plasma ? 'plasma' : b.wave ? 'wave' : b.ice ? 'ice' : 'base', mods = []; if (b.ice && style !== 'ice') mods.push('ice'); if (b.wave && style !== 'wave') mods.push('wave');
+    return { style, mods, dmg: 1 + (b.wave ? 1 : 0) + (b.plasma ? 2 : 0), cdmg: 1 + (b.wave ? 1 : 0) + (b.ice ? 1 : 0) + (b.plasma ? 2 : 0), ice: !!b.ice, wave: !!b.wave, pierce: !!b.plasma, col };
   };
   /* charge beam: hold Fire past a short delay and p.charge climbs. Release early for a partial shot (tier 1, 1.5x to 3x), at CH.full for a full piercing shot (tier 2, 4x), at CH.mega for an overcharge (tier 3, 10x, huge and piercing) */
   const CH = { min: 12, full: 60, mega: 110, max: 120 };
@@ -15,7 +16,7 @@
   function shoot(g, p, tier, ch) {
     const m = P.muzzle(p), v = P.aimVec(p), B = W.beam(g.abil), f = tier === 1 ? (ch - CH.min) / (CH.full - CH.min) : 1;
     const mult = [1, 1.5 + 1.5 * f, 4, 10][tier], sp = [6, 6.2, 7, 8.5][tier], r = [2, 3 + Math.round(f * 2), 5, 9][tier];
-    g.shots.push({ kind: 'beam', x: m.x, y: m.y, vx: v.x * sp, vy: v.y * sp, life: [90, 85, 80, 110][tier], dmg: tier === 3 ? B.cdmg * 20 : B.dmg * mult, r, ice: B.ice, wave: B.wave, pierce: B.pierce || tier >= 2, col: B.col, big: tier >= 2, tier, f, t: 0, hit: new Set() });
+    g.shots.push({ kind: 'beam', x: m.x, y: m.y, vx: v.x * sp, vy: v.y * sp, life: [90, 85, 80, 110][tier], dmg: tier === 3 ? B.cdmg * 20 : B.dmg * mult, r, ice: B.ice, wave: B.wave, pierce: B.pierce || tier >= 2, col: B.col, style: B.style, mods: B.mods, big: tier >= 2, tier, f, t: 0, hit: new Set() });
     if (tier < 2) G.fx.flash(m.x, m.y, B.col[1], 3); else G.fx.sparkBurst(m.x, m.y, B.col[1], tier === 3 ? 14 : 7);
     if (tier === 3) { G.fx.ring(m.x, m.y); g.shake = Math.max(g.shake, 4); }
     G.audio.sfx(tier === 3 ? 'mega' : tier ? 'charged' : 'shot');
