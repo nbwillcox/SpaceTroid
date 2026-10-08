@@ -20,6 +20,7 @@
   const inCore = (b, x, y) => { const c = core(b); return b.kind === 'heart' ? Math.abs(x - c.x) < 40 && Math.abs(y - c.y) < 40 : b.kind === 'jelly' ? Math.abs(x - c.x) < 30 && Math.abs(y - c.y) < 26 : b.kind === 'wyrm' ? Math.abs(x - c.x) < 34 && Math.abs(y - c.y) < 28 : b.kind === 'moth' ? Math.abs(x - c.x) < 24 && Math.abs(y - c.y) < 26 : Math.abs(x - c.x) < 30 && y > b.y - 76 && y < b.y - 28; };
   B.damage = function (g, b, dmg) {
     if (!vulnerable(b) || b.dead) return false;
+    if (b.kind === 'heart') dmg = Math.min(dmg, 50);                      /* the Hive Core's armoured heart: no single hit takes more than 50, so an overcharge cannot end the fight in a few shots */
     b.hp -= dmg; b.flash = 4; G.audio.sfx('hit');
     if (b.kind === 'heart') { if (b.phase === 2 && b.hp <= b.hpMax * 0.6) { b.phase = 3; b.reshield = true; b.open = false; } }
     else { if (b.hp <= b.hpMax * 0.6 && b.phase < 2) b.phase = 2; if (b.hp <= b.hpMax * 0.28 && b.phase < 3) b.phase = 3; }
