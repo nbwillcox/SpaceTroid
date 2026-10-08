@@ -43,7 +43,7 @@
       for (const dr of d.doors || []) {
         if (dr.color === 'open') continue;
         const live = g.roomId === id && g.doors ? g.doors.find((q) => q.id === dr.id) : null;
-        const col = dr.color === 'boss' && g.prog.flags.boss1 ? DOOR.blue : (g.prog.doors[id + ':' + dr.id] && dr.color !== 'boss' ? DOOR.blue : DOOR[dr.color]);
+        const col = dr.color === 'boss' && G.world.bossBeaten(g, id) ? DOOR.blue : (g.prog.doors[id + ':' + dr.id] && dr.color !== 'boss' ? DOOR.blue : DOOR[dr.color]);
         const yy = ry + Math.round((dr.ty + 1) / d.map.length * h) - 2, xx = dr.side === 'L' ? rx - 1 : rx + w - 2;
         ctx.fillStyle = col; ctx.fillRect(xx, yy, 3, 5);
       }

@@ -26,11 +26,15 @@
   /* map cells (30 x 17 tiles each) a room covers */
   W.cells = function (def) { if (def.parent) return []; const cw = Math.ceil(def.map[0].length / 30), ch = Math.ceil(def.map.length / 17), out = []; for (let y = 0; y < ch; y++) for (let x = 0; x < cw; x++) out.push([def.mx + x, def.my + y]); return out; };
   const dkey = (room, d) => room.id + ':' + d.id;
+  /* the gold exit door of a boss arena stays locked only until that arena's boss has been beaten (rooms are rebuilt on every visit, so the flag is checked on entry) */
+  W.BOSS_FLAG = { arena: 'boss1', arena2: 'boss2', arena3: 'boss3', arena4: 'boss4', heartroom: 'boss5' };
+  W.bossBeaten = (g, roomId) => !!(W.BOSS_FLAG[roomId] && g.prog.flags[W.BOSS_FLAG[roomId]]);
   W.setup = function (g, room) {
     const def = room.def;
     g.doors = (def.doors || []).map((d) => {
       const o = Object.assign({ h: 3, state: 'closed', t: 0, idle: 0, tx: d.side === 'L' ? 0 : room.w - 1 }, d);
       if (o.color === 'open') o.state = 'open';
+      if (o.color === 'boss' && W.bossBeaten(g, room.id)) o.color = 'blue';
       if (g.prog.doors[dkey(room, d)]) o.unlocked = true;
       W.applyDoor(room, o);
       return o;
@@ -55,7 +59,6 @@
   /* boss fight: lock every door, then free them */
   W.sealDoors = function (g) { for (const d of g.doors) { d.sealed = true; if (d.state !== 'closed') { d.state = 'closed'; W.applyDoor(g.room, d); } } };
   W.openAll = function (g) { for (const d of g.doors) { d.sealed = false; if (d.color === 'boss') d.color = 'blue'; if (d.state === 'closed') { d.state = 'opening'; d.t = 0; } } };
-  W.bossOpen = function (g) { for (const d of g.doors) if (d.color === 'boss' && g.prog.flags.boss1) { d.color = 'blue'; } };
   W.update = function (g) {
     const p = g.P, room = g.room;
     if (g.doorGrace > 0) g.doorGrace--;
