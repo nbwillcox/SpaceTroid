@@ -93,6 +93,7 @@ def cache():
     r.style = ['panels', 'glow']; r.tone = 0.75
     r.cave([(0, 15)], [(0, 2), (6, 4), (10, 2), (22, 2), (26, 4)])
     r.door('w', 'L', 14, 'open', 'passage', 'e', h=1)
+    r.door('e', 'R', 12, 'red', 'cavern', 'wb')      # loop: the first missiles open this red door, straight into the sump west of the Deep Cavern, so the missile and bomb gates beyond are next door
     r.fill(1, 12, 5, 13, '#')
     r.statue(14, 'big', 15, 'missile', 'missile')
     return r
@@ -154,6 +155,7 @@ def cavern():
     r.cave([(0, 32)], [(0, 19), (4, 22), (12, 19), (20, 23), (30, 19), (42, 17, 's'), (58, 17)], y0=17, y1=33)
     r.stair(54, 56, 32)
     r.fill(1, 19, 9, 31, '#'); r.fill(2, 29, 8, 31, '.'); r.fill(9, 29, 9, 31, 'M'); add_shrine(ROOMS, r, 'dS', 2, 29, 1, 3, 'mtankS', 'missileTank', 'Arsenal Shrine')
+    r.fill(1, 29, 1, 31, '.'); r.door('wb', 'L', 29, 'red', 'cache', 'e')      # the loop from the Missile Cache: a missile block still seals the way on into the sump
     r.on('c', 16); r.on('c', 30); r.spawn('m', 24, 26); r.spawn('m', 44, 24); r.on('o', 38)
     r.door('eb', 'R', 29, 'blue', 'outlet', 'w')
     r.wall(1, 18, 58, 32, ragged=False)

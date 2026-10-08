@@ -106,6 +106,7 @@ def vent():
     r = room('vent', 'Vent Chamber', 30, 17, 8, 9, solid=True, wall_all=True)
     r.cave([(0, 13), (10, 13), (13, 15), (19, 15), (22, 13)], [(0, 2), (4, 4), (10, 2), (22, 4)])
     r.door('w', 'L', 10, 'green', 'deepcut', 'v')
+    r.door('e', 'R', 10, 'green', 'lift4', 'v')      # shortcut: the super missiles found in the Surface Lock open this tunnel straight to the Vent Chamber
     r.statue(16, 'small', 15, 'stank', 'superTank'); r.style = ['glow', 'pipes']; r.tone = 0.7
     return r
 vent()
@@ -131,7 +132,7 @@ arena4()
 def lift4():
     r = room('lift4', 'Surface Lock', 30, 17, 14, 8, solid=True, wall_all=True)
     r.cave([(0, 15)], [(0, 2), (4, 4), (16, 2)])
-    r.door('w', 'L', 12, 'blue', 'arena4', 'e')
+    r.door('w', 'L', 12, 'blue', 'arena4', 'e'); r.door('v', 'R', 12, 'green', 'vent', 'e')
     r.style = ['panels', 'glow']; r.tone = 0.75
     r.statue(8, 'big', 15, 'super', 'superMissile'); r.station('lift', 22, 14, to='hgate')
     return r
