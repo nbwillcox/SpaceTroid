@@ -87,6 +87,11 @@
       if (near) { g.near = s; if (G.input.down.u && !g.banner) W.useStation(g, s); }
     }
   };
+  /* fast travel: any save pad whose room has been visited is a warp target, usable from another pad (press the map key while standing on one) */
+  W.padRooms = (g) => Object.keys(G.rooms).filter((id) => g.prog.visited[id] && (G.rooms[id].stations || []).some((s) => s.type === 'save'));
+  W.canWarp = (g) => !!(g.near && g.near.type === 'save' && !g.saveAnim && !g.getAnim && !g.boss && !g.escape && !g.banner && !g.trans && W.padRooms(g).length >= 2);
+  W.padSpot = (id) => { const s = G.rooms[id].stations.find((q) => q.type === 'save'); return { x: s.tx * T + 8, y: s.ty * T + 16 }; };
+  W.warpTo = function (g, id) { const sp = W.padSpot(id); g.trans = { t: 0, to: id, door: null, phase: 'out', sx: sp.x, sy: sp.y }; G.audio.sfx('door'); };
   W.useStation = function (g, s) {
     const p = g.P;
     if (s.type === 'lift') { if (s.to) g.trans = { t: 0, to: s.to, door: null, phase: 'out' }; else G.main.ending(g); return; }
@@ -162,5 +167,6 @@
     }
     for (const it of g.pickups) W.drawItem(ctx, it.type, Math.round(it.x), Math.round(it.y), it.t, Math.round(Math.sin(it.t * 0.08) * 2));
     if (g.near && !g.saveAnim) G.px.text(ctx, { save: 'UP: SAVE', map: 'UP: MAP', lift: 'UP: DESCEND' }[g.near.type], Math.round(g.near.x), Math.round(g.near.y - 62), { s: 1, c: '#f2ffff', o: '#0a0e2c', a: 'c' });
+    if (g.near && !g.saveAnim && W.canWarp(g)) G.px.text(ctx, 'M: WARP', Math.round(g.near.x), Math.round(g.near.y - 52), { s: 1, c: '#86f0f2', o: '#0a0e2c', a: 'c' });
   };
 })((window.SGS = window.SGS || {}));

@@ -74,7 +74,7 @@
     const dbg = Game.debugAll; Game.begin(Game.slot, rec, false); if (dbg) Game.debugAll = true;
   };
   Game.finishTrans = function () {
-    const t = Game.trans; Game.enterRoom(t.to, t.door); t.phase = 'in'; t.t = 0;
+    const t = Game.trans; Game.enterRoom(t.to, t.door, t.sx, t.sy); t.phase = 'in'; t.t = 0;
   };
   Game.step = function () {
     const p = Game.P, room = Game.room, D = G.input.down;

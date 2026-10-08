@@ -32,6 +32,7 @@ This is an original game inspired by classic exploration platformers. It uses no
 | Map | M or Tab |
 | Pause | P or Esc |
 | Save / use map terminal | stand on the pad and press Up |
+| Fast travel | stand on a save pad and press M: pick any save pad you have visited (Left / Right), Jump to warp |
 | Menus | Up / Down, Left / Right to change values, Jump or Enter to select |
 
 Doors: **blue** opens with any shot, **red** needs a missile, **green** a super missile, **gold** opens when the zone boss is beaten.

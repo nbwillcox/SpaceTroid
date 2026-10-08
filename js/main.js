@@ -16,7 +16,13 @@
   M.startDebug = function (room) { const rec = G.save.fresh(); rec.room = room || 'crash'; I.clear(); Game.debugAll = true; Game.begin(null, rec, true); M.mode = 'play'; };
   M.pause = function () { if (M.mode !== 'play') return; M.mode = 'pause'; I.clear(); UI.open('pause', 'pause'); };
   M.resume = function () { M.mode = 'play'; I.clear(); };
-  M.openMap = function () { if (M.mode === 'pause' || M.mode === 'play') { M.fromPause = M.mode === 'pause'; M.mode = 'map'; I.clear(); } };
+  M.openMap = function () {
+    if (M.mode === 'pause' || M.mode === 'play') {
+      M.fromPause = M.mode === 'pause'; M.warp = null;
+      if (M.mode === 'play' && G.world.canWarp(Game)) { const list = G.world.padRooms(Game); M.warp = { list, idx: Math.max(0, list.indexOf(Game.roomId)) }; }
+      M.mode = 'map'; I.clear();
+    }
+  };
   M.toTitle = function () { M.mode = 'title'; I.clear(); UI.open('title'); G.music.play('title'); };
   M.ending = function () { M.mode = 'end'; I.clear(); UI.open('end'); G.music.play('ending'); };
   function update() {
@@ -24,7 +30,14 @@
       if (I.down.pause) { M.pause(); return; }
       if (I.down.map && !Game.banner && !Game.trans && !Game.saveAnim) { M.openMap(); return; }
       Game.step();
-    } else if (M.mode === 'map') { if (I.down.map || I.down.pause || I.down.jump || I.down.start) { M.mode = M.fromPause ? 'pause' : 'play'; I.clear(); } }
+    } else if (M.mode === 'map') {
+      const w = M.warp, close = () => { M.mode = M.fromPause ? 'pause' : 'play'; M.warp = null; I.clear(); };
+      if (w) {
+        if (I.down.l) w.idx = (w.idx + w.list.length - 1) % w.list.length; if (I.down.r) w.idx = (w.idx + 1) % w.list.length;
+        if (I.down.jump || I.down.start || I.down.fire) { const id = w.list[w.idx]; close(); if (id !== Game.roomId) G.world.warpTo(Game, id); }
+        else if (I.down.map || I.down.pause) close();
+      } else if (I.down.map || I.down.pause || I.down.jump || I.down.start) close();
+    }
     else UI.update();
   }
   M.render = function () {
