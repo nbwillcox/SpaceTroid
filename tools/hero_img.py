@@ -78,12 +78,14 @@ def _seg(dr, p0, p1, w0, w1, col):
 def _band(dr, P, Q, t, w, col):
     x, y = P[0] + (Q[0] - P[0]) * t, P[1] + (Q[1] - P[1]) * t; dx, dy = Q[0] - P[0], Q[1] - P[1]; d = math.hypot(dx, dy) or 1.0; nx, ny = -dy / d * w / 2, dx / d * w / 2
     _seg(dr, (x - nx, y - ny), (x + nx, y + ny), 1.4, 1.4, col)
+def foot_at(p, amp=1.0):
+    """foot position (forward, lift, boot pitch) at phase p of the stride: stance slides the foot back along the ground, swing lifts it and carries it forward"""
+    if p < 0.5: return amp * (9.0 - 19.0 * (p / 0.5)), 0.0, 0.0
+    u = (p - 0.5) / 0.5; beta = 1.1 * math.sin(math.pi * u) if u < 0.5 else -0.35 * math.sin(math.pi * u); sm = u * u * (3 - 2 * u)
+    return amp * (-10.0 + 19.0 * sm), (3.0 + 5.0 * amp) * math.sin(math.pi * u) ** 0.8, beta
 def _leg(dr, hip, p, G, f, L=11.2, amp=1.0, foot=None):
     """one leg of the run cycle: stance (foot slides back along the ground) then swing (foot lifts and carries forward)"""
-    beta = 0.0
-    if foot: fx, lift, beta = foot                                          # an explicit pose (standing, jumping, crouching ...)
-    elif p < 0.5: fx = amp * (9.0 - 19.0 * (p / 0.5)); lift = 0.0
-    else: u = (p - 0.5) / 0.5; beta = (1.1 * math.sin(math.pi * u) if u < 0.5 else -0.35 * math.sin(math.pi * u)); sm = u * u * (3 - 2 * u); fx = amp * (-10.0 + 19.0 * sm); lift = (3.0 + 5.0 * amp) * math.sin(math.pi * u) ** 0.8
+    fx, lift, beta = foot if foot else foot_at(p, amp)                       # an explicit pose (standing, jumping, crouching ...) or a point in the stride
     fy = G - 2.4 - lift; n0 = math.hypot(fx, fy); d = min(n0, 2 * L - 0.4); ux, uy = fx / n0, fy / n0
     h = math.sqrt(max(0.1, L * L - (d / 2) ** 2)); H = hip; K = (hip[0] + ux * d / 2 + uy * h, hip[1] + uy * d / 2 - ux * h); A = (hip[0] + ux * d, hip[1] + uy * d)
     o, m, l, dk, tan = [_shade(LEG[k], f) for k in ('out', 'mid', 'lite', 'dark', 'tan')]

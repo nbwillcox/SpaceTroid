@@ -65,10 +65,17 @@ def leg_poses():
          'land1': (('ft', 7, 0, 0), ('ft', -7, 0, 0), 17),
          'land2': (('ft', 9, 0, 0), ('ft', -8, 0, 0), 14),
          'crouch': (('ft', 10, 0, 0), ('ft', -8, 0, 0), 10)}
-    for tag, amp in (('w', 0.5), ('m', 0.75), ('r', 1.0)):                       # walk-start, walk and run cycles share their phase, so the speed can change mid-stride
+    AMPS = (('a', 0.5), ('b', 0.65), ('c', 0.8), ('d', 0.9), ('e', 1.0))       # stride lengths by speed: five steps, so the legs never jump between sizes when you speed up or slow down
+    for tag, amp in AMPS:                                                      # the cycles share their phase, so the speed can change mid-stride
         for i in range(8):
             bob = round(0.9 * (1 - math.cos(4 * math.pi * i / 8)) / 2)
             P['%s%d' % (tag, i)] = (('ph', (i / 8.0) % 1.0, amp), ('ph', ((i / 8.0) + 0.5) % 1.0, amp), GD - bob)
+    idle = P['idle']                                                           # stopping: from wherever the stride stopped, glide the feet to the idle stance in three steps
+    for i in range(8):
+        bob = round(0.9 * (1 - math.cos(4 * math.pi * i / 8)) / 2); n0, f0 = H.foot_at((i / 8.0) % 1.0, 0.5), H.foot_at(((i / 8.0) + 0.5) % 1.0, 0.5)
+        for k in (1, 2, 3):
+            t = k / 4.0; lerp = lambda a, b: tuple(x + (y - x) * t for x, y in zip(a, b))
+            P['s%d_%d' % (k, i)] = (('ft',) + lerp(n0, idle[0][1:]), ('ft',) + lerp(f0, idle[1][1:]), round((GD - bob) + (GD - (GD - bob)) * t))
     return P
 
 def make(raw, s):

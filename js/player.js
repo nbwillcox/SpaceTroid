@@ -42,9 +42,9 @@
     if (sp > 0.25) {
       if (Math.sign(p.vx) !== p.face && sp > 1.0) return { tor, leg: 'skid', ox: -2, oy: 0 };          /* skidding round */
       const i = Math.floor(p.anim * 1.6) % 8;
-      return { tor, leg: (sp < 0.9 ? 'w' : sp < 1.5 ? 'm' : 'r') + i, ox: sp > 2.1 ? 2 : 1, oy: 0 };
+      return { tor, leg: (sp < 0.7 ? 'a' : sp < 1.1 ? 'b' : sp < 1.5 ? 'c' : sp < 2.1 ? 'd' : 'e') + i, ox: sp > 2.1 ? 2 : 1, oy: 0 };
     }
-    if (p.anim > 0) return { tor, leg: 'w' + (Math.floor(p.anim * 1.6) % 8), ox: 1, oy: 0 };              /* settling into the stand */
+    if (p.anim > 0) return { tor, leg: 's' + (p.settle > 4 ? 3 : p.settle > 2 ? 2 : 1) + '_' + (p.settleI || 0), ox: p.settle > 4 ? 0 : 1, oy: 0 };      /* the feet glide in to the stand */
     return { tor, leg: 'idle', ox: 0, oy: Math.floor(t / 50) & 1 };                                      /* breathing moves the torso only */
   };
   P.muzzle = function (p) {

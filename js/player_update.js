@@ -86,16 +86,10 @@
     if (p.ground && wasAir && vyBefore > 2) { p.landT = 6; G.fx.puff(p.x, p.y, 3); }
     if (p.ground || (p.drop && PH.support(room, p, p.y - 10, p.y + 2, false) === null && p.vy > 1)) p.drop = false;
     const an0 = Math.floor(p.anim * 0.4); p.anim += Math.abs(p.vx) * (ball ? 0.16 : 0.12);
-    if (p.ground && !ball && Math.abs(p.vx) < 0.25 && p.anim > 0) {         /* stopping: finish the stride to the next contact pose, then stand (and every run starts from the same stride) */
-      const ph = p.anim * 1.6, tgt = Math.ceil(ph / 4 - 0.001) * 4;
-      if (ph < tgt - 0.1) p.anim += 0.9 / 1.6; else p.anim = 0;
-    } if (ball) p.ballRot = (p.ballRot || 0) + p.vx * 0.19;
-    if (p.ground && !ball && Math.abs(p.vx) > 0.6 && Math.floor(p.anim * 0.4) !== an0 && p.mode === 'stand') G.audio.sfx('step');
-    /* dash blocks shatter when you dash into them */
-    if (p.dash > 0) {
-      const tx = Math.floor((p.x + p.face * (p.w / 2 + 3)) / 16);
-      for (let ty = Math.floor((p.y - p.h + 2) / 16); ty <= Math.floor((p.y - 2) / 16); ty++) if (G.room.at(room, tx, ty) === 13) { G.room.set(room, tx, ty, 0); G.fx.debris(tx * 16 + 8, ty * 16 + 8, ['#efba42', '#946a78', '#46283a']); G.audio.sfx('break'); }
-    }
+    if (p.ground && !ball && Math.abs(p.vx) < 0.25 && p.anim > 0) {          /* stopping: the feet glide from wherever the stride stopped to the stand over six ticks (and every run starts from the same stride) */
+      p.settle = (p.settle || 0) + 1; if (p.settle === 1) p.settleI = Math.floor(p.anim * 1.6) % 8;
+      if (p.settle > 6) { p.anim = 0; p.settle = 0; }
+    } else p.settle = 0;
     /* lava: with the heat suit it is a slow, swimmable fluid; without it, it burns and throws you out */
     if (PH.boxTiles(room, p.x - p.w / 2, p.y - Math.min(p.h, 12), p.x + p.w / 2, p.y - 0.01, 11)) {
       if (A.suitHeat) { p.inLava = true; p.vx *= 0.9; p.vy = Math.min(p.vy, 1.6); if (I.jump && !lock) p.vy = -2.2; }

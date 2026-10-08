@@ -7,5 +7,5 @@ const draw=()=>{ let x=10, y=10, rowH=0; for(const k of names){ const f=F[k], w=
   if(f.hx!==undefined){ ctx.fillStyle='#f55'; ctx.fillRect(x+f.hx*4-2,y+f.hy*4-2,4,4); } if(f.tx!==undefined&&f.hx!==undefined){ ctx.fillStyle='#5f5'; ctx.fillRect(x+(f.hx+f.tx)*4-2,y+(f.hy+f.ty)*4-2,4,4); } ctx.fillStyle='#9fb'; ctx.fillText(k,x,y+h+12); x+=w+12; rowH=Math.max(rowH,h); } };
 for(const k of names){ const i=new Image(); i.onload=()=>{ img[k]=i; if(--left===0) draw(); }; i.src=F[k].u; }
 const an=document.createElement('canvas'); an.width=260; an.height=200; an.style.cssText='position:fixed;right:10px;bottom:10px;background:#2a3050'; document.body.append(an); const ax=an.getContext('2d'); ax.imageSmoothingEnabled=false;
-setInterval(()=>{ const i=Math.floor(Date.now()/90)%8, L=F['leg_r'+i], T=F['tor_0']; if(!img['leg_r'+i]||!img.tor_0) return; ax.clearRect(0,0,260,200); const hx=100,hy=60; ax.drawImage(img['leg_r'+i],hx-L.hx*4,hy-L.hy*4,L.w*4,L.h*4); ax.drawImage(img.tor_0,hx+4-T.hx*4,hy-T.hy*4,T.w*4,T.h*4); },40);
+setInterval(()=>{ const i=Math.floor(Date.now()/90)%8, L=F['leg_e'+i], T=F['tor_0']; if(!img['leg_e'+i]||!img.tor_0) return; ax.clearRect(0,0,260,200); const hx=100,hy=60; ax.drawImage(img['leg_e'+i],hx-L.hx*4,hy-L.hy*4,L.w*4,L.h*4); ax.drawImage(img.tor_0,hx+4-T.hx*4,hy-T.hy*4,T.w*4,T.h*4); },40);
 </script></body></html>
