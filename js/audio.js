@@ -8,7 +8,8 @@
     if (A.ctx) { if (A.ctx.state === 'suspended') A.ctx.resume(); return; }
     try { const C = window.AudioContext || window.webkitAudioContext; A.ctx = new C(); master = A.ctx.createGain(); master.gain.value = G.settings.sfx; master.connect(A.ctx.destination); } catch (e) { A.ctx = null; }
   };
-  window.addEventListener('keydown', A.init); window.addEventListener('pointerdown', A.init);
+  A.running = () => !!A.ctx && A.ctx.state === 'running';
+  for (const ev of ['keydown', 'pointerdown', 'mousedown', 'touchend', 'click']) window.addEventListener(ev, A.init);                    /* browsers only allow sound after a real key press or click */
   function tone(f0, f1, dur, type, vol, delay) {
     if (!A.ctx) return; const t = A.ctx.currentTime + (delay || 0), o = A.ctx.createOscillator(), g = A.ctx.createGain();
     o.type = type; o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(Math.max(20, f1), t + dur);

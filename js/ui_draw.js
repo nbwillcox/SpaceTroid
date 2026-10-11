@@ -90,6 +90,7 @@
     else if (m !== 'end') { ctx.fillStyle = 'rgba(6,8,26,0.84)'; ctx.fillRect(0, 0, 480, 270); }
     if (m === 'title') {
       PX.text(ctx, 'SPACETROID', 240, 48, { s: 5, c: '#fff2a8', o: '#2e1a0c', a: 'c' }); txt(ctx, 'A FREE PIXEL EXPLORATION ADVENTURE', 240, 98, '#a6ccff', 'c');
+      if (!G.audio.running() && Math.floor(time * 2) % 2) txt(ctx, 'PRESS ANY KEY OR CLICK FOR SOUND', 240, 232, '#86f0f2', 'c');
       menu(ctx, U.items.title(), 128, 26, true); txt(ctx, 'CC BY-NC 4.0  -  GITHUB.COM/NBWILLCOX/SPACETROID', 240, 254, '#8ea2d2', 'c');
     } else if (m === 'slots') slots(ctx);
     else if (m === 'options') { txt(ctx, 'OPTIONS', 240, 40, '#a6ccff', 'c', 2); menu(ctx, U.items.options(), 80, 20, false); txt(ctx, 'LEFT / RIGHT CHANGES A VALUE', 240, 248, '#8ea2d2', 'c'); }

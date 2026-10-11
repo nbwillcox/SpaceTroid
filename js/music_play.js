@@ -52,7 +52,10 @@
     if (!MU.timer) MU.timer = setInterval(tick, 40);
   };
   MU.stop = function () { MU.cur = null; };
-  const unlock = () => { if (MU.pending) { const n = MU.pending; MU.pending = null; MU.cur = null; MU.play(n); } };
-  window.addEventListener('keydown', () => setTimeout(unlock, 80)); window.addEventListener('pointerdown', () => setTimeout(unlock, 80));
+  const unlock = () => {
+    const c = G.audio.ctx; if (c && c.state === 'suspended') c.resume();
+    if (MU.pending) { const n = MU.pending; MU.pending = null; MU.cur = null; MU.play(n); }
+  };
+  for (const ev of ['keydown', 'pointerdown', 'mousedown', 'touchend', 'click']) window.addEventListener(ev, () => setTimeout(unlock, 80));
   MU.forRoom = function (g) { if (g.boss && g.boss.state !== 'wait' && !g.boss.dead) MU.play('boss'); else if (g.escape) MU.play('escape'); else MU.play('z' + (g.room.zone || 1)); };
 })((window.SGS = window.SGS || {}));
