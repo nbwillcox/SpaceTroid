@@ -4,11 +4,13 @@
   const S = G.sprites, RM = G.room, T = 16, U = G.U, W = G.world;
   const R = {};
   G.render = R;
-  const solidish = (room, tx, ty) => { const k = RM.at(room, tx, ty); return k === 1 || k === 3 || k === 4 || k === 5 || k === 6 || k === 7 || k === 9 || k === 10 || k === 12 || k === 13 || k === 17; };
+  const solidAny = (room, tx, ty) => { const k = RM.at(room, tx, ty); return k === 1 || k === 3 || k === 4 || k === 5 || k === 6 || k === 7 || k === 9 || k === 10 || k === 12 || k === 13 || k === 17; };
   const hash = (a, b) => ((a * 73856093) ^ (b * 19349663)) >>> 0;
   /* bake the static layers of a room into one canvas (re-run when blocks break) */
   R.bake = function (room) {
     const TS = S.tilesets[room.zone || 1], tile = TS, deco = TS.deco;
+    const doorCell = (tx, ty) => (room.def.doors || []).some((d) => d.side !== 'I' && ty >= d.ty && ty < d.ty + d.h && tx === (d.side === 'L' ? 0 : room.w - 1));
+    const solidish = (rm, tx, ty) => solidAny(rm, tx, ty) || doorCell(tx, ty);                  /* a doorway always counts as rock for the tiles around it, so the sill and lintel look the same whether the door is open or shut */
     const c = room.baked && room.baked.width === room.pw && room.baked.height === room.ph ? room.baked : document.createElement('canvas');
     c.width = room.pw; c.height = room.ph;
     const x = c.getContext('2d'); x.imageSmoothingEnabled = false; x.clearRect(0, 0, c.width, c.height);

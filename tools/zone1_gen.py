@@ -14,6 +14,8 @@ def crash():
     r.cave([(0, 13), (30, 13), (34, 12), (38, 10), (50, 12)], [(0, 1)])
     for y in range(1, 13): r.g[y][0] = '.'                                   # no cave walls: the sky is open above the ground (row 0 stays a hidden ceiling)
     for y in range(1, 12): r.g[y][59] = '.'
+    for x, top in ((59, 1), (58, 1), (57, 1), (56, 2), (55, 3), (54, 5)):    # a rock overhang above the east door (down to the lintel), so the hero cannot hop over it
+        for y in range(top, 9): r.g[y][x] = '#'
     r.sky = True
     r.decor.append({'kind': 'ship', 'x': 150, 'y': 208})
     r.spawn('P', 3, 12)
