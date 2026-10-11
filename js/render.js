@@ -51,7 +51,7 @@
       else if (k === 13) x.drawImage(tile.dashblock, px, py);
       else if (k === 17) x.drawImage(tile.mega, px, py);
     }
-    room.baked = c; room.dirty = false;
+    room.baked = c; room.dirty = false; room.wetLayer = null;
   };
   /* the light that rises from a save pad: stepped bands that grow upward, rising sparkles and a bright base; front = the thin inner beam drawn over the hero */
   R.saveLight = function (ctx, a, front) {
@@ -178,7 +178,18 @@
     const TS3 = S.tilesets[room.zone || 1], lf = Math.floor(time * 6) & 3;
     const lavaPass = () => { for (const l of room.lava) { const lx = l.tx * T, ly = l.ty * T; if (lx + 16 < ox || lx > ox + 480 || ly + 16 < oy || ly > oy + 270) continue; ctx.drawImage((l.top ? TS3.lavaTop : TS3.lava)[(lf + l.tx) & 3], lx, ly); } };
     if (room.lava.length) { lavaPass(); if (G.atmos) G.atmos.lavaGlow(ctx, room, ox, oy); }
-    const waterPass = (a) => { ctx.globalAlpha = a; for (const w of room.water) { const wx = w.tx * T, wy = w.ty * T; if (wx + 16 < ox || wx > ox + 480 || wy + 16 < oy || wy > oy + 270) continue; ctx.fillStyle = '#2a78c8'; ctx.fillRect(wx, wy, 16, 16); if (w.top) { ctx.fillStyle = '#c8f0ff'; ctx.fillRect(wx, wy + (Math.floor(time * 3 + w.tx) & 1), 16, 1); } else if ((w.tx * 7 + w.ty * 13 + Math.floor(time * 2)) % 9 === 0) { ctx.fillStyle = '#a8e8ff'; ctx.fillRect(wx + 5, wy + 6, 2, 2); } } ctx.globalAlpha = 1; };
+    if (room.water.length && !room.wetLayer) {                              /* ledges and ramps standing in the water are tinted too, so they read as submerged rather than dry */
+      const wl = document.createElement('canvas'); wl.width = room.pw; wl.height = room.ph; const wx = wl.getContext('2d'), tc = document.createElement('canvas'); tc.width = tc.height = T; const tx_ = tc.getContext('2d');
+      for (let ty = 0; ty < room.h; ty++) for (let tx = 0; tx < room.w; tx++) {
+        const k = room.t[ty * room.w + tx]; if (k !== 2 && k !== 3 && k !== 4) continue;
+        const wet = (x, y) => x >= 0 && x < room.w && y >= 0 && room.t[y * room.w + x] === 14;
+        if (!(wet(tx, ty - 1) || wet(tx - 1, ty) || wet(tx + 1, ty))) continue;
+        tx_.clearRect(0, 0, T, T); tx_.globalCompositeOperation = 'source-over'; tx_.drawImage(room.baked, tx * T, ty * T, T, T, 0, 0, T, T);
+        tx_.globalCompositeOperation = 'source-atop'; tx_.fillStyle = '#2a78c8'; tx_.fillRect(0, 0, T, T); wx.drawImage(tc, tx * T, ty * T);
+      }
+      room.wetLayer = wl;
+    }
+    const waterPass = (a) => { ctx.globalAlpha = a; if (room.wetLayer) ctx.drawImage(room.wetLayer, 0, 0); for (const w of room.water) { const wx = w.tx * T, wy = w.ty * T; if (wx + 16 < ox || wx > ox + 480 || wy + 16 < oy || wy > oy + 270) continue; ctx.fillStyle = '#2a78c8'; ctx.fillRect(wx, wy, 16, 16); if (w.top) { ctx.fillStyle = '#c8f0ff'; ctx.fillRect(wx, wy + (Math.floor(time * 3 + w.tx) & 1), 16, 1); } else if ((w.tx * 7 + w.ty * 13 + Math.floor(time * 2)) % 9 === 0) { ctx.fillStyle = '#a8e8ff'; ctx.fillRect(wx + 5, wy + 6, 2, 2); } } ctx.globalAlpha = 1; };
     if (room.water.length) waterPass(0.26);
     if (room.scanTiles === undefined) { room.scanTiles = []; for (let y = 0; y < room.h; y++) for (let x = 0; x < room.w; x++) if (room.t[y * room.w + x] === 16) room.scanTiles.push([x, y]); }
     for (const [sx, sy] of room.scanTiles) {                          /* hidden scan blocks: solid and visible only while scanning; a faint shimmer hints at them */

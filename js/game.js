@@ -24,7 +24,7 @@
     const bl = Game.prog.broken && Game.prog.broken[id]; if (bl) { for (const i of bl) room.t[i] = 0; room.broken = bl.slice(); }
     Game.room = room; Game.roomId = id; Game.shots = []; Game.bombs = []; Game.foes = []; Game.items = []; Game.spores = []; Game.boss = null; G.fx.reset();
     G.world.setup(Game, room); G.movers.setup(Game, def); Game.frozenRects = []; Game.buildDyn();
-    if (doorId) { const dd = Game.doors.find((q) => q.id === doorId); if (dd && !dd.sealed) { dd.state = 'open'; dd.idle = 0; G.world.applyDoor(room, dd); } }
+    if (doorId) { const dd = Game.doors.find((q) => q.id === doorId); if (dd && !dd.sealed && !dd.shut) { dd.state = 'open'; dd.idle = 0; G.world.applyDoor(room, dd); } }
     let start = null;
     for (const s of room.spawns) {
       if (s.ch === 'P') start = s;

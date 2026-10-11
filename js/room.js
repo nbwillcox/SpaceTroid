@@ -19,6 +19,17 @@
       const i = y * w + x, wt = (xx, yy) => xx >= 0 && yy >= 0 && xx < w && yy < h && room.t[yy * w + xx] === 14;
       if (!room.t[i] && wt(x, y - 1) && (wt(x - 1, y) || wt(x + 1, y))) { room.t[i] = 14; room.filled = (room.filled || 0) + 1; }
     }
+    /* pools: water settles into every open cell it can reach sideways or downward (through one-way ledges too), so it always rests against terrain instead of ending in mid-air */
+    { const seen = new Uint8Array(w * h), q = []; room.doorWet = new Set();
+      for (let i = 0; i < w * h; i++) if (room.t[i] === 14) { seen[i] = 1; q.push(i); }
+      while (q.length) {
+        const i = q.pop(), x = i % w, y = (i - x) / w;
+        for (const [dx, dy] of [[-1, 0], [1, 0], [0, 1]]) {
+          const nx = x + dx, ny = y + dy; if (nx < 0 || nx >= w || ny >= h) continue;
+          const j = ny * w + nx, k = room.t[j]; if (seen[j] || (k !== 0 && k !== 2)) continue;
+          seen[j] = 1; if (k === 0) { room.t[j] = 14; room.filled = (room.filled || 0) + 1; if (nx === 0 || nx === w - 1) room.doorWet.add(j); } q.push(j);
+        }
+      } }
     room.water = []; for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (room.t[y * w + x] === 14) room.water.push({ tx: x, ty: y, top: y === 0 || room.t[(y - 1) * w + x] !== 14 });
     room.anchors = []; for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (room.t[y * w + x] === 15) room.anchors.push({ x: x * T + 8, y: y * T + 8, tx: x, ty: y });
     room.lava = []; for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (room.t[y * w + x] === 11) room.lava.push({ tx: x, ty: y, top: y === 0 || room.t[(y - 1) * w + x] !== 11 });

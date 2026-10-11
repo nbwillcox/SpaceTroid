@@ -30,11 +30,13 @@
   /* the gold exit door of a boss arena stays locked only until that arena's boss has been beaten (rooms are rebuilt on every visit, so the flag is checked on entry) */
   W.BOSS_FLAG = { arena: 'boss1', arena2: 'boss2', arena3: 'boss3', arena4: 'boss4', heartroom: 'boss5' };
   W.bossBeaten = (g, roomId) => !!(W.BOSS_FLAG[roomId] && g.prog.flags[W.BOSS_FLAG[roomId]]);
+  W.shrineDone = (g, d) => { const its = d.to && G.rooms[d.to] && G.rooms[d.to].items; return !!(its && its.length && its.every((it) => g.prog.items[it.id])); };
   W.setup = function (g, room) {
     const def = room.def;
     g.doors = (def.doors || []).map((d) => {
       const o = Object.assign({ h: 3, state: 'closed', t: 0, idle: 0, tx: d.side === 'L' ? 0 : room.w - 1 }, d);
       if (o.color === 'open') o.state = 'open';
+      if (o.side === 'I' && W.shrineDone(g, o)) { o.state = 'closed'; o.shut = true; }                   /* a shrine whose items are all taken is sealed for good: solid, and no transition */
       if (o.color === 'boss' && W.bossBeaten(g, room.id)) o.color = 'blue';
       if (g.prog.doors[dkey(room, d)] || (d.to && g.prog.doors[d.to + ':' + d.door])) o.unlocked = true;      /* a door opened from either side is a plain blue door from then on */
       W.applyDoor(room, o);
@@ -49,7 +51,7 @@
     });
     g.prog.visited[room.id] = true;
   };
-  W.applyDoor = function (room, d) { const k = d.state === 'open' ? 0 : 9; for (let i = 0; i < d.h; i++) RM.set(room, d.tx, d.ty + i, k); };
+  W.applyDoor = function (room, d) { for (let i = 0; i < d.h; i++) RM.set(room, d.tx, d.ty + i, d.state !== 'open' ? 9 : room.doorWet && room.doorWet.has((d.ty + i) * room.w + d.tx) ? 14 : 0); };      /* an open doorway in a flooded room is water, not a hole in it */
   const canOpen = (g, d, kind) => d.unlocked || d.color === 'blue' || (d.color === 'red' && (kind === 'missile' || kind === 'super')) || (d.color === 'green' && kind === 'super');
   W.shotDoor = function (g, tx, ty, kind) {
     const d = g.doors.find((q) => q.tx === tx && ty >= q.ty && ty < q.ty + q.h);
@@ -60,7 +62,7 @@
   };
   /* boss fight: lock every door, then free them */
   W.sealDoors = function (g) { for (const d of g.doors) { d.sealed = true; if (d.state !== 'closed') { d.state = 'closed'; W.applyDoor(g.room, d); } } };
-  W.openAll = function (g) { for (const d of g.doors) { d.sealed = false; if (d.color === 'boss') d.color = 'blue'; if (d.state === 'closed') { d.state = 'opening'; d.t = 0; } } };
+  W.openAll = function (g) { for (const d of g.doors) { d.sealed = false; if (d.color === 'boss') d.color = 'blue'; if (d.state === 'closed' && !d.shut) { d.state = 'opening'; d.t = 0; } } };
   W.update = function (g) {
     const p = g.P, room = g.room;
     if (g.doorGrace > 0) g.doorGrace--;
@@ -148,6 +150,14 @@
     for (const d of g.doors) {                                              /* doorways inside the room (they lead to item shrines): a dark arch with pulsing runes */
       if (d.side !== 'I') continue;
       const x = d.tx * T, y = d.ty * T, h = d.h * T, pulse = 0.5 + 0.5 * Math.sin(time * 3 + d.tx);
+      if (d.shut) {                                                      /* sealed: a plain stone slab in a riveted frame with a dead red lamp */
+        const lamp = (Math.floor(time * 1.5 + d.tx) & 3) === 0 ? '#ff6a4a' : '#8a2a2a';
+        ctx.fillStyle = '#3a4260'; ctx.fillRect(x, y, 16, h); ctx.fillStyle = '#566486'; ctx.fillRect(x, y, 16, 1); ctx.fillRect(x, y, 1, h); ctx.fillStyle = '#242a44'; ctx.fillRect(x + 15, y, 1, h); ctx.fillRect(x, y + h - 1, 16, 1);
+        ctx.fillStyle = '#2c3350'; for (let k = 1; k < d.h * 2; k++) ctx.fillRect(x + 1, y + k * 8, 14, 1);
+        ctx.fillStyle = '#7a88aa'; ctx.fillRect(x + 2, y + 2, 1, 1); ctx.fillRect(x + 13, y + 2, 1, 1); ctx.fillRect(x + 2, y + h - 3, 1, 1); ctx.fillRect(x + 13, y + h - 3, 1, 1);
+        ctx.fillStyle = '#1a1e34'; ctx.fillRect(x + 5, y + (h >> 1) - 3, 6, 6); ctx.fillStyle = lamp; ctx.fillRect(x + 7, y + (h >> 1) - 1, 2, 2);
+        continue;
+      }
       if (d.h === 1) { ctx.fillStyle = 'rgba(6,8,24,0.8)'; ctx.fillRect(x + 1, y + 1, 14, 15); ctx.fillStyle = 'rgba(134,240,242,' + (0.35 + pulse * 0.4).toFixed(2) + ')'; ctx.fillRect(x, y, 16, 1); ctx.fillRect(x, y, 1, 16); ctx.fillRect(x + 15, y, 1, 16); continue; }
       ctx.fillStyle = 'rgba(6,8,24,0.85)'; ctx.fillRect(x + 1, y + 2, 14, h - 2);
       ctx.fillStyle = '#6a7ca8'; ctx.fillRect(x - 3, y - 2, 22, 4); ctx.fillRect(x - 1, y, 3, h); ctx.fillRect(x + 14, y, 3, h);
