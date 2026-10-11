@@ -160,12 +160,12 @@
       }
       if (d.statue) R.shaft(ctx, d, room, time);
       ctx.drawImage(d.img, d.x, d.y);
-      if (d.statue === 'big') {                                              /* the statue's magenta visor and cyan chest jewel glow, slowly breathing */
+      if (d.statue) {                                              /* the statue's magenta visor and cyan chest jewel glow, slowly breathing */
         ctx.globalCompositeOperation = 'lighter';
-        S.statue.lights.forEach((l, i) => {
-          const visor = l.k === 'visor', pulse = 0.5 + 0.5 * Math.sin(time * (visor ? 2.4 : 1.7) + i * 1.9), lx = d.x + l.cx, ly = d.y + l.cy;
-          ctx.fillStyle = visor ? '#ff3ad0' : '#58e8ff'; ctx.globalAlpha = 0.07 + 0.1 * pulse; ctx.beginPath(); ctx.arc(lx, ly, visor ? 9 : 8, 0, 6.2832); ctx.fill();
-          ctx.globalAlpha = 0.14 + 0.2 * pulse; ctx.beginPath(); ctx.arc(lx, ly, visor ? 5 : 4, 0, 6.2832); ctx.fill();
+        (d.statue === 'big' ? S.statue.lights : S.statue.lightsSmall).forEach((l, i) => {
+          const visor = l.k === 'visor', pulse = 0.5 + 0.5 * Math.sin(time * (visor ? 2.4 : 1.7) + i * 1.9), lx = d.x + l.cx, ly = d.y + l.cy, z = d.statue === 'big' ? 1 : 0.62;
+          ctx.fillStyle = visor ? '#ff3ad0' : '#58e8ff'; ctx.globalAlpha = 0.07 + 0.1 * pulse; ctx.beginPath(); ctx.arc(lx, ly, (visor ? 9 : 8) * z, 0, 6.2832); ctx.fill();
+          ctx.globalAlpha = 0.14 + 0.2 * pulse; ctx.beginPath(); ctx.arc(lx, ly, (visor ? 5 : 4) * z, 0, 6.2832); ctx.fill();
           ctx.fillStyle = visor ? '#ffc4f4' : '#e0fcff'; ctx.globalAlpha = 0.25 + 0.6 * pulse; for (const [px, py] of l.px) ctx.fillRect(d.x + px, d.y + py, 1, 1);
         });
         ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1;
