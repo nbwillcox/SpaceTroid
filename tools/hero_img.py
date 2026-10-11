@@ -13,7 +13,6 @@ CW, C2 = 132.25, 264.5             # cell widths (8 across / 4 across); the grid
 def row(names, y0, y1, x0=13.0, w=CW): return [(n, int(x0 + i * w) + 3, int(x0 + (i + 1) * w) - 2, y0, y1) for i, n in enumerate(names)]
 CELLS = []
 CELLS += row(['aim_90', 'aim_70', 'aim_45', 'aim_20', 'aim_0', 'aim_m20', 'aim_m45', 'aim_m90'], 992, 1132)
-CELLS += row(['ball0', 'ball1', 'ball2', 'ball3'], 1322, 1407, x0=14.0, w=98.5)
 CELLS += row(['spin%d' % i for i in range(8)], 1322, 1407, x0=420.0, w=81.5)
 def theta(n):
     if n.startswith(('spin', 'ball')): return None
@@ -103,6 +102,28 @@ def _leg(dr, hip, p, G, f, L=11.2, amp=1.0, foot=None):
     dr.ellipse([(K[0] + 0.5 - 1.9) * SS, (K[1] - 0.3 - 1.9) * SS, (K[0] + 0.5 + 1.9) * SS, (K[1] - 0.3 + 1.9) * SS], fill=tan); dr.ellipse([(K[0] - 0.2) * SS, (K[1] - 1.4) * SS, (K[0] + 1.0) * SS, (K[1] - 0.4) * SS], fill=l)
     dr.polygon([(x * SS, y * SS) for x, y in rot([(A[0] + 1.0, A[1] - 0.4), (A[0] + 3.4, A[1] - 0.4), (A[0] + 3.4, A[1] + 0.6), (A[0] + 1.0, A[1] + 0.6)])], fill=tan)
 
+def ball_frames():
+    """the morph ball, drawn: a lit blue sphere with an orange band; 8 frames turn the band through 180 degrees (light stays top-left), so the ball rolls in the direction of travel.
+    Frame k has the band turned k * 22.5 degrees clockwise from vertical, so counting up rolls right."""
+    R, N, SSB = 8.0, 16, 8
+    ramp = [(14, 22, 64), (26, 52, 130), (44, 92, 188), (96, 150, 232)]; oramp = [(120, 60, 16), (190, 104, 24), (232, 160, 50), (255, 218, 140)]
+    L = np.array([-0.5, -0.6, 0.62]); L /= np.linalg.norm(L); out = {}
+    for k in range(8):
+        th = math.radians(k * 22.5); dx, dy = math.sin(th), -math.cos(th)
+        big = np.zeros((N * SSB, N * SSB, 4), np.uint8)
+        for yy in range(N * SSB):
+            for xx in range(N * SSB):
+                x = (xx + 0.5) / SSB - N / 2.0; y = (yy + 0.5) / SSB - N / 2.0; r = math.hypot(x, y)
+                if r > R: continue
+                z = math.sqrt(max(0.0, 1 - (r / R) ** 2)); lit = max(0.0, (x / R) * L[0] + (y / R) * L[1] + z * L[2])
+                band = abs(x * dy - y * dx) < 2.3                                  # distance from the centre line of the band
+                step = min(3, int(lit * 4.2)); col = (oramp if band else ramp)[step]
+                if r > R - 1.0: col = (8, 12, 40)                                   # dark outline
+                big[yy, xx] = (*col, 255)
+        im = Image.fromarray(big, 'RGBA').convert('RGBa').resize((N, N), Image.BOX).convert('RGBA'); a = np.asarray(im).copy(); a[..., 3] = np.where(a[..., 3] > 120, 255, 0)
+        im = Image.fromarray(a, 'RGBA'); out['ball%d' % k] = {'u': png64(im), 'w': N, 'h': N, 'ax': 8, 'ay': 16}
+    return out
+
 def build():
     im = Image.open(SRC).convert('RGB'); a = np.asarray(im).astype(int)
     bg = np.median(a[100:105, 0:6].reshape(-1, 3), axis=0); mask = np.abs(a - bg).sum(2) > 48
@@ -167,6 +188,7 @@ def build():
         fr = {'u': png64(im2), 'w': im2.width, 'h': im2.height, 'ax': round(ax), 'ay': round(ay)}
         if tip: fr['tx'] = round(tip[0]); fr['ty'] = round(tip[1])
         frames[name] = fr
+    frames.update(ball_frames())
     import hero_parts
     frames.update(hero_parts.make(raw, s))
     old = json.load(open(os.path.join(HERE, 'hero_old_frames.json')))

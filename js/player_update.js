@@ -86,7 +86,7 @@
     PH.moveY(room, p, p.vy, p.drop);
     if (p.ground && wasAir && vyBefore > 2) { p.landT = 6; G.fx.puff(p.x, p.y, 3); }
     if (p.ground || (p.drop && PH.support(room, p, p.y - 10, p.y + 2, false) === null && p.vy > 1)) p.drop = false;
-    const an0 = Math.floor(p.anim * 0.4); p.anim += Math.abs(p.vx) * (ball ? 0.16 : 0.12);
+    const an0 = Math.floor(p.anim * 0.4); p.anim += Math.abs(p.vx) * (ball ? 0.16 : 0.12); if (ball) p.ballRot = (p.ballRot || 0) + p.vx * 0.32;      /* the ball turns with the ground: 8 frames per half turn, 22.5 degrees each, clockwise when rolling right */
     if (p.ground && !ball && Math.abs(p.vx) < 0.25 && p.anim > 0) {          /* stopping: the feet glide from wherever the stride stopped to the stand over six ticks (and every run starts from the same stride) */
       p.settle = (p.settle || 0) + 1; if (p.settle === 1) p.settleI = Math.floor(p.anim * 1.6) % 8;
       if (p.settle > 6) { p.anim = 0; p.settle = 0; }

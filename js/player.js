@@ -73,7 +73,7 @@
   P.frame = function (p) {
     const H = G.sprites.hero[p.suit || 'cobalt'];
     if (G.game && G.game.getAnim) return G.sprites.heroPose(p.suit || 'cobalt', '90', 'idle', 0, 0);
-    if (p.mode === 'ball') return H['ball' + ((Math.floor(p.ballRot || 0) % 4 + 4) % 4)];          /* spins the way it rolls (the sprite is never mirrored) */
+    if (p.mode === 'ball') return H['ball' + ((Math.floor(p.ballRot || 0) % 8 + 8) % 8)];          /* spins the way it rolls (the sprite is never mirrored) */
     if (p.spinning && !p.ground) return H['spin' + (Math.floor(p.spinT / 2.4) & 7)];
     if (G.game && G.game.saveAnim) return H.front;
     const q = P.pose(p); return G.sprites.heroPose(p.suit || 'cobalt', q.tor, q.leg, q.ox, q.oy);

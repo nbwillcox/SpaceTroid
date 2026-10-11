@@ -36,7 +36,7 @@
       const o = Object.assign({ h: 3, state: 'closed', t: 0, idle: 0, tx: d.side === 'L' ? 0 : room.w - 1 }, d);
       if (o.color === 'open') o.state = 'open';
       if (o.color === 'boss' && W.bossBeaten(g, room.id)) o.color = 'blue';
-      if (g.prog.doors[dkey(room, d)]) o.unlocked = true;
+      if (g.prog.doors[dkey(room, d)] || (d.to && g.prog.doors[d.to + ':' + d.door])) o.unlocked = true;      /* a door opened from either side is a plain blue door from then on */
       W.applyDoor(room, o);
       return o;
     });
@@ -56,7 +56,7 @@
     if (!d || d.state !== 'closed' || d.color === 'open' || d.sealed) return;
     if (d.color === 'boss' || !canOpen(g, d, kind)) { G.fx.sparkBurst(tx * T + 8, ty * T + 8, '#fff', 3); G.audio.sfx('hit'); return; }
     d.state = 'opening'; d.t = 0; G.audio.sfx('door');
-    if (d.color !== 'blue' && !d.unlocked) { d.unlocked = true; g.prog.doors[dkey(g.room, d)] = true; }
+    if (d.color !== 'blue' && !d.unlocked) { d.unlocked = true; g.prog.doors[dkey(g.room, d)] = true; if (d.to) g.prog.doors[d.to + ':' + d.door] = true; }
   };
   /* boss fight: lock every door, then free them */
   W.sealDoors = function (g) { for (const d of g.doors) { d.sealed = true; if (d.state !== 'closed') { d.state = 'closed'; W.applyDoor(g.room, d); } } };
