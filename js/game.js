@@ -47,6 +47,7 @@
       else if (s.ch === 'g') G.enemies.spawn(Game, 'guard', s.x, s.y, -1);
       else if (s.ch === 'p') G.enemies.spawn(Game, 'hpod', s.x, s.y, -1);
       else if (s.ch === 'k') G.enemies.spawn(Game, 'egg', s.x, s.y, -1);
+      else if (G.enemies.LETTER[s.ch]) G.enemies.spawn(Game, G.enemies.LETTER[s.ch], s.x, s.y - (G.enemies.FLYER[G.enemies.LETTER[s.ch]] ? 8 : 0), -1);
     }
     p.vx = p.vy = 0; p.dead = 0; p.inv = 0; p.hurt = 0; p.charge = 0; p.dash = 0; p.spinning = false; p.drop = false;
     const setMode = (m) => { p.mode = m; p.w = m === 'ball' ? 16 : 14; p.h = m === 'ball' ? 15 : 42; };

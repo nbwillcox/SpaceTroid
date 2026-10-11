@@ -40,7 +40,7 @@ def sluice():
     r.cave([(0, 15), (4, 13), (8, 15), (51, 17, 's'), (54, 15, 's')], [(0, 2), (8, 5), (24, 3), (34, 3), (48, 5), (54, 2)], y1=16)
     r.door('w', 'L', 12, 'blue', 'beacon4', 'e'); r.door('e', 'R', 12, 'blue', 'pump', 'w')
     r.flood(8, 23, 11); r.flood(35, 50, 11); r.fill(26, 12, 32, 14, '#')
-    r.spawn('a', 24, 14); r.spawn('a', 34, 14); r.spawn('r', 29, 11); r.spawn('j', 12, 9); r.spawn('j', 44, 9); r.on('d', 57)
+    r.spawn('a', 24, 14); r.spawn('a', 34, 14); r.spawn('E', 29, 11); r.spawn('F', 12, 9); r.spawn('j', 44, 9); r.on('d', 57)
     r.g[14][26] = 'b'; r.fill(27, 14, 29, 14, '.'); add_shrine(Z, r, 'd5', 29, 14, -1, 1, 'tank5', 'energyTank', 'Vigor Shrine')      # a ball nook in the pillar, sealed by a shot block
     # pumphouse: under the east bank (gap at x 51..53); a grapple ledge on the west side holds a tank
     r.cave([(0, 32)], [(0, 19), (4, 17), (22, 19), (30, 19), (44, 17, 's'), (58, 17)], y0=17, y1=33)
@@ -71,7 +71,7 @@ def deepcut():
     r.fill(14, 12, 18, 14, '#'); r.fill(28, 9, 31, 14, '#'); r.fill(42, 12, 46, 14, '#'); r.plat(34, 38, 8); r.plat(50, 56, 8)
     r.fill(51, 8, 58, 8, '#'); r.fill(51, 7, 52, 7, '.')
     add_shrine(Z, r, 'd6', 24, 12, 1, 3, 'tank6', 'energyTank', 'Vigor Shrine')
-    r.spawn('j', 10, 9); r.spawn('j', 22, 6); r.spawn('j', 36, 11); r.spawn('j', 48, 7); r.spawn('r', 16, 11); r.spawn('r', 44, 11)
+    r.spawn('F', 10, 9); r.spawn('j', 22, 6); r.spawn('j', 36, 11); r.spawn('j', 48, 7); r.spawn('r', 16, 11); r.spawn('E', 44, 11)
     return r
 deepcut()
 
@@ -98,7 +98,7 @@ def gantry():
     r.fill(22, 6, 28, 6, '#')
     r.fill(2, 30, 27, 31, 'W')
     r.fill(1, 14, 2, 22, '#'); r.fill(26, 12, 28, 22, '#'); r.fill(27, 24, 28, 28, '#')
-    r.spawn('d', 24, 31); r.spawn('r', 26, 31); r.spawn('j', 8, 20); r.spawn('j', 18, 14)
+    r.spawn('d', 24, 31); r.spawn('r', 26, 31); r.spawn('F', 8, 20); r.spawn('j', 18, 14)
     return r
 gantry()
 

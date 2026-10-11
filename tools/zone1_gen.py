@@ -15,7 +15,7 @@ def crash():
     r.spawn('P', 10, 11)
     r.hang(14, 2, 3); r.hang(15, 1, 1); r.hang(24, 2, 2); r.hang(40, 2, 3); r.hang(44, 1, 2)
     r.plat(19, 23, 11); r.plat(26, 30, 8); r.plat(44, 48, 6)
-    r.on('c', 19); r.on('c', 28); r.on('c', 42); r.spawn('m', 40, 5)
+    r.on('c', 19); r.on('T', 28); r.on('c', 42); r.spawn('m', 40, 5)
     r.wall(1, 2, 12, 11)
     r.door('e', 'R', 9, 'blue', 'hall', 'w')
     return r
@@ -29,7 +29,7 @@ def hall():
     r.fill(24, 15, 26, 15, '^')
     r.plat(21, 28, 11); r.plat(50, 55, 8)
     r.hang(26, 3, 1); r.hang(31, 2, 2); r.hang(34, 4, 1); r.hang(20, 2, 1)
-    r.on('c', 16); r.on('c', 33); r.on('o', 43); r.spawn('m', 30, 8); r.spawn('m', 52, 6)
+    r.on('c', 16); r.on('T', 33); r.on('o', 43); r.spawn('m', 30, 8); r.spawn('H', 52, 6)
     r.wall(14, 2, 46, 14)
     # undercroft: a cavern under the floor, reached through the gap at x 37..39 and climbed back out by ledges; a ball tunnel at the east end holds a tank
     r.cave([(0, 31), (10, 31), (14, 29), (20, 29), (24, 32), (44, 32)], [(0, 19), (6, 21), (14, 19), (28, 19), (31, 17, 's'), (45, 17), (46, 20, 's')], y0=17, y1=33)
@@ -59,7 +59,7 @@ def shaft():
     r.fill(26, 18, 28, 18, '#'); r.fill(26, 20, 28, 20, '#'); r.g[19][26] = 'b'   # a ball-sized nook sealed by one shot block (crouch to shoot it)
     add_shrine(ROOMS, r, 'd1', 28, 19, -1, 1, 'tank1', 'energyTank', 'Vigor Shrine')
     r.fill(1, 12, 2, 19, '#'); r.fill(1, 22, 3, 27, '#'); r.fill(26, 24, 28, 27, '#'); r.fill(25, 25, 25, 26, '#')
-    r.spawn('m', 14, 18); r.spawn('m', 8, 8); r.spawn('c', 20, 31); r.spawn('c', 12, 31)
+    r.spawn('m', 14, 18); r.spawn('H', 8, 8); r.spawn('T', 20, 31); r.spawn('c', 12, 31)
     return r
 ROOMS.append(shaft())
 
@@ -132,7 +132,7 @@ def rootfall():
     for (x0, x1, y) in [(10, 17, 11), (14, 18, 14), (20, 24, 17), (14, 18, 20), (8, 12, 23), (14, 18, 26), (20, 24, 29)]: r.plat(x0, x1, y)
     r.fill(2, 31, 6, 31, '^')
     r.fill(1, 17, 3, 22, '#'); r.fill(1, 25, 2, 29, '#'); r.fill(26, 12, 28, 16, '#'); r.fill(27, 21, 28, 25, '#')
-    r.spawn('m', 20, 12); r.spawn('m', 10, 20); r.spawn('c', 5, 7)
+    r.spawn('H', 20, 12); r.spawn('m', 10, 20); r.spawn('c', 5, 7)
     return r
 ROOMS.append(rootfall())
 
@@ -149,7 +149,7 @@ def cavern():
     r.fill(51, 2, 58, 9, '#'); r.fill(51, 8, 57, 8, '.'); r.fill(51, 8, 52, 8, 'B')
     add_shrine(ROOMS, r, 'd3', 57, 8, -1, 1, 'mtank3', 'missileTank', 'Arsenal Shrine')
     for x in (15, 24, 36, 49): r.on('c', x)
-    r.spawn('o', 28, 11); r.spawn('m', 18, 7); r.spawn('m', 34, 6); r.spawn('m', 46, 6)
+    r.spawn('o', 28, 11); r.spawn('m', 18, 7); r.spawn('m', 34, 6); r.spawn('H', 46, 6)
     r.wall(1, 2, 58, 16, ragged=False)
     # sump: a long cavern under the floor; the gap at x 54..56 drops into it, ledges climb back out, and a missile block seals a tank at the far west end
     r.cave([(0, 32)], [(0, 19), (4, 22), (12, 19), (20, 23), (30, 19), (42, 17, 's'), (58, 17)], y0=17, y1=33)

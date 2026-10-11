@@ -11,7 +11,7 @@ def fgate():
     r = room('fgate', 'Forge Gate', 30, 17, 0, 6, solid=True, wall_all=True)
     r.cave([(0, 13), (6, 15)], [(0, 2), (6, 5), (14, 3), (22, 2)])
     r.spawn('P', 2, 12); r.door('e', 'R', 12, 'blue', 'ember', 'w')
-    r.fill(12, 14, 15, 15, 'L'); r.fill(22, 12, 25, 12, '#'); r.on('n', 20)
+    r.fill(12, 14, 15, 15, 'L'); r.fill(22, 12, 25, 12, '#'); r.on('R', 20)
     r.hang(9, 3, 1); r.hang(18, 2, 2)
     return r
 fgate()
@@ -29,7 +29,7 @@ def ember():
     r.stair(47, 49, 32)
     r.fill(14, 31, 38, 32, 'L')
     r.fill(1, 19, 9, 31, '#'); r.fill(2, 29, 8, 31, '.'); r.fill(9, 29, 9, 31, 'D'); add_shrine(Z, r, 'dE', 2, 29, 1, 3, 'mtankE', 'missileTank', 'Arsenal Shrine')
-    r.on('n', 12); r.on('h', 41); r.spawn('z', 20, 30); r.spawn('z', 30, 30); r.on('e', 52)
+    r.on('R', 12); r.on('J', 41); r.spawn('z', 20, 30); r.spawn('z', 30, 30); r.on('e', 52)
     r.door('eb', 'R', 29, 'blue', 'slagcell', 'w')
     r.wall(1, 18, 58, 32, ragged=False)
     return r
@@ -72,7 +72,7 @@ def chimney():
     for (x0, x1, y) in [(4, 8, 29), (10, 14, 26), (16, 20, 21), (22, 26, 18), (16, 20, 13), (10, 14, 10), (4, 8, 5)]: r.plat(x0, x1, y)
     r.fill(1, 5, 3, 5, '#')
     r.fill(1, 12, 2, 19, '#'); r.fill(1, 23, 3, 28, '#'); r.fill(26, 9, 28, 15, '#'); r.fill(26, 24, 28, 28, '#'); r.fill(24, 25, 25, 27, '#')
-    r.spawn('z', 14, 31); r.spawn('e', 25, 31); r.spawn('n', 20, 31)
+    r.spawn('z', 14, 31); r.spawn('e', 25, 31); r.spawn('R', 20, 31)
     r.hang(14, 4, 2); r.hang(22, 3, 2)
     return r
 chimney()
@@ -105,7 +105,7 @@ def crucible():
     r.fill(14, 14, 26, 15, 'L'); r.plat(15, 18, 11); r.plat(21, 25, 10)
     r.fill(34, 12, 39, 14, '#'); r.fill(44, 12, 46, 14, '#')
     r.fill(40, 8, 52, 8, '#'); r.fill(40, 9, 40, 11, 'x'); r.fill(41, 12, 52, 12, '#'); r.fill(52, 9, 52, 11, '#'); add_shrine(Z, r, 'd7', 51, 9, -1, 3, 'mtank7', 'missileTank', 'Arsenal Shrine')   # crystal alcove: wave beam only
-    r.spawn('e', 35, 11); r.on('n', 8); r.on('n', 31); r.on('h', 54); r.spawn('z', 20, 13); r.on('e', 56)
+    r.spawn('e', 35, 11); r.on('R', 8); r.on('n', 31); r.on('J', 54); r.spawn('z', 20, 13); r.on('e', 56)
     r.hang(30, 3, 2); r.hang(10, 2, 1)
     return r
 crucible()
