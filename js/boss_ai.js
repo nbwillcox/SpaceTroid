@@ -76,7 +76,7 @@
       if (!near) continue;
       const hitCore = B.vulnerable(b) && B.inCore(b, s.x, s.y);
       if (s.kind === 'missile' || s.kind === 'super') { s.dead = true; G.fx.boom(s.x, s.y, 10); if (hitCore) B.damage(g, b, s.dmg); else G.audio.sfx('hit'); }
-      else if (hitCore) { B.damage(g, b, s.dmg); if (!s.pierce) s.dead = true; G.fx.sparkBurst(s.x, s.y, '#f2ffff', 5); }
+      else if (hitCore) { B.hitBoss(g, b, s); if (!s.pierce) s.dead = true; G.fx.sparkBurst(s.x, s.y, '#f2ffff', 5); }
       else if (!s.hit.has(b)) { s.hit.add(b); if (!s.pierce) s.dead = true; G.fx.sparkBurst(s.x, s.y, '#fff', 3); G.audio.sfx('hit'); }
     }
     B.updateRocks(g);

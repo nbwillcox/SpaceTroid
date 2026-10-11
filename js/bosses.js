@@ -28,6 +28,8 @@
     if (b.hp <= 0) { b.dead = true; b.state = 'dying'; b.t = 0; G.audio.sfx('boom'); g.shake = 10; }
     return true;
   };
+  /* a shot hurts a boss once: a piercing charge shot flying through it deals its one big hit, not a hit every frame it overlaps */
+  B.hitBoss = function (g, b, s) { s.bossHit = s.bossHit || new Set(); if (s.bossHit.has(b)) return false; s.bossHit.add(b); return B.damage(g, b, s.dmg); };
   B.blast = function (g, x, y, r, kind) {
     const b = g.boss; if (!b || b.dead || !vulnerable(b)) return;
     const c = core(b);

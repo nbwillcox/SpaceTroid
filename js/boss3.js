@@ -53,7 +53,7 @@
       if (s.dead || Math.abs(s.x - b.x) > 42 || Math.abs(s.y - b.y) > 34) continue;
       const hit = B.vulnerable(b);
       if (s.kind === 'missile' || s.kind === 'super') { s.dead = true; G.fx.boom(s.x, s.y, 10); if (hit) B.damage(g, b, s.dmg); else G.audio.sfx('hit'); }
-      else if (hit) { B.damage(g, b, s.dmg); if (!s.pierce) s.dead = true; G.fx.sparkBurst(s.x, s.y, '#fff2b0', 5); }
+      else if (hit) { B.hitBoss(g, b, s); if (!s.pierce) s.dead = true; G.fx.sparkBurst(s.x, s.y, '#fff2b0', 5); }
       else if (!s.hit.has(b)) { s.hit.add(b); if (!s.pierce) s.dead = true; G.fx.sparkBurst(s.x, s.y, '#fff', 3); G.audio.sfx('hit'); }
     }
     B.updateRocks(g);
