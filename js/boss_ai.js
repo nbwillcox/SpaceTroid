@@ -13,12 +13,15 @@
     else if (b.state === 'intro') { faceP(); g.shake = Math.max(g.shake, 2); if (b.t === 20) G.audio.sfx('boom'); if (b.t > 90) { b.state = 'walk'; b.t = 0; } }
     else if (b.state === 'walk') {
       faceP(); b.x = U.clamp(b.x + b.face * sp, lo, hi);
-      if (b.t > 120 - b.phase * 15) {
-        const far = Math.abs(p.x - b.x) > 200, r = Math.random();
-        if (b.phase >= 2 && r < 0.26) { b.state = 'leap'; b.t = 0; }                                                 /* a jumping slam with shockwaves */
-        else if (b.phase >= 2 && r < 0.5) { b.state = 'roots'; b.t = 0; }                                             /* roots spear up round you */
-        else b.state = Math.random() < (far ? 0.7 : 0.4) ? 'tele' : 'volley';
-        b.t = 0; b.rico = false;
+      if (b.t > 100 - b.phase * 14) {
+        const r = Math.random(); b.since = (b.since || 0) + 1; b.rico = false;
+        if (b.since >= 3) b.state = 'tele';                                                                         /* never more than two non-charge attacks in a row: the weak spot is always coming */
+        else if (b.phase === 1) b.state = r < 0.55 ? 'tele' : 'volley';
+        else if (r < 0.30) b.state = 'leap';                                                                         /* a jumping slam with shockwaves (he is stuck in the floor afterwards) */
+        else if (r < 0.50) b.state = 'roots';                                                                        /* roots spear up round you */
+        else b.state = r < 0.86 ? 'tele' : 'volley';
+        if (b.state === 'tele') { b.willRico = b.phase >= 3 && Math.random() < 0.35; }
+        b.t = 0;
       }
     } else if (b.state === 'volley') { if (b.t === 24) B.volley(g, b); if (b.t > 52) { b.state = 'walk'; b.t = 0; } }
     else if (b.state === 'tele') {
@@ -31,7 +34,7 @@
       else if (b.air) {
         b.y += b.vy; b.vy += 0.52; b.x = U.clamp(b.x + b.vx, lo, hi);
         if (b.y >= b.floor && b.vy > 0) {
-          b.y = b.floor; b.air = false; b.vx = 0; b.state = 'recover'; b.t = 0; g.shake = 11; G.audio.sfx('boom'); G.fx.debris(b.x - 30, b.y - 4, ['#52627a', '#7f8c96']); G.fx.debris(b.x + 30, b.y - 4, ['#52627a', '#7f8c96']);
+          b.y = b.floor; b.air = false; b.vx = 0; b.state = 'stun'; b.stunLen = 100; b.since = 0; b.t = 0; g.shake = 11; G.audio.sfx('boom'); G.fx.debris(b.x - 30, b.y - 4, ['#52627a', '#7f8c96']); G.fx.debris(b.x + 30, b.y - 4, ['#52627a', '#7f8c96']);
           const sp = [0, 2.1, 2.5, 3.0][b.phase]; g.waves.push({ x: b.x - 40, y: b.y, vx: -sp, t: 0 }, { x: b.x + 40, y: b.y, vx: sp, t: 0 });
           if (b.phase >= 3) B.rocks(g, 3);
           if (!p.dead && Math.abs(p.x - b.x) < 44 && p.y > b.y - 12 && G.player.hurt(g, p, 22, b.x)) G.audio.sfx('hurt');          /* landing on him hurts */
@@ -50,17 +53,17 @@
       if (b.t > 22) { b.state = 'charge'; b.t = 0; b.vx = -b.vxs; b.face = b.vx >= 0 ? 1 : -1; G.audio.sfx('missile'); }
     } else if (b.state === 'charge') {
       b.x += b.vx; if (b.t % 4 === 0) G.fx.puff(b.x - Math.sign(b.vx) * 40, b.y, 2);
-      if ((b.x <= lo || b.x >= hi) && b.phase >= 2 && !b.rico) {                                                    /* later phases: he bounces off the wall and charges back, so the stun has to be earned twice over */
+      if ((b.x <= lo || b.x >= hi) && b.willRico && !b.rico) {                                                    /* later phases: he bounces off the wall and charges back, so the stun has to be earned twice over */
         b.x = U.clamp(b.x, lo, hi); b.rico = true; b.vxs = b.vx; b.state = 'ricochet'; b.t = 0; g.shake = 7; G.audio.sfx('boom'); G.fx.debris(b.x + Math.sign(b.vx) * 44, b.y - 30, ['#52627a', '#7f8c96']); B.rocks(g, 2);
       } else if (b.x <= lo || b.x >= hi) {
-        b.x = U.clamp(b.x, lo, hi); b.state = 'stun'; b.t = 0; b.vx = 0; g.shake = 12; G.audio.sfx('boom');
+        b.x = U.clamp(b.x, lo, hi); b.state = 'stun'; b.t = 0; b.vx = 0; g.shake = 12; G.audio.sfx('boom'); b.since = 0; b.stunLen = b.rico ? 190 : b.phase === 3 ? 135 : 160; b.willRico = false;
         G.fx.debris(b.x + b.face * 44, b.y - 30, ['#52627a', '#7f8c96', '#33405e']);
         if (b.phase >= 2) B.rocks(g, b.phase === 3 ? 6 : 4);
         B.dropItems(g);
       }
     } else if (b.state === 'stun') {
       if (b.phase === 3 && b.t % 70 === 0) B.rocks(g, 2);
-      if (b.t > (b.phase === 3 ? 120 : 145)) { b.state = b.phase === 3 && Math.random() < 0.5 ? 'tele' : 'walk'; b.t = 0; }
+      if (b.t > (b.stunLen || 150)) { b.state = 'walk'; b.t = 0; b.rico = false; }
     } else if (b.state === 'dying') {
       if (b.t % 6 === 0) G.fx.boom(b.x + (Math.random() - 0.5) * 90, b.y - 10 - Math.random() * 50, 9);
       g.shake = 5; if (b.t === 140) B.finish(g, b);

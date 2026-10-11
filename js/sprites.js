@@ -115,6 +115,8 @@
     S.heart = { body: BI.heart.heart.map(bp), node: BI.heart.node.map(bp) };
     { const CI = A.capsuleimg, cc = document.createElement('canvas'); cc.width = CI.w; cc.height = CI.h; const cim = new Image(); cim.onload = () => cc.getContext('2d').drawImage(cim, 0, 0); cim.src = CI.u; S.capsule = { c: cc, w: CI.w, h: CI.h, glass: CI.glass, lights: CI.lights }; }      /* the save capsule: one painted picture; its cyan lights pulse in world.js */
     { const LI = A.liftimg, lc = document.createElement('canvas'); lc.width = LI.w; lc.height = LI.h; const lim = new Image(); lim.onload = () => lc.getContext('2d').drawImage(lim, 0, 0); lim.src = LI.u; S.lift = { c: lc, w: LI.w, h: LI.h, bay: LI.bay, deck: LI.deck, lights: LI.lights }; }      /* the elevator arch: the hero hops onto its deck to teleport */
+    S.portrait = {}; { const PI = A.portraitimg, pim = new Image(); const cs = {}; for (const suit in shift) { const c = document.createElement('canvas'); c.width = PI.w; c.height = PI.h; cs[suit] = c; S.portrait[suit] = c; }
+      pim.onload = () => { for (const suit in shift) { cs[suit].getContext('2d').drawImage(pim, 0, 0); if (shift[suit]) recolor(cs[suit], shift[suit]); } }; pim.src = PI.u; }      /* the detailed hero picture for the status screen, tinted per suit */
     S.pad = W1.pad.map((g) => mkc(g, 'cobalt', 'pad')); S.term = W1.terminal.map((g) => mkc(g, 'cobalt', 'term')); S.wreck = mkc(W1.wreck, 'cobalt', 'wreck');
   };
 })((window.SGS = window.SGS || {}));

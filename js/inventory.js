@@ -58,9 +58,9 @@
     panel(ctx, 14, 162, 136, 30, 'SCORE'); T(ctx, String(G.score.total(g)).padStart(7, '0'), 82, 175, '#ffe07a', 'c', 2);
     panel(ctx, 14, 200, 136, 28, 'TIME'); T(ctx, fmtTime(g.playTime || 0), 82, 212, '#ffffff', 'c', 2);
     /* centre: the hero */
-    const suit = p.suit || 'cobalt', fr = G.sprites.hero[suit].front, k = 3, px = 240 - Math.round(fr.w * k / 2) + 2, py = 56;
-    ctx.fillStyle = 'rgba(40,70,140,0.25)'; for (let r = 78; r > 20; r -= 14) { ctx.beginPath(); ctx.ellipse(240, 130, r * 0.8, r * 1.3, 0, 0, 6.2832); ctx.fill(); }
-    ctx.imageSmoothingEnabled = false; ctx.drawImage(fr.r, px, py, fr.w * k, fr.h * k);
+    const suit = p.suit || 'cobalt', pt = G.sprites.portrait[suit], px = 240 - Math.round(pt.width / 2), py = 28;
+    ctx.fillStyle = 'rgba(40,70,140,0.25)'; for (let r = 92; r > 22; r -= 14) { ctx.beginPath(); ctx.ellipse(240, 116, r * 0.78, r * 1.3, 0, 0, 6.2832); ctx.fill(); }
+    ctx.drawImage(pt, px, py);
     ctx.fillStyle = '#566cac'; ctx.fillRect(196, 198, 88, 1); T(ctx, ({ cobalt: 'STANDARD SUIT', crimson: 'HEAT SUIT', teal: 'AQUA SUIT' })[suit] || 'SUIT', 240, 204, '#a6ccff', 'c');
     /* right: beams, suit + boots, tools */
     const bw = 126, bx = 340; let y = 34;

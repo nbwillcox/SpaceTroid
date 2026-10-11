@@ -7,7 +7,7 @@
   B.setup = function (g, room) {
     g.rocks = []; g.waves = []; g.roots = [];
     const s = room.spawns.find((q) => q.ch === 'K');
-    if (room.id === 'arena' && !g.prog.flags.boss1) g.boss = { kind: 'beetle', flag: 'boss1', name: 'MOSSBACK WARDEN', x: s.x, y: s.y, w: 88, h: 56, hp: 150, hpMax: 150, state: 'wait', t: 0, face: -1, vx: 0, anim: 0, flash: 0, phase: 1, dead: false };
+    if (room.id === 'arena' && !g.prog.flags.boss1) g.boss = { kind: 'beetle', flag: 'boss1', name: 'MOSSBACK WARDEN', x: s.x, y: s.y, w: 88, h: 56, hp: 130, hpMax: 130, state: 'wait', t: 0, face: -1, vx: 0, anim: 0, flash: 0, phase: 1, dead: false };
     else if (room.id === 'heartroom' && !g.prog.flags.boss5) { B.setupHeart(g, room); }
     else if (room.id === 'arena4' && !g.prog.flags.boss4) g.boss = { kind: 'jelly', flag: 'boss4', name: 'ABYSSAL JELLY', x: s.x, y: -50, w: 100, h: 70, hp: 170, hpMax: 170, state: 'wait', t: 0, face: 1, vx: 0, vy: 0, anim: 0, flash: 0, phase: 1, dead: false, open: false };
     else if (room.id === 'arena3' && !g.prog.flags.boss3) g.boss = { kind: 'wyrm', flag: 'boss3', name: 'CINDER WYRM', x: s.x, y: 224, w: 60, h: 48, hp: 150, hpMax: 150, state: 'wait', t: 0, face: -1, vx: 0, anim: 0, flash: 0, phase: 1, dead: false, open: false, H: 80 };
