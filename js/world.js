@@ -136,11 +136,11 @@
     const S = G.sprites, def = W.ITEMS[type], pulse = 0.5 + 0.5 * Math.sin(t * 0.09);
     if (def.tank) {
       W.glow(ctx, x, y - 12 + bob, 13, '200,240,255', (0.05 + pulse * 0.05).toFixed(3));
-      ctx.drawImage(S.tank[def.tank][(t >> 4) & 1], x - 10, y - 22 + bob);
+      { const im = S.tank[def.tank][(t >> 4) & 1]; ctx.drawImage(im, x - (im.width >> 1), y - 1 - im.height + bob); }
     } else {
       const col = def.glow || '255,244,190';
       W.glow(ctx, x, y - 13 + bob, 17, col, (0.05 + pulse * 0.05).toFixed(3)); W.glow(ctx, x, y - 13 + bob, 12, col, (0.08 + pulse * 0.08).toFixed(3));
-      ctx.drawImage(S.icon[type], x - 10, y - 23 + bob);
+      { const im = S.icon[type]; ctx.drawImage(im, x - (im.width >> 1), y - 2 - im.height + bob); }
       if ((t >> 2) % 7 === 0) { ctx.fillStyle = '#fff'; ctx.fillRect(x + 8, y - 24 + bob, 1, 1); ctx.fillRect(x - 9, y - 6 + bob, 1, 1); }
     }
   };

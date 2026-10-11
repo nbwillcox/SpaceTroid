@@ -87,8 +87,9 @@
     S.orb = {}; for (const r of ['cobalt', 'crimson', 'teal', 'gold', 'visor']) S.orb[r] = W1.orb.map((g, i) => mkc(g, r, 'orb' + r + i));
     S.tank = { energy: W1.tankEnergy.map((g) => mkc(g, 'cobalt', 'te')), missile: W1.tankMissile.map((g) => mkc(g, 'cobalt', 'tm')), super: W1.tankSuper.map((g) => mkc(g, 'cobalt', 'ts')) };
     const IT = A.items;                                                    /* item art: icons (the object itself), tank pickups, drop icons, shrine statues */
-    S.icon = {}; for (const k in IT.icons) S.icon[k] = mkc(IT.icons[k], IT.ramps[k], 'ic' + k);
-    S.tank = { energy: IT.tanks.energy.map((g) => mkc(g, 'cobalt', 'te')), missile: IT.tanks.missile.map((g) => mkc(g, 'crimson', 'tm')), super: IT.tanks.super.map((g) => mkc(g, 'teal', 'ts')) };
+    const II = A.iconimg, icv = (k, glow) => { const c = document.createElement('canvas'); c.width = II.w; c.height = II.h; const im = new Image(); im.onload = () => { const x = c.getContext('2d'); x.drawImage(im, 0, 0); if (glow) { x.globalCompositeOperation = 'lighter'; x.globalAlpha = 0.22; x.drawImage(im, 0, 0); } }; im.src = II.icons[k]; return c; };      /* painted pickup icons; a tank's second frame is a brighter copy so it still blinks */
+    S.icon = {}; for (const k in IT.icons) S.icon[k] = icv(k, false);
+    S.tank = { energy: [icv('energyTank', false), icv('energyTank', true)], missile: [icv('missileTank', false), icv('missileTank', true)], super: [icv('superTank', false), icv('superTank', true)] };
     S.drop = {}; for (const k in IT.drops) S.drop[k] = IT.drops[k].map((g, i) => mkc(g, IT.dropRamps[k], 'dr' + k + i));
     const sp = A.statueimg, sc = document.createElement('canvas'); sc.width = sp.w; sc.height = sp.h; const sim = new Image(); sim.onload = () => sc.getContext('2d').drawImage(sim, 0, 0); sim.src = sp.u;      /* the painted shrine statue: one image for every zone, its visor and chest jewel glow */
     S.statue = { big: {}, small: {}, lights: sp.lights }; for (let z = 1; z <= 5; z++) { S.statue.big[z] = sc; S.statue.small[z] = mkc(IT.statue.small, z === 1 ? 'world' : 'world' + z, 'sts' + z); }

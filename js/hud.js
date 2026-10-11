@@ -47,7 +47,7 @@
       const bn = g.banner, k = Math.min(1, bn.t / 12), h = Math.round(86 * k), y = 98 + (86 - h) / 2;
       ctx.fillStyle = 'rgba(8,10,34,0.92)'; ctx.fillRect(70, y, 340, h); ctx.fillStyle = '#5688dc'; ctx.fillRect(70, y, 340, 1); ctx.fillRect(70, y + h - 1, 340, 1);
       if (k >= 1) {
-        if (bn.type) { const dfn = G.world.ITEMS[bn.type], im = dfn.tank ? G.sprites.tank[dfn.tank][(Math.floor(time * 3)) & 1] : G.sprites.icon[bn.type]; ctx.imageSmoothingEnabled = false; for (const bx of [86, 354]) ctx.drawImage(im, bx, 112, im.width * 2, im.height * 2); }
+        if (bn.type) { const dfn = G.world.ITEMS[bn.type], im = dfn.tank ? G.sprites.tank[dfn.tank][(Math.floor(time * 3)) & 1] : G.sprites.icon[bn.type]; ctx.imageSmoothingEnabled = false; for (const bx of [86, 354]) ctx.drawImage(im, bx - (im.width - 20), 112 - (im.height - 20), im.width * 2, im.height * 2); }
         txt(ctx, 'ITEM ACQUIRED', 240, 106, '#86f0f2', 'c'); PX.text(ctx, bn.name, 240, 122, { s: 2, c: '#fff2a8', o: '#2e1a0c', a: 'c' });
         bn.lines.forEach((l, i) => txt(ctx, l, 240, 148 + i * 11, '#dde7fb', 'c'));
         if (bn.t > 50 && Math.floor(time * 2) % 2) txt(ctx, 'PRESS JUMP', 240, 172, '#8ea2d2', 'c');
