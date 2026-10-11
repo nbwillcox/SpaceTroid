@@ -90,7 +90,8 @@
     S.icon = {}; for (const k in IT.icons) S.icon[k] = mkc(IT.icons[k], IT.ramps[k], 'ic' + k);
     S.tank = { energy: IT.tanks.energy.map((g) => mkc(g, 'cobalt', 'te')), missile: IT.tanks.missile.map((g) => mkc(g, 'crimson', 'tm')), super: IT.tanks.super.map((g) => mkc(g, 'teal', 'ts')) };
     S.drop = {}; for (const k in IT.drops) S.drop[k] = IT.drops[k].map((g, i) => mkc(g, IT.dropRamps[k], 'dr' + k + i));
-    S.statue = { big: {}, small: {} }; for (let z = 1; z <= 5; z++) { S.statue.big[z] = mkc(IT.statue.big, z === 1 ? 'world' : 'world' + z, 'stb' + z); S.statue.small[z] = mkc(IT.statue.small, z === 1 ? 'world' : 'world' + z, 'sts' + z); }
+    const sp = A.statueimg, sc = document.createElement('canvas'); sc.width = sp.w; sc.height = sp.h; const sim = new Image(); sim.onload = () => sc.getContext('2d').drawImage(sim, 0, 0); sim.src = sp.u;      /* the painted shrine statue: one image for every zone, its visor and chest jewel glow */
+    S.statue = { big: {}, small: {}, lights: sp.lights }; for (let z = 1; z <= 5; z++) { S.statue.big[z] = sc; S.statue.small[z] = mkc(IT.statue.small, z === 1 ? 'world' : 'world' + z, 'sts' + z); }
     /* boss sprites are painted frames (PNG data URIs in art/bossimg.js): each canvas fills in when its image decodes; ax, ay = the point that sits at the boss's position */
     const BI = A.bossimg;
     const loadFrame = (spec, flip) => {
