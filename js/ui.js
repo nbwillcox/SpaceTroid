@@ -7,7 +7,7 @@
   const anySave = () => [0, 1, 2].some((n) => G.save.read(n));
   U.items = {
     title: () => [{ k: 'new', t: 'NEW GAME' }, { k: 'cont', t: 'CONTINUE', off: !anySave() }, { k: 'opt', t: 'OPTIONS' }],
-    pause: () => [{ k: 'resume', t: 'RESUME' }, { k: 'map', t: 'MAP' }, { k: 'help', t: 'CONTROLS' }, { k: 'opt', t: 'OPTIONS' }, { k: 'quit', t: 'QUIT TO TITLE' }],
+    pause: () => [{ k: 'resume', t: 'RESUME' }, { k: 'map', t: 'MAP' }, { k: 'inv', t: 'STATUS' }, { k: 'help', t: 'CONTROLS' }, { k: 'opt', t: 'OPTIONS' }, { k: 'quit', t: 'QUIT TO TITLE' }],
     options: () => [{ k: 'sfx', t: 'SOUND VOLUME  ' + bar(S.sfx) }, { k: 'music', t: 'MUSIC VOLUME  ' + bar(S.music) }, { k: 'mouse', t: 'MOUSE AIM  ' + (S.mouseAim ? 'ON' : 'OFF') }, { k: 'hard', t: 'DIFFICULTY  ' + (S.hard ? 'HARD' : 'NORMAL') }, { k: 'shake', t: 'SCREEN SHAKE  ' + (S.shake ? 'ON' : 'OFF') }, { k: 'reduced', t: 'REDUCED EFFECTS  ' + (S.reduced ? 'ON' : 'OFF') }, { k: 'pad', t: 'GAMEPAD  ' + (S.gamepad ? 'ON' : 'OFF') }, { k: 'back', t: 'BACK' }],
     slots: () => [0, 1, 2].map((n) => ({ k: 'slot', n, rec: G.save.read(n) })).concat([{ k: 'back', t: 'BACK' }]),
   };
@@ -43,6 +43,7 @@
       case 'slot': if (U.slotMode === 'cont') { if (it.rec) M.startSlot(it.n, false); } else if (it.rec) U.confirm = { n: it.n, yes: false }; else M.startSlot(it.n, true); break;
       case 'resume': M.resume(); break;
       case 'map': M.openMap(); break;
+      case 'inv': M.openInv(); break;
       case 'help': U.open('help'); break;
       case 'quit': M.toTitle(); break;
       case 'mouse': S.mouseAim = !S.mouseAim; S.save(); break;

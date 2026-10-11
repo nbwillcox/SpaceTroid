@@ -10,6 +10,7 @@
     txt(ctx, 'EN', 8, 8, '#86f0f2'); txt(ctx, String(Math.max(0, p.en > 0 && p.en < 1 ? 1 : Math.ceil(p.en))).padStart(3, '0'), 24, 8, p.en < 30 && Math.floor(time * 4) % 2 ? '#ec5c4a' : '#ffffff');
     for (let i = 0; i < p.tanks; i++) { const x = 8 + i * 8, on = i < full; ctx.fillStyle = on ? '#8ea2d2' : '#2a3050'; ctx.fillRect(x, 17, 6, 1); ctx.fillRect(x, 24, 6, 1); ctx.fillStyle = on ? '#2c6ad8' : '#162050'; ctx.fillRect(x, 18, 6, 6); ctx.fillStyle = on ? '#f2ffff' : '#3a4a80'; ctx.fillRect(x + 2, 19, 2, 1); ctx.fillRect(x + 2, 21, 2, 1); ctx.fillRect(x + 2, 23, 2, 1); ctx.fillRect(x + 1, 19, 1, 5); }
     ctx.fillStyle = '#10142e'; ctx.fillRect(8, 26, 84, 3); ctx.fillStyle = p.en / max < 0.3 ? '#ec5c4a' : '#4cd2b8'; ctx.fillRect(8, 26, Math.round(84 * Math.min(1, p.en / Math.max(1, max))), 3);
+    txt(ctx, 'SCORE ' + String(G.score.total(g)).padStart(7, '0'), 404, 6, '#ffe2a0', 'r');
     const DS = G.sprites.drop;
     if (g.abil.missiles) { const sel = p.sel === 0; ctx.fillStyle = sel ? '#efba42' : '#3a3550'; ctx.fillRect(100, 5, 36, 14); ctx.fillStyle = '#10142e'; ctx.fillRect(101, 6, 34, 12); ctx.drawImage(DS.missile[0], 105, 6); txt(ctx, String(p.missiles).padStart(2, '0'), 117, 9, sel ? '#fff2a8' : '#98a6ca'); }
     if (g.abil.supers) { const sel = p.sel === 1; ctx.fillStyle = sel ? '#6cf08a' : '#3a3550'; ctx.fillRect(138, 5, 30, 14); ctx.fillStyle = '#10142e'; ctx.fillRect(139, 6, 28, 12); ctx.drawImage(DS.super[0], 143, 6); txt(ctx, String(p.supers).padStart(2, '0'), 152, 9, sel ? '#d8ffe0' : '#98a6ca'); }

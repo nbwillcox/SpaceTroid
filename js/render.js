@@ -108,6 +108,31 @@
     }
     ctx.restore();
   };
+  /* the super dash look: the armour is wrapped in a pulsing rim of energy (the beam's colours), afterimages hang behind him, speed streaks and sparks peel off, a white core flickers over the suit.
+     back (drawn under the hero) = afterimages, streaks and the outer glow; front (over him) = the flicker and the bright rim. */
+  const tints = new Map();
+  const tintOf = (cv, col) => { const key = col; let m = tints.get(cv); if (!m) { m = {}; tints.set(cv, m); } let t = m[key]; if (!t) { t = document.createElement('canvas'); t.width = cv.width; t.height = cv.height; const x = t.getContext('2d'); x.drawImage(cv, 0, 0); x.globalCompositeOperation = 'source-in'; x.fillStyle = col; x.fillRect(0, 0, t.width, t.height); m[key] = t; } return t; };
+  const rims = new Map();
+  const rimOf = (cv, col) => { let m = rims.get(cv); if (!m) { m = {}; rims.set(cv, m); } let t = m[col]; if (!t) { t = document.createElement('canvas'); t.width = cv.width + 2; t.height = cv.height + 2; const x = t.getContext('2d'), tt = tintOf(cv, col); for (const [ox, oy] of [[0, 1], [2, 1], [1, 0], [1, 2]]) x.drawImage(tt, ox, oy); x.globalCompositeOperation = 'destination-out'; x.drawImage(cv, 1, 1); m[col] = t; } return t; };      /* only the one-pixel ring around the silhouette */
+  R.dashAura = function (ctx, g, p, c0, hx, hy, time, front) {
+    const B = G.weapons.beam(g.abil), c1 = B.col[0], c2 = B.col[1], dir = p.dashDir || p.face, tick = Math.floor(time * 60), on = p.dash > 0 && g.abil.dash;
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    if (!front) {
+      const tr = g.dashTrail || [];
+      for (let i = tr.length - 1; i >= 0; i--) { const q = tr[i]; if (Math.abs(q.x - p.x) < 7) continue; const right = q.face >= 0, cc = right ? q.fr.r : q.fr.l, qx = Math.round(q.x - (right ? q.fr.ax : q.fr.axl)), qy = Math.round(q.y - q.fr.ay); ctx.globalAlpha = 0.3 * (1 - i / (tr.length + 1)); ctx.drawImage(tintOf(cc, c1), qx, qy); }
+      if (on) {
+        const cx = Math.round(p.x), cy = Math.round(p.y - 22);
+        for (let k = 0; k < 9; k++) { const len = 12 + ((tick * 7 + k * 13) % 30), oy = ((k * 11 + (tick >> 1) * 5) % 40) - 20, ox = ((tick * 3 + k * 17) % 8); ctx.fillStyle = k & 1 ? c2 : c1; ctx.globalAlpha = 0.55 - (k % 3) * 0.12; ctx.fillRect(dir > 0 ? cx - 8 - ox - len : cx + 8 + ox, cy + oy, len, 1); }
+        ctx.globalAlpha = 0.07 + 0.03 * Math.sin(tick * 0.8); ctx.fillStyle = c1; for (let r = 20; r > 12; r -= 4) { ctx.beginPath(); ctx.ellipse(cx, cy, r * 0.8, r * 1.25, 0, 0, 6.2832); ctx.fill(); }
+      }
+    } else if (on) {
+      const pulse = 0.5 + 0.5 * Math.sin(tick * 0.9);
+      ctx.globalAlpha = 0.7 + 0.3 * pulse; ctx.drawImage(rimOf(c0, c2), hx - 1, hy - 1);                              /* a one-pixel rim of energy all round the armour */
+      ctx.globalAlpha = 0.06 + 0.12 * pulse; ctx.drawImage(tintOf(c0, '#ffffff'), hx, hy);                                                                                     /* the suit flickers white-hot */
+      for (let i = 0; i < 6; i++) { const a = (tick * 0.5 + i * 1.05) % 6.2832, rx = Math.round(p.x + Math.cos(a) * 11), ry = Math.round(p.y - 22 + Math.sin(a) * 19); ctx.fillStyle = i & 1 ? '#ffffff' : c2; ctx.globalAlpha = 0.9; ctx.fillRect(rx, ry, 1, 2); }  /* sparks orbit the body */
+    }
+    ctx.restore();
+  };
   /* the item-get moment: light rays from the raised cannon, the item floating up with a glow, and a quick white flash */
   R.getFx = function (ctx, g, time) {
     const a = g.getAnim, p = g.P, m = G.player.muzzle(p), t = a.t, big = a.big, fade = t > (big ? 140 : 62) ? Math.max(0, 1 - (t - (big ? 140 : 62)) / 24) : 1;
@@ -208,7 +233,7 @@
     }
     if (G.atmos) G.atmos.draw(ctx, g, 0, time);
     G.world.drawBack(ctx, g, time);
-    G.enemies.draw(ctx, g, time);
+    G.enemies.draw(ctx, g, time); G.score.draw(ctx, g);
     G.bosses.draw(ctx, g, time);
     const TS3 = S.tilesets[room.zone || 1], lf = Math.floor(time * 6) & 3;
     const lavaPass = () => { for (const l of room.lava) { const lx = l.tx * T, ly = l.ty * T; if (lx + 16 < ox || lx > ox + 480 || ly + 16 < oy || ly > oy + 270) continue; ctx.drawImage((l.top ? TS3.lavaTop : TS3.lava)[(lf + l.tx) & 3], lx, ly); } };
@@ -253,7 +278,9 @@
       const fr = G.player.frame(p), ball = p.mode === 'ball' && !g.getAnim, right = p.face >= 0 || ball, c0 = right ? fr.r : fr.l, c = dying && (p.dead & 2) ? S.whiteOf(c0) : c0;
       const spin = p.spinning && !p.ground && !g.getAnim, hx = Math.round(p.x - (right ? fr.ax : fr.axl)), hy = Math.round(p.y - (spin ? 22 : 0) - fr.ay - ((g.saveAnim || g.liftAnim || {}).yoff || 0));
       if (p.spinAtk) R.spinAura(ctx, g, p, time, false);
+      if (g.dashTrail && g.dashTrail.length) R.dashAura(ctx, g, p, c0, hx, hy, time, false);
       ctx.drawImage(c, hx, hy);
+      if (p.dash > 0 && g.abil.dash) R.dashAura(ctx, g, p, c0, hx, hy, time, true);
       if (g.liftAnim && g.liftAnim.flash) { ctx.globalAlpha = 0.95; ctx.drawImage(S.whiteOf(c0), hx, hy); ctx.globalAlpha = 1; }                          /* teleport flicker: the silhouette flashes white */
       if (p.spinAtk) R.spinAura(ctx, g, p, time, true);
       if (g.saveAnim && g.saveAnim.t > 34 && g.saveAnim.t < 58) { ctx.globalAlpha = 0.75 * (1 - Math.abs(g.saveAnim.t - 46) / 12); ctx.drawImage(S.whiteOf(c0), hx, hy); ctx.globalAlpha = 1; }

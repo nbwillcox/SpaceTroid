@@ -70,7 +70,7 @@
     const t = Math.floor(time * 2) % 2; ctx.fillStyle = '#e8ecf8'; ctx.fillRect(300, 150 - ((time * 12) % 150), 3, 14); ctx.fillStyle = '#ffd24a'; ctx.fillRect(300, 164 - ((time * 12) % 150), 3, 3 + t);
     txt(ctx, ['MISSION COMPLETE', 'VICTORY', 'PERFECT VICTORY'][tier], 240, 24, '#fff2a8', 'c', 3);
     txt(ctx, ['THE HIVE IS GONE, BUT THE GALAXY KEEPS ITS SECRETS.', 'THE HIVE FALLS SILENT. THE LONG WAY HOME BEGINS.', 'EVERY LAST SECRET RECOVERED. THE SIGNAL FADES, AT PEACE.'][tier], 240, 72, '#dde7fb', 'c');
-    txt(ctx, 'ITEMS  ' + n + ' / ' + tot + '  (' + pct + '%)', 240, 184, '#fff2a8', 'c'); txt(ctx, 'TIME  ' + fmtTime(g.playTime), 240, 198, '#dde7fb', 'c');
+    txt(ctx, 'ITEMS  ' + n + ' / ' + tot + '  (' + pct + '%)', 240, 184, '#fff2a8', 'c'); txt(ctx, 'TIME  ' + fmtTime(g.playTime) + '    SCORE  ' + G.score.total(g), 240, 198, '#dde7fb', 'c');
     txt(ctx, tier === 2 ? 'ENDING: STARBOUND' : tier === 1 ? 'ENDING: HOMEWARD' : 'ENDING: ADRIFT', 240, 218, '#86f0f2', 'c');
     txt(ctx, 'THANKS FOR PLAYING  -  CC BY-NC 4.0  -  GITHUB.COM/NBWILLCOX/SPACETROID', 240, 240, '#8ea2d2', 'c');
     if (Math.floor(time * 2) % 2) txt(ctx, 'PRESS JUMP', 240, 256, '#8ea2d2', 'c');

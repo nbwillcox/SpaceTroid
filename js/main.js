@@ -23,13 +23,17 @@
       M.mode = 'map'; I.clear();
     }
   };
+  M.openInv = function () { if (M.mode === 'pause' || M.mode === 'play') { M.fromPause = M.mode === 'pause'; M.mode = 'inv'; I.clear(); G.inv.open(Game); } };
+  M.closeInv = function () { M.mode = M.fromPause ? 'pause' : 'play'; I.clear(); };
   M.toTitle = function () { M.mode = 'title'; I.clear(); UI.open('title'); G.music.play('title'); };
   M.ending = function () { M.mode = 'end'; I.clear(); UI.open('end'); G.music.play('ending'); };
   function update() {
     if (M.mode === 'play') {
       if (I.down.pause) { M.pause(); return; }
       if (I.down.map && !Game.banner && !Game.trans && !Game.saveAnim && !Game.liftAnim) { M.openMap(); return; }
+      if (I.down.inv && !Game.banner && !Game.trans && !Game.saveAnim && !Game.liftAnim && !Game.getAnim) { M.openInv(); return; }
       Game.step();
+    } else if (M.mode === 'inv') { G.inv.update(Game);
     } else if (M.mode === 'map') {
       const w = M.warp, close = () => { M.mode = M.fromPause ? 'pause' : 'play'; M.warp = null; I.clear(); };
       if (w) {
@@ -50,6 +54,7 @@
     G.render.draw(ctx, Game, Game.time / 60); G.hud.draw(ctx, Game, Game.time / 60); G.hud.overlay(ctx, Game, Game.time / 60);
     if (M.mode === 'pause') UI.draw(ctx, t, Game);
     if (M.mode === 'map') G.map.drawScreen(ctx, Game, t);
+    if (M.mode === 'inv') G.inv.draw(ctx, Game, t);
   };
   let last = 0, acc = 0;
   function frame(now) {

@@ -12,7 +12,7 @@
   };
   N.spawn = function (g, type, x, y, face) {
     const d = DEF[type];
-    const f = { type, x, y, w: d.w, h: d.h, hp: d.hp, dmg: d.dmg, armor: d.armor, vx: 0, vy: 0, face: face || -1, t: Math.floor(Math.random() * 60), anim: 0, flash: 0, frozen: 0, ground: false, home: { x, y }, dead: false, open: 0 };
+    const f = { type, x, y, w: d.w, h: d.h, hp: d.hp, hpMax: d.hp, dmg: d.dmg, armor: d.armor, vx: 0, vy: 0, face: face || -1, t: Math.floor(Math.random() * 60), anim: 0, flash: 0, frozen: 0, ground: false, home: { x, y }, dead: false, open: 0 };
     g.foes.push(f); return f;
   };
   const drop = (g, f) => {
@@ -27,6 +27,7 @@
     if (f.armor && kind === 'beam' && !(shot && shot.tier >= 2)) { dmg *= f.armor; G.fx.spark(f.x, f.y - f.h / 2, '#ffffff'); }       /* armoured: plain beam shots barely scratch it */
     f.hp -= dmg; f.flash = 4; G.audio.sfx('hit');
     if (f.frozen) f.vx = 0;
+    if (f.hp <= 0 && !f.scored) { f.scored = true; G.score.kill(g, f); }
     if (f.hp <= 0 && N.die && N.die[f.type] && f.state !== 'boom') { N.die[f.type](g, f); return; }
     if (f.hp <= 0) { f.dead = true; G.fx.boom(f.x, f.y - f.h / 2, 7); G.audio.sfx('die'); drop(g, f); g.kills = (g.kills || 0) + 1; }
   };

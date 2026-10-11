@@ -11,7 +11,7 @@
     iceBeam: { name: 'ICE BEAM', ramp: 'cobalt', lines: ['Freezes enemies solid for a while.', 'Frozen enemies make stepping stones. Toggle: 1'], apply: (g) => { g.abil.hasIce = true; g.abil.beams.ice = true; } },
     heatSuit: { name: 'HEAT SUIT', ramp: 'crimson', lines: ['Shrugs off extreme heat.', 'Magma will hurt far less.'], apply: (g) => { g.abil.suitHeat = true; g.P.suit = 'crimson'; } },
     spaceJump: { name: 'SPACE JUMP', ramp: 'teal', lines: ['Press Jump again in mid-air to flip higher.', 'Chain it to climb tall shafts.'], apply: (g) => { g.abil.spacejump = true; } },
-    dashBoots: { name: 'DASH BOOTS', ramp: 'gold', lines: ['Tap Shift for a burst of speed.', 'Dash into cracked blocks; jump out of a dash to leap far.'], apply: (g) => { g.abil.dash = true; } },
+    dashBoots: { name: 'DASH BOOTS', ramp: 'gold', lines: ['Tap Shift for a SUPER DASH: a burst of speed wrapped in energy.', 'It shatters cracked blocks and hurts what it touches.'], apply: (g) => { g.abil.dash = true; } },
     waveBeam: { name: 'WAVE BEAM', ramp: 'visor', lines: ['Shots ripple through walls and shatter crystal blocks.', 'Toggle: 2'], apply: (g) => { g.abil.hasWave = true; g.abil.beams.wave = true; } },
     aquaSuit: { name: 'AQUA SUIT', ramp: 'cobalt', lines: ['Swim and move freely underwater.', 'Water no longer drags you down.'], apply: (g) => { g.abil.suitAqua = true; g.P.suit = 'teal'; } },
     grapple: { name: 'GRAPPLE BEAM', ramp: 'gold', lines: ['Hold Q near a ceiling anchor to be reeled in.', 'Jump to leap from it.'], apply: (g) => { g.abil.grapple = true; } },
@@ -125,7 +125,7 @@
   };
   /* picking up an item: the world holds still, the hero raises an arm, a fanfare plays and the item floats up in a burst of light; then the text panel opens */
   W.collect = function (g, it) {
-    const def = W.ITEMS[it.type]; g.prog.items[it.id] = true; def.apply(g);
+    const def = W.ITEMS[it.type]; g.prog.items[it.id] = true; def.apply(g); G.score.item(g, def, it.x, it.y);
     g.getAnim = { t: 0, it: { type: it.type, x: it.x, y: it.y }, def, big: !def.tank };
     if (G.music && G.music.fanfare) G.music.fanfare(!def.tank); else G.audio.sfx('pickup');
     G.fx.boom(it.x, it.y - 8, def.tank ? 8 : 14);

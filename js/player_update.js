@@ -27,7 +27,7 @@
   P.update = function (g) {
     const p = g.P, I = G.input.held, D = G.input.down, room = g.room, A = g.abil;
     if (p.dead) { if (p.dead === 14) { G.fx.boom(p.x, p.y - 20, 26); G.fx.sparkBurst(p.x, p.y - 20, '#ffffff', 14); G.audio.sfx('die'); g.shake = Math.max(g.shake, 9); } p.dead++; return; }
-    p.inv = Math.max(0, p.inv - 1); p.hurt = Math.max(0, p.hurt - 1); p.fireCd = Math.max(0, p.fireCd - 1); p.bombCd = Math.max(0, p.bombCd - 1); p.dashCd = Math.max(0, p.dashCd - 1); p.landT = Math.max(0, p.landT - 1); p.spin = Math.max(0, p.spin - 1);
+    p.inv = Math.max(0, p.inv - 1); p.hurt = Math.max(0, p.hurt - 1); p.fireCd = Math.max(0, p.fireCd - 1); p.missCd = Math.max(0, (p.missCd || 0) - 1); p.bombCd = Math.max(0, p.bombCd - 1); p.dashCd = Math.max(0, p.dashCd - 1); p.landT = Math.max(0, p.landT - 1); p.spin = Math.max(0, p.spin - 1);
     if (G.grapple.update(g)) { p.anim += 0; G.weapons.playerFire(g, p, G.input.held, G.input.down); return; }
     if (A.scan && D.scan) { p.scanning = !p.scanning; G.audio.sfx(p.scanning ? 'pickup' : 'hit'); }          /* the scan visor is a toggle, not a hold */
     room.scanOn = !!(A.scan && p.scanning);
@@ -93,6 +93,7 @@
     if (p.ground && wasAir && vyBefore > 2) { p.landT = 6; G.fx.puff(p.x, p.y, 3); }
     if (p.ground || (p.drop && PH.support(room, p, p.y - 10, p.y + 2, false) === null && p.vy > 1)) p.drop = false;
     const an0 = Math.floor(p.anim * 0.4); p.anim += Math.abs(p.vx) * (ball ? 0.16 : 0.12); if (ball) p.ballRot = (p.ballRot || 0) + p.vx * 0.32;      /* the ball turns with the ground: 8 frames per half turn, 22.5 degrees each, clockwise when rolling right */
+    if (p.ground && !ball && Math.abs(p.vx) > 0.6 && Math.floor(p.anim * 0.4) !== an0 && p.mode === 'stand') G.audio.sfx('step');
     if (p.ground && !ball && Math.abs(p.vx) < 0.25 && p.anim > 0) {          /* stopping: the feet glide from wherever the stride stopped to the stand over six ticks (and every run starts from the same stride) */
       p.settle = (p.settle || 0) + 1; if (p.settle === 1) p.settleI = Math.floor(p.anim * 1.6) % 8;
       if (p.settle > 6) { p.anim = 0; p.settle = 0; }

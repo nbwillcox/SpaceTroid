@@ -46,7 +46,7 @@
   }
   function dropItems(g) { for (let i = 0; i < 2; i++) g.items.push({ kind: i ? 'missile' : 'en', x: 120 + Math.random() * (g.room.pw - 240), y: 40, vy: 0, t: 0, life: 700 }); }
   function finish(g, b) {
-    g.prog.flags[b.flag] = true; g.boss = null; G.world.openAll(g);
+    g.prog.flags[b.flag] = true; g.boss = null; G.world.openAll(g); G.score.boss(g, b);
     g.toast = { txt: b.name + ' DEFEATED', t: 0 };
     if (b.kind === 'heart') { G.game.startEscape(g); return; } G.audio.sfx('save');
     for (let i = 0; i < 3; i++) g.items.push({ kind: i === 1 ? 'missile' : 'en', x: b.x + (i - 1) * 24, y: b.y - 40, vy: -2, t: 0, life: 900 });

@@ -2,8 +2,8 @@
 (function (G) {
   'use strict';
   const I = { held: {}, down: {}, k: {}, lt: {}, prev: {}, mouse: { on: false, x: 0, y: 0, fire: false } };
-  const MAP = { ArrowLeft: 'l', KeyA: 'l', ArrowRight: 'r', KeyD: 'r', ArrowUp: 'u', KeyW: 'u', ArrowDown: 'd', KeyS: 'd', Space: 'jump', KeyZ: 'jump', KeyK: 'jump', KeyX: 'fire', KeyJ: 'fire', KeyC: 'missile', KeyL: 'missile', ShiftLeft: 'dash', ShiftRight: 'dash', KeyV: 'dash', KeyE: 'aim', KeyR: 'swap', KeyQ: 'grapple', KeyF: 'scan', KeyM: 'map', Tab: 'map', KeyP: 'pause', Escape: 'pause', Enter: 'start', Digit1: 'b1', Digit2: 'b2', Digit3: 'b3' };
-  const ACTIONS = ['l', 'r', 'u', 'd', 'jump', 'fire', 'missile', 'dash', 'aim', 'swap', 'map', 'pause', 'start', 'b1', 'b2', 'b3', 'grapple', 'scan'];
+  const MAP = { ArrowLeft: 'l', KeyA: 'l', ArrowRight: 'r', KeyD: 'r', ArrowUp: 'u', KeyW: 'u', ArrowDown: 'd', KeyS: 'd', Space: 'jump', KeyZ: 'jump', KeyK: 'jump', KeyX: 'fire', KeyJ: 'fire', KeyC: 'missile', KeyL: 'missile', ShiftLeft: 'dash', ShiftRight: 'dash', KeyV: 'dash', KeyE: 'aim', KeyR: 'swap', KeyQ: 'grapple', KeyF: 'scan', KeyM: 'map', KeyI: 'inv', Tab: 'map', KeyP: 'pause', Escape: 'pause', Enter: 'start', Digit1: 'b1', Digit2: 'b2', Digit3: 'b3' };
+  const ACTIONS = ['l', 'r', 'u', 'd', 'jump', 'fire', 'missile', 'dash', 'aim', 'swap', 'map', 'pause', 'start', 'b1', 'b2', 'b3', 'grapple', 'scan', 'inv'];
   const typing = (t) => { const n = t && t.tagName; return n === 'INPUT' || n === 'TEXTAREA' || n === 'SELECT'; };
   window.addEventListener('keydown', (e) => {
     if (typing(e.target)) return;

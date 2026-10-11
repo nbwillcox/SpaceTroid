@@ -26,7 +26,7 @@
     if (sup) p.supers--; else if (p.missiles > 0 && g.abil.missiles) p.missiles--; else return;
     const m = P.muzzle(p), v = P.aimVec(p);
     g.shots.push({ kind: sup ? 'super' : 'missile', x: m.x, y: m.y, vx: v.x * 2, vy: v.y * 2, dx: v.x, dy: v.y, spd: 2, life: 130, dmg: sup ? 24 : 8, r: 3, t: 0, hit: new Set() });
-    p.fireCd = 10; G.audio.sfx(sup ? 'super' : 'missile');
+    p.missCd = 12; G.audio.sfx(sup ? 'super' : 'missile');                                   /* missiles have their own cooldown, so the beam keeps firing while they launch */
   }
   function bomb(g, p) {
     let small = 0; for (const b of g.bombs) if (!b.big) small++;
@@ -37,24 +37,26 @@
     if (p.sbombs <= 0 || g.bombs.some((b) => b.big)) { p.bombCd = 10; return; }
     p.sbombs--; g.bombs.push({ x: p.x, y: p.y - 8, t: 0, fuse: 70, big: true }); p.bombCd = 20; G.audio.sfx('bomb');
   }
+  W.usesCharge = (g) => !!g.abil.charge && G.settings.fireMode !== 'rapid';
   W.playerFire = function (g, p, I, D) {
     const A = g.abil;
     if (p.hurt > 0 || p.dead) { p.charge = 0; p.held = 0; return; }
     if (p.mode === 'ball') { if (D.fire && A.bombs && p.bombCd === 0) bomb(g, p); else if (D.missile && A.sbombs && p.bombCd === 0) superBomb(g, p); p.charge = 0; return; }
-    if (!A.charge) { if (I.fire && p.fireCd === 0) { shoot(g, p, 0, 0); p.fireCd = 9; } p.charge = 0; }
+    const useCharge = G.weapons.usesCharge(g);                                               /* the charge beam is used only if it is owned AND chosen in the status screen (otherwise rapid fire) */
+    if (!useCharge) { if (I.fire && p.fireCd === 0) { shoot(g, p, 0, 0); p.fireCd = A.charge ? 6 : 9; } p.charge = 0; p.held = 0; }
     else {
     if (D.fire && p.fireCd === 0) { shoot(g, p, 0, 0); p.fireCd = 8; p.held = 0; }
     if (I.fire) {
       p.held++;
-      if (A.charge && p.held > 14) {
+      if (p.held > 14) {
         const c0 = p.charge; p.charge = Math.min(CH.max, p.held - 14); if (p.charge === 1) G.audio.sfx('chargeStart');
         if (c0 < CH.full && p.charge >= CH.full) G.audio.sfx('chargeFull');
         if (c0 < CH.mega && p.charge >= CH.mega) { G.audio.sfx('chargeMega'); g.shake = Math.max(g.shake, 2); }
         if (p.charge >= CH.mega && p.held % 4 === 0) g.shake = Math.max(g.shake, 0.8);
       }
-    } else { if (A.charge && p.charge >= CH.min) { const t = tierOf(p.charge); shoot(g, p, t, p.charge); p.fireCd = t === 3 ? 22 : 14; } p.charge = 0; p.held = 0; }
+    } else { if (p.charge >= CH.min) { const t = tierOf(p.charge); shoot(g, p, t, p.charge); p.fireCd = t === 3 ? 22 : 14; } p.charge = 0; p.held = 0; }
     }
-    if (D.missile && p.fireCd === 0 && p.mode !== 'ball') missile(g, p);
+    if (D.missile && (p.missCd || 0) === 0 && p.mode !== 'ball' && !(useCharge && p.charge > 0)) missile(g, p);          /* missiles and beam together, unless a charge is building */
     if (D.swap && A.supers) p.sel = 1 - p.sel;
     if (D.b1) A.beams.ice = !A.beams.ice && A.hasIce; if (D.b2) A.beams.wave = !A.beams.wave && A.hasWave; if (D.b3) A.beams.plasma = !A.beams.plasma && A.hasPlasma;
   };
@@ -95,9 +97,30 @@
     if (p.spinAtkT % 2 === 0) G.fx.spark(p.x + (Math.random() - 0.5) * 34, p.y - 20 + (Math.random() - 0.5) * 44, B.col[Math.random() < 0.5 ? 0 : 1]);
     const tr = g.spinTrail = g.spinTrail || []; tr.unshift({ x: p.x, y: p.y, fr: G.player.frame(p), face: p.face }); if (tr.length > 6) tr.pop();
   };
+  /* the super dash: while the dash burst runs the hero is wrapped in energy. It shatters dash blocks and shot blocks in its path and hurts every enemy it touches (a hit per enemy every 8 ticks; damage 6 plus 3 per beam upgrade),
+     a stunned boss's weak point too. The energy also armours him (see P.hurt). */
+  W.dashAttack = function (g) {
+    const p = g.P;
+    if (!(p.dash > 0) || !g.abil.dash) { if (g.dashTrail && g.dashTrail.length) g.dashTrail.pop(); return; }
+    const dir = p.dashDir || p.face, B = W.beam(g.abil), dmg = 6 + 3 * B.dmg, now = g.time, x0 = Math.min(p.x - 12, p.x + dir * 22), x1 = Math.max(p.x + 12, p.x + dir * 22), y0 = p.y - 42, y1 = p.y + 1;
+    const fake = { ice: false, wave: false, pierce: true, kind: 'beam', dmg, tier: 2, col: B.col, hit: new Set() };
+    for (let ty = Math.floor(y0 / T); ty <= Math.floor(y1 / T); ty++) for (let tx = Math.floor(x0 / T); tx <= Math.floor(x1 / T); tx++) {
+      const k = RM.at(g.room, tx, ty);
+      if (k === 13) { RM.set(g.room, tx, ty, 0); G.fx.debris(tx * T + 8, ty * T + 8, ['#efba42', '#946a78', '#46283a']); G.audio.sfx('break'); g.shake = Math.max(g.shake, 2); }
+      else if (k === 5) W.breakAt(g, tx, ty, 'shot');
+    }
+    for (const f of g.foes) {
+      if (f.dead || f.ghost) continue;
+      if (x1 > f.x - f.w / 2 && x0 < f.x + f.w / 2 && y1 > f.y - f.h && y0 < f.y && now - (f.dashHit === undefined ? -99 : f.dashHit) >= 8) {
+        f.dashHit = now; G.enemies.damage(g, f, dmg, 'beam', fake); G.fx.sparkBurst(f.x, f.y - f.h / 2, B.col[1], 8); g.shake = Math.max(g.shake, 2); G.audio.sfx('hit');
+      }
+    }
+    if (G.bosses && G.bosses.spinHit && g.boss) G.bosses.spinHit(g, Math.min(dmg, 12));
+    const tr = g.dashTrail = g.dashTrail || []; tr.unshift({ x: p.x, y: p.y, fr: G.player.frame(p), face: p.face, t: 0 }); if (tr.length > 7) tr.pop();
+  };
   W.update = function (g) {
     const room = g.room, p = g.P;
-    W.spinAttack(g);
+    W.spinAttack(g); W.dashAttack(g);
     for (const s of g.shots) {
       s.t++;
       if (s.kind === 'missile' || s.kind === 'super') { s.spd = Math.min(s.kind === 'super' ? 5 : 5.5, s.spd + 0.18); s.vx = s.dx * s.spd; s.vy = s.dy * s.spd; if (s.t % 2 === 0) G.fx.spark(s.x - s.dx * 3, s.y - s.dy * 3, '#ffd2a0'); }
