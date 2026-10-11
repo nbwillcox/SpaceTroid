@@ -44,7 +44,7 @@
     g.stations = (def.stations || []).map((s) => ({ type: s.type, to: s.to, x: s.tx * T + 8, y: s.ty * T + 16, t: 0 }));
     room.decor = (def.decor || []).map((d) => {
       if (d.kind === 'statue') { const img = G.sprites.statue[d.size][room.zone || 1]; return { img, x: Math.round(d.x - img.width / 2), y: Math.round(d.y - img.height), statue: d.size, cx: d.x, fy: d.y }; }
-      if (d.kind === 'ship') { const f = G.sprites.ship[0]; return { ship: true, cx: d.x, fy: d.y, x: Math.round(d.x - f.w / 2), y: Math.round(d.y - f.h) }; }
+      if (d.kind === 'ship') { const f = G.sprites.ship; return { ship: true, cx: d.x, fy: d.y, x: Math.round(d.x - f.w / 2), y: Math.round(d.y - f.h) }; }
       return { img: G.sprites.wreck, x: d.x, y: d.y };
     });
     g.prog.visited[room.id] = true;

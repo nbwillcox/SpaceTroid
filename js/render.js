@@ -144,9 +144,17 @@
     ctx.translate(-ox, -oy);
     ctx.drawImage(room.baked, 0, 0);
     for (const d of room.decor || []) {
-      if (d.ship) {                                                          /* the landed ship: engine lights pulse through its 8 frames, a warm glow washes the pad */
-        ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = '#ff9a4a'; ctx.globalAlpha = 0.07 + 0.03 * Math.sin(time * 3); for (let i = 0; i < 4; i++) ctx.fillRect(d.cx - 66 + i * 6, d.fy - 3 - i, 132 - i * 12, 3 + i); ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1;
-        ctx.drawImage(S.ship[Math.floor(time * 5) % S.ship.length].c, d.x, d.y); continue;
+      if (d.ship) {                                                          /* the landed ship: one still hull; its orange lamps and engine pods pulse, the cyan lamps flicker, a warm glow washes the pad */
+        ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = '#ff9a4a'; ctx.globalAlpha = 0.06 + 0.03 * Math.sin(time * 2.2); for (let i = 0; i < 4; i++) ctx.fillRect(d.cx - 66 + i * 6, d.fy - 3 - i, 132 - i * 12, 3 + i); ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1;
+        ctx.drawImage(S.ship.c, d.x, d.y);
+        ctx.globalCompositeOperation = 'lighter';
+        S.ship.lights.forEach((l, i) => {
+          const orange = l.k === 'orange', pulse = orange ? (i === 0 ? (Math.sin(time * 5) > 0.2 ? 1 : 0.25) : 0.5 + 0.5 * Math.sin(time * 2.6 + i * 1.3)) : (Math.sin(time * 11 + i * 3) > 0 ? 1 : 0.35), lx = d.x + l.cx, ly = d.y + l.cy;
+          ctx.fillStyle = orange ? '#ff8a24' : '#7ae0ff'; ctx.globalAlpha = 0.07 + 0.1 * pulse; ctx.beginPath(); ctx.arc(lx, ly, orange ? 8 : 5, 0, 6.2832); ctx.fill();      /* soft halo */
+          ctx.globalAlpha = 0.14 + 0.2 * pulse; ctx.beginPath(); ctx.arc(lx, ly, orange ? 4 : 2.5, 0, 6.2832); ctx.fill();
+          ctx.fillStyle = orange ? '#ffd890' : '#d8f8ff'; ctx.globalAlpha = 0.22 + 0.55 * pulse; for (const [px, py] of l.px) ctx.fillRect(d.x + px, d.y + py, 1, 1);     /* the lamp pixels themselves brighten */
+        });
+        ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1; continue;
       }
       if (d.statue) R.shaft(ctx, d, room, time); ctx.drawImage(d.img, d.x, d.y);
     }
