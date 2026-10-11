@@ -25,7 +25,7 @@ SPECS = [
     ('ember', 1, (640, 622, 895, 786), 2, [], 46, 'ground', {'old': 'ember'}),
     ('magmite', 1, (926, 622, 1167, 754), 2, [], 46, 'ground', {'old': 'magmite'}),
     ('cinder', 1, (1197, 622, 1923, 762), 4, [], 46, 'ground', {'old': 'cinder'}),
-    ('drone', 2, (24, 120, 821, 314), 4, [], 26, 'ground', {'old': 'drone'}),
+    ('drone', 2, (24, 120, 821, 314), 4, [], 26, 'ground', {'old': 'drone', 'bg': (500, 290)}),
     ('jelly', 2, (853, 120, 1269, 363), 3, [], 46, 'center', {'old': 'jelly'}),
     ('rturret', 2, (1300, 120, 1585, 372), 2, [], 46, 'ground', {'old': 'rturret'}),
     ('guard', 2, (24, 541, 797, 727), 4, [], 46, 'ground', {'old': 'guard'}),
@@ -96,7 +96,9 @@ def sheet(i):
 def cut(spec):
     """-> list of (RGBA PIL image, (left, bottom) position in sheet coordinates)"""
     name, i, (x0, y0, x1, y1), n, excl, thr, mode, ex = spec
-    a, bg = sheet(i); d = np.abs(a - bg).sum(2) > thr
+    a, bg = sheet(i)
+    if 'bg' in ex: bx, by = ex['bg']; bg = np.median(a[by:by + 6, bx:bx + 6].reshape(-1, 3), axis=0)         # a sprite sitting on its panel's own (slightly lighter) background
+    d = np.abs(a - bg).sum(2) > thr
     sub = np.zeros_like(d); sub[y0:y1, x0:x1] = d[y0:y1, x0:x1]
     for (ex0, ey0, ex1, ey1) in excl: sub[ey0:ey1, ex0:ex1] = False
     comps = [c for c in components(sub) if c['n'] >= 6 and not (c['y1'] - c['y0'] < 4 and c['x1'] - c['x0'] > 40) and not (c['x1'] - c['x0'] < 4 and c['y1'] - c['y0'] > 40)]
