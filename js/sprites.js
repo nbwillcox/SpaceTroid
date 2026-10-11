@@ -41,7 +41,8 @@
     const CW = 80, CH = 96, HX = 40, HY = 64, poseCache = new Map(), blank = document.createElement('canvas'); blank.width = CW; blank.height = CH;
     S.heroPose = function (suit, tor, leg, ox, oy) {
       const k = suit + '|' + tor + '|' + leg + '|' + ox + '|' + oy, hit = poseCache.get(k); if (hit) return hit;
-      const P = S.heroParts[suit], T = P['tor_' + tor], L = P['leg_' + leg], g = L.spec.g, ay = HY + g;
+      const P = S.heroParts[suit], T = P['tor_' + tor], L = P['leg_' + leg]; if (!T || !L) return { r: blank, l: blank, w: CW, h: CH, ax: HX, axl: CW - HX, ay: HY, tx: 0, ty: 0 };      /* an unknown part name draws nothing instead of stopping the frame */
+      const g = L.spec.g, ay = HY + g;
       if (!T.ok || !L.ok) return { r: blank, l: blank, w: CW, h: CH, ax: HX, axl: CW - HX, ay, tx: 0, ty: 0 };           /* still decoding: draw nothing this frame */
       const r = document.createElement('canvas'), l = document.createElement('canvas'); r.width = l.width = CW; r.height = l.height = CH;
       const x = r.getContext('2d'); x.drawImage(L.c, Math.round(HX - L.spec.hx), Math.round(HY - L.spec.hy)); x.drawImage(T.c, Math.round(HX + ox - T.spec.hx), Math.round(HY + oy - T.spec.hy));
@@ -51,7 +52,7 @@
     for (const suit in shift) {
       const o = {}, P = S.heroParts[suit] = {};
       for (const k in HI) { if (k.indexOf('tor_') === 0 || k.indexOf('leg_') === 0) P[k] = part(HI[k], shift[suit]); else if (k.indexOf('suit_') !== 0) o[k] = heroFrame(HI[k], shift[suit]); }
-      Object.defineProperty(o, 'idle', { get: () => S.heroPose(suit, '0', 'idle', 0, 0) });
+      Object.defineProperty(o, 'idle', { get: () => S.heroPose(suit, 'r12', 'idle', 0, 0) });
       S.hero[suit] = o;
     }
     const Z = A.zone1, M = A.zone1misc, D = A.zone1deco;

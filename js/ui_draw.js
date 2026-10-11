@@ -45,7 +45,7 @@
     if (up && tb.flip) { const f = S.hero.cobalt['spin' + (Math.floor(u * 16) & 7)]; ctx.drawImage(f.r, x - f.ax, 224 - lift - 22 - f.ay); }
     else {
       const leg = up ? (u < 0.38 ? 'rise' : u < 0.62 ? 'apex' : 'fall') : 'e' + (Math.floor(time * 24) % 8);
-      const f = S.heroPose('cobalt', '0', leg, up ? 1 : 2, 0); ctx.drawImage(f.r, x - f.ax, 224 - lift - f.ay);
+      const f = S.heroPose('cobalt', 'r12', leg, up ? 1 : 2, 0); ctx.drawImage(f.r, x - f.ax, 224 - lift - f.ay);
     }
   }
   function slots(ctx) {
