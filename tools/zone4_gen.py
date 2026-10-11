@@ -47,7 +47,7 @@ def sluice():
     r.cave([(0, 32)], [(0, 19), (4, 17), (22, 19), (30, 19), (44, 17, 's'), (58, 17)], y0=17, y1=33)
     r.stair(51, 53, 32)
     r.flood(24, 40, 28)
-    r.plat(6, 15, 25); r.fill(9, 21, 12, 21, '#'); r.g[22][10] = 'G'; r.g[22][11] = 'G'; add_shrine(Z, r, 'dQ', 14, 22, -1, 3, 'tankQ', 'energyTank', 'Vigor Shrine')
+    r.plat(6, 15, 25); r.fill(9, 20, 12, 20, '#'); r.g[21][10] = 'G'; r.g[21][11] = 'G'; add_shrine(Z, r, 'dQ', 14, 22, -1, 3, 'tankQ', 'energyTank', 'Vigor Shrine')
     r.on('d', 22); r.spawn('j', 30, 24); r.spawn('j', 44, 22); r.on('a', 38); r.spawn('r', 46, 31)
     r.door('eb', 'R', 29, 'blue', 'settling', 'w')
     r.wall(1, 18, 58, 32, ragged=False)
@@ -94,8 +94,8 @@ def gantry():
     # three ledges seven rows apart, each with a ceiling slab and grapple anchors above it: grapple up, hang, and leap onto the ledge
     for (ly, sx0, sx1, lx0, lx1) in [(25, 9, 12, 6, 15), (18, 13, 16, 10, 19), (11, 17, 20, 14, 20)]:
         r.plat(lx0, lx1, ly)
-        r.fill(sx0, ly - 4, sx1, ly - 4, '#')
-        for x in range(sx0 + 1, sx1): r.g[ly - 3][x] = 'G'
+        r.fill(sx0, ly - 5, sx1, ly - 5, '#')                                       # the slab and anchors sit 4 rows over the ledge: a hanging hero (45 px under the anchor) clears the ledge instead of sinking into it
+        for x in range(sx0 + 1, sx1): r.g[ly - 4][x] = 'G'
     r.fill(22, 6, 28, 6, '#')
     r.fill(2, 30, 27, 31, 'W')
     r.fill(1, 14, 2, 22, '#'); r.fill(26, 12, 28, 22, '#'); r.fill(27, 24, 28, 28, '#')

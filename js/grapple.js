@@ -3,13 +3,13 @@
   'use strict';
   const PH = G.phys, GR = {};
   G.grapple = GR;
-  const RANGE = 150;
+  const RANGE = 160;
   const clear = (room, x0, y0, x1, y1) => { for (let i = 1; i < 8; i++) { const x = x0 + (x1 - x0) * i / 8, y = y0 + (y1 - y0) * i / 8; if (G.room.solidAt(room, Math.floor(x / 16), Math.floor(y / 16))) return false; } return true; };
   GR.find = function (room, p) {
     let best = null, bd = 1e9;
     for (const a of room.anchors) {
       const dx = a.x - p.x, dy = a.y - (p.y - p.h * 0.7), d = Math.hypot(dx, dy);
-      if (dy < -12 && d < RANGE && d < bd && clear(room, p.x, p.y - p.h * 0.7, a.x, a.y)) { best = a; bd = d; }
+      if (dy < -36 && d < RANGE && d < bd && clear(room, p.x, p.y - p.h * 0.7, a.x, a.y)) { best = a; bd = d; }
     }
     return best;
   };
