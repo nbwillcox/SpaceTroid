@@ -26,7 +26,7 @@
     for (const id in G.rooms) {
       const d = G.rooms[id]; if (!known(g, id)) continue;
       for (const s of d.stations || []) {
-        if (s.type !== 'lift' || !s.to || !G.rooms[s.to] || !known(g, s.to)) continue;
+        if (s.type !== 'lift' || s.back || !s.to || !G.rooms[s.to] || !known(g, s.to)) continue;
         const e = G.rooms[s.to], x0 = ox + (d.mx + 0.5) * cw, y0 = oy + (d.my + 1) * ch, x1 = ox + (e.mx + 0.5) * cw, y1 = oy + e.my * ch;
         for (let t = 0; t <= 1; t += 2 / Math.max(4, Math.abs(y1 - y0) + Math.abs(x1 - x0))) ctx.fillRect(Math.round(x0 + (x1 - x0) * t), Math.round(y0 + (y1 - y0) * t), 1, 1);
       }

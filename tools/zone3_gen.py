@@ -11,8 +11,9 @@ def fgate():
     r = room('fgate', 'Forge Gate', 30, 17, 0, 6, solid=True, wall_all=True)
     r.cave([(0, 13), (6, 15)], [(0, 2), (6, 5), (14, 3), (22, 2)])
     r.spawn('P', 2, 12); r.door('e', 'R', 12, 'blue', 'ember', 'w')
-    r.fill(12, 14, 15, 15, 'L'); r.fill(22, 12, 25, 12, '#'); r.on('R', 20)
+    r.fill(12, 14, 15, 15, 'L'); r.fill(22, 12, 25, 12, '#'); r.on('R', 27)
     r.hang(9, 3, 1); r.hang(18, 2, 2)
+    r.station('lift', 19, 14, to='heat', back=True)                                          # the way back up
     return r
 fgate()
 

@@ -190,7 +190,7 @@ def lift():
     r.cave([(0, 15)], [(0, 2), (4, 4), (14, 3), (18, 2), (28, 5)])
     r.door('w', 'L', 12, 'blue', 'arena', 'e')
     r.statue(8, 'big', 15, 'charge', 'charge')
-    r.station('lift', 22, 14, to='gate')
+    r.station('lift', 15, 14, to='gate')
     # the Spinflip alcove: a cracked overcharge wall, which only a fully charged shot (or the spinflip itself) breaks, seals a doorway in the east end of the room
     r.fill(24, 5, 28, 11, '#'); r.fill(26, 12, 28, 14, '.'); r.fill(24, 12, 25, 14, 'O')
     add_big_shrine(ROOMS, r, 'dF', 27, 12, -1, 3, 'spin', 'spinFlip', 'Shrine of Momentum', arr=72)

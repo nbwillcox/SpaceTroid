@@ -11,8 +11,9 @@ def rgate():
     r = room('rgate', 'Reactor Gate', 30, 17, 0, 8, solid=True, wall_all=True)
     r.cave([(0, 14), (7, 15)], [(0, 2), (5, 5), (12, 3), (24, 2)])
     r.spawn('P', 3, 13); r.door('e', 'R', 12, 'blue', 'intake', 'w')
-    r.flood(9, 23, 13); r.fill(14, 12, 17, 12, '#'); r.on('d', 25)
+    r.flood(9, 23, 13); r.fill(14, 12, 17, 12, '#'); r.on('d', 8)
     r.hang(8, 3, 1); r.hang(20, 2, 2)
+    r.station('lift', 24, 14, to='lift3', back=True)                                         # the way back up (mirrored: lands at tile 5)
     return r
 rgate()
 

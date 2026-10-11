@@ -12,7 +12,8 @@ def gate():
     r.cave([(0, 13), (8, 15)], [(0, 2), (5, 4), (11, 2)])
     r.spawn('P', 3, 12); r.door('e', 'R', 12, 'blue', 'drift', 'w')
     r.surf(9, 19); r.fill(22, 12, 25, 12, '#')
-    r.on('f', 17); r.top(14, 'v'); r.top(21, 'v')
+    r.on('f', 6); r.top(14, 'v'); r.top(21, 'v')
+    r.station('lift', 14, 14, to='lift', back=True)                                          # the way back up (the zone is mirrored: lands at tile 15)
     return r
 gate()
 

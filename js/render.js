@@ -75,6 +75,39 @@
     }
     ctx.restore();
   };
+  /* the teleport light show. out: converging motes and rising bands while the hero charges, then a burst (rays, a beam up and a flat ring); in: a beam crashes down onto the deck,
+     a shockwave ring spreads and sparks fly, and the hero materialises. back = behind the hero, front = over him. */
+  R.liftFx = function (ctx, g, front) {
+    const a = g.liftAnim; if (!a) return;
+    const L = S.lift, lift = L.h - L.deck, t = a.t, cx = Math.round(a.x), deckY = Math.round(a.y - lift), cy = deckY - 22, camTop = Math.round(g.cam.y);
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    if (a.phase === 'out') {
+      const charge = Math.max(0, Math.min(1, (t - 14) / 50));
+      if (!front && t > 14 && t < 70) {
+        for (let k = 0; k < 3; k++) { const ph = (t * (2.4 + 0.6 * k) + k * 19) % 52, fl = ((t + k * 3) >> 1) & 1 ? 1 : 0.45; ctx.fillStyle = k & 1 ? '#c8fbff' : '#7cefff'; ctx.globalAlpha = 0.5 * charge * fl; ctx.fillRect(cx - 14, deckY - Math.round(ph), 28, 1); ctx.globalAlpha = 0.16 * charge * fl; ctx.fillRect(cx - 14, deckY - Math.round(ph) - 1, 28, 3); }
+        for (let i = 0; i < 18; i++) { const ph = ((t * 1.4 + i * 9) % 34) / 34, ang = i * 2.399, r = (1 - ph) * 36; ctx.fillStyle = i & 1 ? '#ffffff' : '#7cefff'; ctx.globalAlpha = charge * (0.2 + 0.7 * ph); const sz = i % 3 === 0 ? 2 : 1; ctx.fillRect(Math.round(cx + Math.cos(ang) * r), Math.round(cy + Math.sin(ang) * r * 0.9), sz, sz); }
+      }
+      if (front && t >= 40 && t < 70) { const w = ((t - 40) / 30); ctx.fillStyle = '#ffffff'; ctx.globalAlpha = 0.18 + 0.3 * w; ctx.fillRect(cx - 12, cy - 22, 24, 44); }                               /* the body starts to blow out */
+      if (!front && t >= 70) {
+        const u = Math.min(1, (t - 70) / 18), fade = 1 - u, w = Math.max(2, Math.round(14 * (1 - u * 0.7)));
+        ctx.fillStyle = '#7cefff'; ctx.globalAlpha = 0.3 * fade; ctx.fillRect(cx - w, camTop, w * 2, deckY - camTop); ctx.fillStyle = '#f2ffff'; ctx.globalAlpha = 0.85 * fade; ctx.fillRect(cx - (w >> 1), camTop, w, deckY - camTop);
+        for (let i = 0; i < 14; i++) { const ang = i * 6.2832 / 14 + 0.2, r0 = 4 + u * 10, r1 = 8 + u * 54; ctx.fillStyle = i & 1 ? '#ffffff' : '#9af2ff'; ctx.globalAlpha = 0.9 * fade; for (let r = r0; r < r1; r += 2) ctx.fillRect(Math.round(cx + Math.cos(ang) * r), Math.round(cy + Math.sin(ang) * r), 1, 1); }
+        ctx.strokeStyle = '#d8fcff'; ctx.globalAlpha = 0.8 * fade; ctx.lineWidth = 1; ctx.beginPath(); ctx.ellipse(cx, deckY - 1, 6 + u * 40, 2 + u * 10, 0, 0, 6.2832); ctx.stroke();
+      }
+    } else if (!front) {
+      if (t < 16) {
+        const u = t / 16, head = camTop + (deckY - camTop) * (u * u);                               /* a falling streak of light */
+        for (let k = 0; k < 28; k++) { const y = Math.round(head - k * 3); if (y < camTop - 3) break; const al = 0.95 * (1 - k / 28); ctx.fillStyle = '#7cefff'; ctx.globalAlpha = al * 0.4; ctx.fillRect(cx - 5, y, 10, 3); ctx.fillStyle = '#f2ffff'; ctx.globalAlpha = al; ctx.fillRect(cx - 2, y, 4, 3); }
+        ctx.fillStyle = '#ffffff'; ctx.globalAlpha = 0.5; ctx.beginPath(); ctx.arc(cx, Math.round(head), 7, 0, 6.2832); ctx.fill();
+      } else if (t < 40) {
+        const v = (t - 16) / 24, fade = 1 - v;
+        for (let k = 0; k < 2; k++) { ctx.strokeStyle = k ? '#7cefff' : '#f2ffff'; ctx.globalAlpha = 0.85 * fade; ctx.lineWidth = 1; ctx.beginPath(); ctx.ellipse(cx, deckY - 1, 4 + v * 36 + k * 7, 1.5 + v * 9 + k * 2, 0, 0, 6.2832); ctx.stroke(); }
+        for (let i = 0; i < 16; i++) { const dx = (i - 7.5) * v * 5, y = deckY - v * (24 + (i % 4) * 9) + v * v * 26; ctx.fillStyle = i & 1 ? '#ffffff' : '#9af2ff'; ctx.globalAlpha = 0.95 * fade; ctx.fillRect(Math.round(cx + dx), Math.round(y), i % 3 === 0 ? 2 : 1, i % 3 === 0 ? 2 : 1); }
+        ctx.fillStyle = '#7cefff'; ctx.globalAlpha = 0.3 * fade; ctx.fillRect(cx - 6, camTop, 12, deckY - camTop); ctx.fillStyle = '#f2ffff'; ctx.globalAlpha = 0.6 * fade; ctx.fillRect(cx - 2, camTop, 4, deckY - camTop);     /* the column fades */
+      }
+    }
+    ctx.restore();
+  };
   /* the item-get moment: light rays from the raised cannon, the item floating up with a glow, and a quick white flash */
   R.getFx = function (ctx, g, time) {
     const a = g.getAnim, p = g.P, m = G.player.muzzle(p), t = a.t, big = a.big, fade = t > (big ? 140 : 62) ? Math.max(0, 1 - (t - (big ? 140 : 62)) / 24) : 1;
@@ -213,18 +246,21 @@
       ctx.fillStyle = fl ? '#fff2a8' : '#ef7a2a'; ctx.fillRect(bx, by - r - 2, 2, 2);
     }
     if (g.saveAnim) R.saveLight(ctx, g.saveAnim, false);
+    if (g.liftAnim) R.liftFx(ctx, g, false);
     /* hero */
     const dying = p.dead > 0 && p.dead < 16;                                 /* a short white-flash collapse before the explosion */
-    if (dying || (!p.dead && !(p.inv > 0 && Math.floor(time * 20) % 2 && p.hurt === 0))) {
+    if (!(g.liftAnim && g.liftAnim.hide) && (dying || (!p.dead && !(p.inv > 0 && Math.floor(time * 20) % 2 && p.hurt === 0)))) {
       const fr = G.player.frame(p), ball = p.mode === 'ball' && !g.getAnim, right = p.face >= 0 || ball, c0 = right ? fr.r : fr.l, c = dying && (p.dead & 2) ? S.whiteOf(c0) : c0;
-      const spin = p.spinning && !p.ground && !g.getAnim, hx = Math.round(p.x - (right ? fr.ax : fr.axl)), hy = Math.round(p.y - (spin ? 22 : 0) - fr.ay - (g.saveAnim ? g.saveAnim.yoff || 0 : 0));
+      const spin = p.spinning && !p.ground && !g.getAnim, hx = Math.round(p.x - (right ? fr.ax : fr.axl)), hy = Math.round(p.y - (spin ? 22 : 0) - fr.ay - ((g.saveAnim || g.liftAnim || {}).yoff || 0));
       if (p.spinAtk) R.spinAura(ctx, g, p, time, false);
       ctx.drawImage(c, hx, hy);
+      if (g.liftAnim && g.liftAnim.flash) { ctx.globalAlpha = 0.95; ctx.drawImage(S.whiteOf(c0), hx, hy); ctx.globalAlpha = 1; }                          /* teleport flicker: the silhouette flashes white */
       if (p.spinAtk) R.spinAura(ctx, g, p, time, true);
       if (g.saveAnim && g.saveAnim.t > 34 && g.saveAnim.t < 58) { ctx.globalAlpha = 0.75 * (1 - Math.abs(g.saveAnim.t - 46) / 12); ctx.drawImage(S.whiteOf(c0), hx, hy); ctx.globalAlpha = 1; }
       R.chargeFx(ctx, g, p, time);
     }
     if (g.saveAnim) R.saveLight(ctx, g.saveAnim, true);
+    if (g.liftAnim) R.liftFx(ctx, g, true);
     if (g.getAnim) R.getFx(ctx, g, time);
     if (room.lava.length) { ctx.globalAlpha = 0.5; lavaPass(); ctx.globalAlpha = 1; }
     if (room.water.length) waterPass(0.2);

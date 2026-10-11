@@ -26,7 +26,7 @@
   /* everything drawn over the HUD: minimap, boss bar, toast, item banner, fades */
   H.overlay = function (ctx, g, time) {
     const Mo = G.input.mouse;
-    if (G.settings.mouseAim && Mo.on && !g.banner && !g.trans && !g.getAnim && !g.saveAnim && g.P.mode !== 'ball' && !G.input.stick) {   /* aiming reticle */
+    if (G.settings.mouseAim && Mo.on && !g.banner && !g.trans && !g.getAnim && !g.saveAnim && !g.liftAnim && g.P.mode !== 'ball' && !G.input.stick) {   /* aiming reticle */
       const x = Math.round(Mo.x), y = Math.round(Mo.y), pulse = Math.floor(time * 4) & 1;
       ctx.fillStyle = '#0a0e2c'; for (const [dx, dy, w, h] of [[-6, -1, 4, 3], [3, -1, 4, 3], [-1, -6, 3, 4], [-1, 3, 3, 4]]) ctx.fillRect(x + dx - 1, y + dy - 1, w + 2, h + 2);
       ctx.fillStyle = pulse ? '#ffffff' : '#86f0f2'; for (const [dx, dy, w, h] of [[-6, 0, 4, 1], [3, 0, 4, 1], [0, -6, 1, 4], [0, 3, 1, 4]]) ctx.fillRect(x + dx, y + dy, w, h);
@@ -56,6 +56,7 @@
     if (g.room.scanOn) { PX.text(ctx, 'SCAN', 206, 24, { s: 1, c: Math.floor(time * 2) & 1 ? '#f2ffff' : '#86f0f2', o: '#0a0e2c' }); }
     if (g.room.scanOn) { ctx.fillStyle = 'rgba(40,180,200,0.10)'; ctx.fillRect(0, 0, 480, 270); for (let y = (Math.floor(time * 40) % 4); y < 270; y += 4) { ctx.fillStyle = 'rgba(134,240,242,0.06)'; ctx.fillRect(0, y, 480, 1); } }
     if (g.P.hurt > 0 && !G.settings.reduced) { ctx.fillStyle = 'rgba(255,50,50,' + (0.16 * g.P.hurt / 14).toFixed(3) + ')'; ctx.fillRect(0, 0, 480, 270); }
+    if (g.liftAnim && g.liftAnim.white > 0) { ctx.fillStyle = 'rgba(235,252,255,' + Math.min(1, g.liftAnim.white).toFixed(3) + ')'; ctx.fillRect(0, 0, 480, 270); }
     let f = 0; if (g.fade) f = g.fade.dir < 0 ? g.fade.t / g.fade.len : 1 - g.fade.t / g.fade.len;
     if (g.trans) f = g.trans.phase === 'out' ? Math.min(1, g.trans.t / 10) : 1 - Math.min(1, g.trans.t / 10);
     if (f > 0) { ctx.fillStyle = 'rgba(5,7,26,' + f + ')'; ctx.fillRect(0, 0, 480, 270); }

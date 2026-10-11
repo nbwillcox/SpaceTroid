@@ -11,8 +11,9 @@ def hgate():
     r = room('hgate', 'Hive Gate', 30, 17, 0, 10, solid=True, wall_all=True)
     r.cave([(0, 15), (8, 13), (14, 15)], [(0, 2), (5, 6), (12, 3), (20, 5), (26, 2)])
     r.spawn('P', 3, 14); r.door('e', 'R', 12, 'blue', 'bloom', 'w')
-    r.on('g', 21)
+    r.on('g', 13)
     r.hang(9, 3, 1); r.hang(17, 2, 2)
+    r.station('lift', 24, 14, to='lift4', back=True)                                         # the way back up
     return r
 hgate()
 

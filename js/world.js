@@ -43,7 +43,7 @@
       return o;
     });
     g.pickups = (def.items || []).filter((it) => !g.prog.items[it.id]).map((it) => Object.assign({}, it, { x: it.tx * T + 8, y: it.ty * T + 16 + (it.dy || 0), t: Math.floor(Math.random() * 60) }));
-    g.stations = (def.stations || []).map((s) => ({ type: s.type, to: s.to, x: s.tx * T + 8, y: s.ty * T + 16, t: 0 }));
+    g.stations = (def.stations || []).map((s) => ({ type: s.type, to: s.to, back: !!s.back, x: s.tx * T + 8, y: s.ty * T + 16, t: 0 }));
     room.decor = (def.decor || []).map((d) => {
       if (d.kind === 'statue') { const img = G.sprites.statue[d.size][room.zone || 1]; return { img, x: Math.round(d.x - img.width / 2), y: Math.round(d.y - img.height), statue: d.size, cx: d.x, fy: d.y }; }
       if (d.kind === 'ship') { const f = G.sprites.ship; return { ship: true, cx: d.x, fy: d.y, x: Math.round(d.x - f.w / 2), y: Math.round(d.y - f.h) }; }
@@ -98,7 +98,7 @@
   W.warpTo = function (g, id) { const sp = W.padSpot(id); g.trans = { t: 0, to: id, door: null, phase: 'out', sx: sp.x, sy: sp.y }; G.audio.sfx('door'); };
   W.useStation = function (g, s) {
     const p = g.P;
-    if (s.type === 'lift') { if (s.to) g.trans = { t: 0, to: s.to, door: null, phase: 'out' }; else G.main.ending(g); return; }
+    if (s.type === 'lift') { if (!g.liftAnim) g.liftAnim = { phase: 'out', t: 0, x: s.x, y: s.y, s, yoff: 0, hide: false, white: 0, flash: false }; return; }
     if (s.type === 'save') { if (!g.saveAnim) g.saveAnim = { t: 0, x: s.x, y: s.y, s, face: p.face }; return; }
     for (const id in G.rooms) if (G.rooms[id].zone === g.room.zone) g.prog.mapped[id] = true;
     g.toast = { txt: 'MAP DATA DOWNLOADED', t: 0 }; G.audio.sfx('save');
@@ -164,6 +164,51 @@
     ctx.fillStyle = '#c8fbff'; ctx.globalAlpha = 0.16 + 0.26 * pulse + 0.4 * boost * (0.6 + 0.4 * fast); for (const [px, py] of C.lights) ctx.fillRect(x0 + px, y0 + py, 1, 1);          /* every cyan light brightens together */
     ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
   };
+  /* the elevator: a painted arch with a glowing deck. Teleporting: the hero hops onto the deck, the light climbs, he flashes faster and faster and bursts into light (out); the light then
+     crashes down on the destination deck, he materialises and drops to the floor (in). Pure picture + timing: the room change happens at the white-out. */
+  const LIFT_UP = 18, LIFT_OUT = 78, LIFT_IN_FALL = 36, LIFT_IN_END = 54;
+  W.liftSpot = (from, to) => { const st = (G.rooms[to].stations || []).find((q) => q.type === 'lift' && (q.to === from || q.back)); return st ? { x: st.tx * T + 8, y: st.ty * T + 16, tx: st.tx, ty: st.ty } : null; };
+  W.liftAnimStep = function (g) {
+    const a = g.liftAnim, p = g.P, L = G.sprites.lift, lift = L.h - L.deck; a.t++;
+    p.vx = 0; p.vy = 0; p.dash = 0;
+    if (a.phase === 'out') {
+      p.x += (a.x - p.x) * 0.3;
+      if (a.t < LIFT_UP) { const u = a.t / LIFT_UP; a.yoff = lift * (1 - (1 - u) * (1 - u)) + 8 * Math.sin(Math.PI * u); } else a.yoff = lift;
+      if (a.t === 1) { G.audio.sfx('jump'); G.audio.sfx('chargeStart'); }
+      if (a.t === 40) G.audio.sfx('chargeFull');
+      a.flash = a.t >= 40 && a.t < 70 && (Math.floor(((a.t - 40) + (a.t - 40) * (a.t - 40) / 18) / 2) & 1) === 1;                   /* the flicker speeds up */
+      if (a.t === 70) { a.hide = true; a.flash = false; G.audio.sfx('boom'); G.audio.sfx('spacejump'); g.shake = Math.max(g.shake, 4); }
+      a.white = a.t < 62 ? 0 : Math.min(1, (a.t - 62) / 14);
+      if (a.t >= LIFT_OUT) {
+        if (!a.s.to) { g.liftAnim = null; G.main.ending(g); return; }
+        const spot = W.liftSpot(g.roomId, a.s.to);
+        G.game.enterRoom(a.s.to, null, spot ? spot.x : undefined, spot ? spot.y : undefined);
+        const ns = spot && g.stations.find((q) => q.type === 'lift' && Math.abs(q.x - spot.x) < 2);
+        g.liftAnim = { phase: 'in', t: 0, x: spot ? spot.x : p.x, y: spot ? spot.y : p.y, s: ns || a.s, yoff: lift, hide: true, white: 1, flash: false, impact: false };
+        p.face = 1; G.render.camera(g, true);
+      }
+    } else {
+      p.x = a.x; p.y = a.y; p.ground = true; a.yoff = a.t < LIFT_IN_FALL ? lift : lift * (1 - Math.pow(Math.min(1, (a.t - LIFT_IN_FALL) / 14), 2));
+      if (a.t === 1) G.audio.sfx('chargeStart');
+      if (a.t === 16) { a.hide = false; a.impact = true; G.audio.sfx('boom'); G.audio.sfx('save'); g.shake = Math.max(g.shake, 5); G.fx.ring(a.x, a.y - lift); }
+      a.flash = a.t >= 16 && a.t < 30 && (Math.floor((a.t - 16) / 2) & 1) === 0;                                                   /* materialising: white silhouette flickers into colour */
+      a.white = a.t < 8 ? 1 - a.t / 8 : a.t >= 16 && a.t < 22 ? 0.55 * (1 - (a.t - 16) / 6) : 0;
+      if (a.t === LIFT_IN_END - 4) { G.audio.sfx('land'); G.fx.puff(a.x, a.y, 5); }
+      if (a.t >= LIFT_IN_END) { g.liftAnim = null; p.ground = true; }
+    }
+  };
+  W.drawLift = function (ctx, g, s, time) {
+    const L = G.sprites.lift, x0 = Math.round(s.x - L.w / 2), y0 = Math.round(s.y - L.h), a = g.liftAnim && g.liftAnim.s && Math.abs(g.liftAnim.s.x - s.x) < 2 && g.liftAnim.y === s.y ? g.liftAnim : null;
+    const charge = a ? (a.phase === 'out' ? Math.min(1, a.t / 60) * (a.t > 70 ? Math.max(0, 1 - (a.t - 70) / 8) : 1) : (a.t < 16 ? 0.3 : Math.max(0, 1 - (a.t - 16) / 30))) : 0, pulse = 0.5 + 0.5 * Math.sin(time * 2.4 + s.x * 0.07), fast = 0.5 + 0.5 * Math.sin(time * 11);
+    const bx = x0 + (L.bay[0] + L.bay[2]) / 2, by = y0 + (L.bay[1] + L.bay[3]) / 2;
+    ctx.globalCompositeOperation = 'lighter';
+    W.glow(ctx, Math.round(bx), Math.round(by), 40, '70,200,255', (0.03 + 0.02 * pulse + 0.07 * charge).toFixed(3)); W.glow(ctx, Math.round(bx), Math.round(by), 26, '90,230,255', (0.04 + 0.03 * pulse + 0.1 * charge).toFixed(3));
+    ctx.globalCompositeOperation = 'source-over'; ctx.drawImage(L.c, x0, y0);
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.fillStyle = '#5ae8ff'; ctx.globalAlpha = 0.03 + 0.03 * pulse + 0.2 * charge; ctx.fillRect(x0 + L.bay[0], y0 + L.bay[1], L.bay[2] - L.bay[0] + 1, L.bay[3] - L.bay[1] + 1);              /* the bay hums */
+    ctx.fillStyle = '#c8fbff'; ctx.globalAlpha = 0.16 + 0.26 * pulse + 0.45 * charge * (0.6 + 0.4 * fast); for (const [px, py] of L.lights) ctx.fillRect(x0 + px, y0 + py, 1, 1);
+    ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
+  };
   W.drawBack = function (ctx, g, time) {
     for (const d of g.doors) {                                              /* doorways inside the room (they lead to item shrines): a dark arch with pulsing runes */
       if (d.side !== 'I') continue;
@@ -184,7 +229,7 @@
       ctx.fillStyle = 'rgba(134,240,242,' + (0.45 + pulse * 0.5).toFixed(2) + ')'; ctx.fillRect(x + 2, y - 1, 2, 2); ctx.fillRect(x + 7, y - 1, 2, 2); ctx.fillRect(x + 12, y - 1, 2, 2);
       for (let k = 1; k < d.h; k++) { ctx.fillRect(x - 1, y + k * 16 - 4, 1, 3); ctx.fillRect(x + 16, y + k * 16 - 4, 1, 3); }
     }
-    for (const s of g.stations) { if (s.type === 'save') { W.drawCapsule(ctx, g, s, time); continue; } const img = s.type === 'map' ? G.sprites.term[Math.floor(time * 2) & 1] : G.sprites.pad[Math.floor(time * 3) & 1]; ctx.drawImage(img, Math.round(s.x - img.width / 2), Math.round(s.y - img.height)); }
+    for (const s of g.stations) { if (s.type === 'save') { W.drawCapsule(ctx, g, s, time); continue; } if (s.type === 'lift') { W.drawLift(ctx, g, s, time); continue; } const img = s.type === 'map' ? G.sprites.term[Math.floor(time * 2) & 1] : G.sprites.pad[Math.floor(time * 3) & 1]; ctx.drawImage(img, Math.round(s.x - img.width / 2), Math.round(s.y - img.height)); }
   };
   W.drawFront = function (ctx, g, time) {
     const S = G.sprites;
@@ -196,7 +241,7 @@
       ctx.drawImage(set[f], d.tx * T, d.ty * T + (d.h - 3) * T);
     }
     for (const it of g.pickups) W.drawItem(ctx, it.type, Math.round(it.x), Math.round(it.y), it.t, Math.round(Math.sin(it.t * 0.08) * 2));
-    if (g.near && !g.saveAnim) G.px.text(ctx, { save: 'UP: SAVE', map: 'UP: MAP', lift: 'UP: DESCEND' }[g.near.type], Math.round(g.near.x + (g.near.type === 'save' ? G.sprites.capsule.w / 2 + 4 : 0)), Math.round(g.near.y - (g.near.type === 'save' ? 22 : 62)), { s: 1, c: '#f2ffff', o: '#0a0e2c', a: g.near.type === 'save' ? 'l' : 'c' });
+    if (g.near && !g.saveAnim) G.px.text(ctx, (g.near.type === 'lift' && g.near.back ? 'UP: ASCEND' : { save: 'UP: SAVE', map: 'UP: MAP', lift: 'UP: DESCEND' }[g.near.type]), Math.round(g.near.x + (g.near.type === 'save' ? G.sprites.capsule.w / 2 + 4 : g.near.type === 'lift' ? G.sprites.lift.w / 2 + 4 : 0)), Math.round(g.near.y - (g.near.type === 'save' || g.near.type === 'lift' ? 22 : 62)), { s: 1, c: '#f2ffff', o: '#0a0e2c', a: g.near.type === 'save' || g.near.type === 'lift' ? 'l' : 'c' });
     if (g.near && !g.saveAnim && W.canWarp(g)) G.px.text(ctx, 'M: WARP', Math.round(g.near.x + (g.near.type === 'save' ? G.sprites.capsule.w / 2 + 4 : 0)), Math.round(g.near.y - (g.near.type === 'save' ? 12 : 52)), { s: 1, c: '#86f0f2', o: '#0a0e2c', a: g.near.type === 'save' ? 'l' : 'c' });
   };
 })((window.SGS = window.SGS || {}));

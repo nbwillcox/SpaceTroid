@@ -83,6 +83,7 @@
     if (Game.fade) { Game.fade.t--; if (Game.fade.t <= 0) Game.fade = null; }
     if (Game.banner) { Game.banner.t++; G.fx.update(); if (Game.banner.t > 50 && (D.jump || D.fire || D.start || D.pause)) { Game.banner = null; G.input.clear(); } return; }
     if (Game.getAnim) { G.world.getAnimStep(Game); G.fx.update(); if (G.atmos) G.atmos.update(Game); return; }
+    if (Game.liftAnim) { G.world.liftAnimStep(Game); G.fx.update(); if (G.atmos) G.atmos.update(Game); G.render.camera(Game, false); return; }
     if (Game.saveAnim) { G.world.saveAnimStep(Game); G.fx.update(); if (G.atmos) G.atmos.update(Game); G.render.camera(Game, false); return; }
     if (Game.trans) {
       const t = Game.trans; t.t++;

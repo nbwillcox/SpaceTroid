@@ -43,9 +43,10 @@ class Room:
                     if x < x0 + dl or x > x1 - dr or y < y0 + dt or y > y1 - db: continue
                 if s.g[y][x] == '.': s.g[y][x] = 'w'
     def item(s, iid, typ, tx, ty): s.items.append({'id': iid, 'type': typ, 'tx': tx, 'ty': ty})
-    def station(s, typ, tx, ty, to=None):
+    def station(s, typ, tx, ty, to=None, back=False):
         d = {'type': typ, 'tx': tx, 'ty': ty}
         if to: d['to'] = to
+        if back: d['back'] = True                                           # a return lift: it does not draw a new shaft on the map
         s.stations.append(d)
     def emit(s):
         s.check()

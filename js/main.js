@@ -28,7 +28,7 @@
   function update() {
     if (M.mode === 'play') {
       if (I.down.pause) { M.pause(); return; }
-      if (I.down.map && !Game.banner && !Game.trans && !Game.saveAnim) { M.openMap(); return; }
+      if (I.down.map && !Game.banner && !Game.trans && !Game.saveAnim && !Game.liftAnim) { M.openMap(); return; }
       Game.step();
     } else if (M.mode === 'map') {
       const w = M.warp, close = () => { M.mode = M.fromPause ? 'pause' : 'play'; M.warp = null; I.clear(); };
