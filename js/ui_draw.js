@@ -11,11 +11,42 @@
       if (on && !it.off) { ctx.fillStyle = '#fff2a8'; ctx.fillRect(240 - Math.round(PX.textW(it.t, sz) / 2) - 12, y + (big ? 4 : 1), 5, 5); }
     });
   }
+  /* the title scene: the hero runs in place through a cave of the first zone's own tiles (back wall, pillars, mossy floor, hanging roots), now and then leaping and somersaulting */
+  let cave = null, tb = null;
+  const hash = (a, b) => ((a * 73856093) ^ (b * 19349663)) >>> 0;
+  function buildCave() {
+    const TS = G.sprites.tilesets[1], T = 16, W = 480, mk = () => { const c = document.createElement('canvas'); c.width = W; c.height = 270; const x = c.getContext('2d'); x.imageSmoothingEnabled = false; return [c, x]; };
+    const [far, fx] = mk(), [near, nx] = mk();
+    for (let ty = 0; ty < 17; ty++) for (let tx = 0; tx < 30; tx++) { const h = hash(tx, ty); fx.drawImage(TS.wall[h % 11 === 0 ? 3 : (tx + ty * 2) % 3], tx * T, ty * T); }
+    for (const [px, w] of [[40, 22], [168, 30], [296, 22], [408, 30]]) {                         /* dark pillars with a lit edge */
+      fx.fillStyle = 'rgba(8,10,30,0.62)'; fx.fillRect(px, 0, w, 270); fx.fillStyle = 'rgba(120,150,190,0.12)'; fx.fillRect(px, 0, 2, 270); fx.fillStyle = 'rgba(4,6,20,0.5)'; fx.fillRect(px + w - 3, 0, 3, 270);
+      fx.fillStyle = 'rgba(8,10,30,0.8)'; fx.fillRect(px - 3, 0, w + 6, 6); fx.fillRect(px - 3, 222 - 8, w + 6, 8);
+    }
+    const place = (x, ty, m) => { for (let tx = 0; tx < 30; tx++) { const h = hash(tx + 11 * ty, ty); x.drawImage(TS.edge[m][h % 3], tx * T, ty * T); } };
+    place(nx, 14, 1); place(nx, 15, 0); place(nx, 16, 0); place(nx, 0, 0); place(nx, 1, 4);
+    for (let tx = 0; tx < 30; tx++) {
+      const h = hash(tx + 154, 14), r = h % 9; if (r < TS.top.length) { const [im, ox, oy] = TS.top[r]; nx.drawImage(im, tx * T + ox, 14 * T - oy); }
+      const h2 = hash(tx + 22, 1); if (h2 % 4 === 0) { const [im, ox] = TS.hang[h2 % TS.hang.length]; nx.drawImage(im, tx * T + ox, 2 * T); }
+    }
+    cave = { far, near };
+  }
   function titleBg(ctx, time) {
-    const bg = G.sprites.bg1, o = -Math.floor(time * 6) % 480, o2 = -Math.floor(time * 18) % 480;
-    ctx.drawImage(bg.far, o, 0); ctx.drawImage(bg.far, o + 480, 0); ctx.drawImage(bg.mid, o2, 0); ctx.drawImage(bg.mid, o2 + 480, 0);
-    ctx.fillStyle = 'rgba(6,8,26,0.35)'; ctx.fillRect(0, 0, 480, 270);
-    { const h = G.sprites.hero.cobalt.idle; ctx.drawImage(h.r, 88 - h.ax, 224 - h.ay); }
+    if (!cave) buildCave();
+    const o = Math.floor(time * 144) % 480, o1 = Math.floor(time * 44) % 480;
+    ctx.drawImage(cave.far, -o1, 0); ctx.drawImage(cave.far, 480 - o1, 0);
+    ctx.fillStyle = 'rgba(6,8,26,0.45)'; ctx.fillRect(0, 0, 480, 270);
+    ctx.drawImage(cave.near, -o, 0); ctx.drawImage(cave.near, 480 - o, 0);
+    ctx.fillStyle = 'rgba(4,6,20,0.62)'; ctx.fillRect(0, 240, 480, 30);                                    /* the footer text sits on a darkened floor */
+    if (!tb || time < tb.last) tb = { next: time + 1.0 + Math.random() * 1.2, t0: -1, last: time, flip: false, T: 0.8, H: 40 };
+    tb.last = time;
+    if (tb.t0 < 0 && time >= tb.next) { tb.t0 = time; tb.flip = Math.random() < 0.55; tb.T = tb.flip ? 0.95 : 0.76; tb.H = tb.flip ? 50 : 38; }
+    let u = -1; if (tb.t0 >= 0) { u = (time - tb.t0) / tb.T; if (u >= 1) { tb.t0 = -1; tb.next = time + 0.8 + Math.random() * 2.2; u = -1; } }
+    const S = G.sprites, up = u >= 0, lift = up ? Math.round(4 * tb.H * u * (1 - u)) : 0, x = 88;
+    if (up && tb.flip) { const f = S.hero.cobalt['spin' + (Math.floor(u * 16) & 7)]; ctx.drawImage(f.r, x - f.ax, 224 - lift - 22 - f.ay); }
+    else {
+      const leg = up ? (u < 0.38 ? 'rise' : u < 0.62 ? 'apex' : 'fall') : 'e' + (Math.floor(time * 24) % 8);
+      const f = S.heroPose('cobalt', '0', leg, up ? 1 : 2, 0); ctx.drawImage(f.r, x - f.ax, 224 - lift - f.ay);
+    }
   }
   function slots(ctx) {
     txt(ctx, U.slotMode === 'cont' ? 'CONTINUE' : 'CHOOSE A SLOT', 240, 50, '#a6ccff', 'c', 2);
