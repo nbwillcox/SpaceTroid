@@ -11,16 +11,17 @@
   }
   B.updateMoth = function (g) {
     const b = g.boss, p = g.P, lo = 104, hi = g.room.pw - 104;
-    b.t++; b.flash = Math.max(0, b.flash - 1); b.anim += 0.35;
+    b.t++; b.flash = Math.max(0, b.flash - 1); b.anim += 0.085;                            /* a slow, even wing beat (it used to flicker through the two wing frames every three ticks) */
     if (b.state === 'wait') { if (p.x > 150) { b.state = 'intro'; b.t = 0; G.world.sealDoors(g); } }
-    else if (b.state === 'intro') { b.x = U.clamp(p.x, lo, hi); b.y = U.lerp(b.y, 70, 0.04); g.shake = Math.max(g.shake, 1.5); if (b.t > 100) { b.state = 'hover'; b.t = 0; b.volleys = 0; } }
+    else if (b.state === 'intro') { b.x += (U.clamp(p.x, lo, hi) - b.x) * 0.03; b.y = U.lerp(b.y, 70, 0.04); g.shake = Math.max(g.shake, 1.5); if (b.t > 100) { b.state = 'hover'; b.t = 0; b.volleys = 0; } }
     else if (b.state === 'hover') {
       const tx = U.clamp(p.x + Math.sin(b.t * 0.03) * 110, lo, hi);
-      b.x += U.clamp((tx - b.x) * 0.03, -2.2, 2.2); b.y = 70 + Math.sin(b.t * 0.06) * 10;
+      b.vx = U.lerp(b.vx || 0, U.clamp((tx - b.x) * 0.03, -2.2, 2.2), 0.12); b.x += b.vx; b.y = 70 + Math.sin(b.t * 0.05) * 9 + Math.sin(b.t * 0.13) * 2;                 /* eased: no sudden changes of speed */
+      if (b.phase >= 2 && b.t === 40) { const n = b.phase === 3 ? 4 : 3; for (let k = 0; k < n; k++) g.rocks.push({ x: U.clamp(p.x + (k - (n - 1) / 2) * 34, 40, g.room.pw - 40), y: 8 - k * 6, vy: 0, t: 0, ice: true }); G.audio.sfx('chargeStart'); }       /* icicles rain down where you are standing */
       if (b.t > 90 - b.phase * 8) { b.t = 0; if (b.volleys >= 2) { b.state = 'tele'; b.volleys = 0; } else { b.state = 'shoot'; b.volleys++; } }
     } else if (b.state === 'shoot') { if (b.t === 24) fan(g, b, b.phase === 3 ? 7 : 5, 2.3 + b.phase * 0.2); if (b.t > 46) { b.state = 'hover'; b.t = 0; } }
     else if (b.state === 'tele') {
-      b.y = U.lerp(b.y, 40, 0.08); if (b.t < 30) b.tx = U.clamp(p.x, lo, hi); b.x += (b.tx - b.x) * 0.1;
+      b.y = U.lerp(b.y, 40, 0.07); if (b.t < 30) b.tx = U.clamp(p.x, lo, hi); b.x += (b.tx - b.x) * 0.07; b.vx = 0;
       if (b.t % 10 === 0) G.fx.sparkBurst(b.x, b.y + 20, '#d4f0fa', 4);
       if (b.t > 40) { b.state = 'dive'; b.t = 0; b.vy = 3; G.audio.sfx('missile'); }
     } else if (b.state === 'dive') {
@@ -33,8 +34,8 @@
       }
     } else if (b.state === 'stun') {
       if (b.phase === 3 && b.t % 80 === 0) B.rocks(g, 2);
-      if (b.t > (b.phase === 3 ? 160 : 190)) { b.state = 'rise'; b.t = 0; }
-    } else if (b.state === 'rise') { b.y = U.lerp(b.y, 70, 0.07); if (b.t > 40) { b.state = b.phase === 3 && Math.random() < 0.4 ? 'tele' : 'hover'; b.t = 0; } }
+      if (b.t > (b.phase === 3 ? 125 : 150)) { b.state = 'rise'; b.t = 0; }
+    } else if (b.state === 'rise') { b.y = U.lerp(b.y, 70, 0.05); if (b.t > 40) { b.state = b.phase === 3 && Math.random() < 0.4 ? 'tele' : 'hover'; b.t = 0; } }
     else if (b.state === 'dying') {
       if (b.t % 6 === 0) G.fx.boom(b.x + (Math.random() - 0.5) * 100, b.y + (Math.random() - 0.5) * 80, 9);
       g.shake = 5; if (b.t === 140) B.finish(g, b);
@@ -52,9 +53,10 @@
   };
   B.drawMoth = function (ctx, g) {
     const b = g.boss, S = G.sprites.boss2; let c;
-    if (b.state === 'shoot') c = S.shoot[(b.t >> 2) & 1]; else if (b.state === 'dive') c = S.dive; else if (b.state === 'stun') c = S.stun[(b.t >> 3) & 1];
-    else if (b.state === 'dying') c = S.dead; else c = S.fly[Math.floor(b.anim) & 3];
-    const x = Math.round(b.x - c.ax), y = Math.round(b.y - c.ay);
+    if (b.state === 'shoot') c = S.shoot[(b.t >> 3) & 1]; else if (b.state === 'tele') c = S.shoot[0]; else if (b.state === 'dive') c = S.dive; else if (b.state === 'stun') c = S.stun[(b.t >> 4) & 1];
+    else if (b.state === 'dying') c = S.dead; else c = S.fly[Math.floor(b.anim) & 1];                  /* the two distinct wing poses, switched slowly */
+    const bob = b.state === 'hover' || b.state === 'rise' ? Math.round(Math.sin(b.t * 0.12) * 1.5) : 0;
+    const x = Math.round(b.x - c.ax), y = Math.round(b.y - c.ay) + bob;
     ctx.drawImage(c, x + (b.state === 'dying' ? Math.round((Math.random() - 0.5) * 3) : 0), y);
     if (b.flash > 0) { ctx.globalAlpha = 0.6; ctx.drawImage(G.sprites.whiteOf(c), x, y); ctx.globalAlpha = 1; }
   };
