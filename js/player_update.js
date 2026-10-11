@@ -12,13 +12,14 @@
       const ang = Math.atan2(-st.y, Math.abs(st.x));
       return ang > 1.15 ? 'up' : ang > 0.4 ? 'diagUp' : ang < -0.4 ? 'diagDown' : 'fwd';
     }
-    if (S.mouseAim && M.on && g.cam && !I.u && !(I.aim && I.d) && (M.fire || performance.now() - M.t < 2500)) {
+    const mouseOn = !!(S.mouseAim && M.on && g.cam);                  /* with a mouse the cannon follows the pointer: the Up key no longer aims (it still does with no mouse, as the keyboard fallback) */
+    if (mouseOn && !(I.aim && I.d) && (M.fire || performance.now() - M.t < 2500)) {
       const ox = M.x + g.cam.x - p.x, oy = M.y + g.cam.y - (p.y - 28), ang = Math.atan2(-oy, Math.abs(ox));
       if (Math.abs(ox) > 3) p.face = ox > 0 ? 1 : -1;
       p.aimTarget = { wx: M.x + g.cam.x, wy: M.y + g.cam.y };
       return ang > 1.15 ? 'up' : ang > 0.4 ? 'diagUp' : ang < -0.4 ? 'diagDown' : 'fwd';
     }
-    if (I.u) return (I.l || I.r) ? 'diagUp' : 'up';
+    if (I.u && !mouseOn) return (I.l || I.r) ? 'diagUp' : 'up';
     if (I.d && !p.ground && (I.l || I.r)) return 'diagDown';
     if (I.aim && I.d) return 'diagDown';
     return 'fwd';
