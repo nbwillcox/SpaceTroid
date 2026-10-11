@@ -4,6 +4,8 @@
   const PX = G.px, H = {};
   G.hud = H;
   const txt = (ctx, s, x, y, c, a) => PX.text(ctx, s, x, y, { s: 1, c: c || '#e8f0ff', o: '#0a0e2c', a });
+  /* word-wrap a string to a pixel width (6 px per character at size 1) */
+  H.wrap = function (str, maxW) { const per = Math.max(8, Math.floor((maxW + 1) / 6)), out = []; for (const para of String(str).split('\n')) { let line = ''; for (const w of para.split(' ')) { const t = line ? line + ' ' + w : w; if (t.length > per && line) { out.push(line); line = w; } else line = t; } out.push(line); } return out; };
   H.draw = function (ctx, g, time) {
     const p = g.P, max = G.player.enMax(p), full = Math.floor(p.en / 100), rest = Math.ceil(p.en % 100);
     ctx.fillStyle = 'rgba(10,14,44,0.55)'; ctx.fillRect(4, 4, 92, 30);
@@ -43,15 +45,26 @@
       const t = Math.max(0, Math.ceil(g.escape.t / 60)), mm = String(Math.floor(t / 60)).padStart(2, '0'), ss = String(t % 60).padStart(2, '0'), urgent = t < 30 && Math.floor(time * 3) % 2;
       ctx.fillStyle = 'rgba(40,6,12,0.75)'; ctx.fillRect(180, 4, 120, 26); PX.text(ctx, 'ESCAPE', 240, 7, { s: 1, c: '#ff80c8', o: '#0a0e2c', a: 'c' }); PX.text(ctx, mm + ':' + ss, 240, 17, { s: 2, c: urgent ? '#ffffff' : '#ffd0f0', o: '#400818', a: 'c' });
     }
-    if (g.toast) { const a = g.toast.t < 10 ? g.toast.t / 10 : g.toast.t > 130 ? (150 - g.toast.t) / 20 : 1; ctx.globalAlpha = Math.max(0, a); ctx.fillStyle = 'rgba(10,14,44,0.8)'; ctx.fillRect(160, 58, 160, 16); txt(ctx, g.toast.txt, 240, 63, '#f2ffff', 'c'); ctx.globalAlpha = 1; }
+    if (g.toast) {                                                          /* the box grows with its text (wrapped when long) and stays centred */
+      const a = g.toast.t < 10 ? g.toast.t / 10 : g.toast.t > 130 ? (150 - g.toast.t) / 20 : 1, ls = H.wrap(g.toast.txt, 420), w = Math.max(...ls.map((l) => PX.textW(l, 1))) + 20, h = ls.length * 11 + 6, x = Math.round(240 - w / 2), y = 58;
+      ctx.globalAlpha = Math.max(0, a); ctx.fillStyle = 'rgba(10,14,44,0.8)'; ctx.fillRect(x, y, w, h); ls.forEach((l, n) => txt(ctx, l, 240, y + 4 + n * 11, '#f2ffff', 'c')); ctx.globalAlpha = 1;
+    }
     if (g.banner) {
-      const bn = g.banner, k = Math.min(1, bn.t / 12), h = Math.round(86 * k), y = 98 + (86 - h) / 2;
-      ctx.fillStyle = 'rgba(8,10,34,0.92)'; ctx.fillRect(70, y, 340, h); ctx.fillStyle = '#5688dc'; ctx.fillRect(70, y, 340, 1); ctx.fillRect(70, y + h - 1, 340, 1);
+      const bn = g.banner, k = Math.min(1, bn.t / 12), PAD = 12, MAXW = 440, ic = bn.type ? (() => { const dfn = G.world.ITEMS[bn.type]; return dfn.tank ? G.sprites.tank[dfn.tank][(Math.floor(time * 3)) & 1] : G.sprites.icon[bn.type]; })() : null;
+      if (!bn.lay) {                                                      /* measured once: wrapped body, header height from the icons, width from the widest line, never wider than the screen allows */
+        const body = []; for (const l of bn.lines) for (const w of H.wrap(l, MAXW - 2 * PAD)) body.push(w);
+        const iw = ic ? ic.width * 2 : 0, ih = ic ? ic.height * 2 : 0, headW = PX.textW(bn.name, 2) + (ic ? 2 * (iw + 14) : 0), bodyW = Math.max(0, ...body.map((l) => PX.textW(l, 1))), headH = Math.max(14, ih);
+        bn.lay = { body, iw, ih, headH, w: Math.min(MAXW, Math.max(200, headW, bodyW) + 2 * PAD), h: PAD + 8 + 6 + headH + 8 + body.length * 11 + 6 + 8 + PAD };
+      }
+      const L = bn.lay, fullH = L.h, h = Math.round(fullH * k), x = Math.round(240 - L.w / 2), top = Math.round(135 - fullH / 2), y = Math.round(135 - h / 2);
+      ctx.fillStyle = 'rgba(8,10,34,0.92)'; ctx.fillRect(x, y, L.w, h); ctx.fillStyle = '#5688dc'; ctx.fillRect(x, y, L.w, 1); ctx.fillRect(x, y + h - 1, L.w, 1);
       if (k >= 1) {
-        if (bn.type) { const dfn = G.world.ITEMS[bn.type], im = dfn.tank ? G.sprites.tank[dfn.tank][(Math.floor(time * 3)) & 1] : G.sprites.icon[bn.type]; ctx.imageSmoothingEnabled = false; for (const bx of [86, 354]) ctx.drawImage(im, bx - (im.width - 20), 112 - (im.height - 20), im.width * 2, im.height * 2); }
-        txt(ctx, 'ITEM ACQUIRED', 240, 106, '#86f0f2', 'c'); PX.text(ctx, bn.name, 240, 122, { s: 2, c: '#fff2a8', o: '#2e1a0c', a: 'c' });
-        bn.lines.forEach((l, i) => txt(ctx, l, 240, 148 + i * 11, '#dde7fb', 'c'));
-        if (bn.t > 50 && Math.floor(time * 2) % 2) txt(ctx, 'PRESS JUMP', 240, 172, '#8ea2d2', 'c');
+        txt(ctx, 'ITEM ACQUIRED', 240, top + PAD, '#86f0f2', 'c');
+        const hy = top + PAD + 8 + 6, cy = hy + L.headH / 2;
+        PX.text(ctx, bn.name, 240, Math.round(cy - 7), { s: 2, c: '#fff2a8', o: '#2e1a0c', a: 'c' });
+        if (ic) { ctx.imageSmoothingEnabled = false; const nw = PX.textW(bn.name, 2); for (const bx of [240 - nw / 2 - 14 - L.iw, 240 + nw / 2 + 14]) ctx.drawImage(ic, Math.round(bx), Math.round(cy - L.ih / 2), L.iw, L.ih); }
+        const by = hy + L.headH + 8; L.body.forEach((l, i) => txt(ctx, l, 240, by + i * 11, '#dde7fb', 'c'));
+        if (bn.t > 50 && Math.floor(time * 2) % 2) txt(ctx, 'PRESS JUMP', 240, by + L.body.length * 11 + 6, '#8ea2d2', 'c');
       }
     }
     if (g.room.scanOn) { PX.text(ctx, 'SCAN', 206, 24, { s: 1, c: Math.floor(time * 2) & 1 ? '#f2ffff' : '#86f0f2', o: '#0a0e2c' }); }
