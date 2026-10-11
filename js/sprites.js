@@ -74,6 +74,7 @@
     };
     S.tilesets = { 1: tileset('world', 1), 2: tileset('world2', 2), 3: tileset('world3', 3), 4: tileset('world4', 4), 5: tileset('world5', 5) }; S.tile = S.tilesets[1].tile || S.tilesets[1]; S.deco = S.tilesets[1].deco;
     S.bg1 = A.buildZone1Bg();                                                  /* only the title screen still uses a parallax backdrop; rooms are black space + back wall */
+    S.ship = A.shipimg.map((spec) => { const c = document.createElement('canvas'); c.width = spec.w; c.height = spec.h; const f = { c, w: spec.w, h: spec.h }, im = new Image(); im.onload = () => c.getContext('2d').drawImage(im, 0, 0); im.src = spec.u; return f; });
     /* enemies are painted frames (art/monimg.js, facing right): canvases fill in when each image decodes; the arc emitter is drawn in code */
     S.foe = { arc: [] };
     for (const type in A.monimg) S.foe[type] = A.monimg[type].frames.map((spec) => {

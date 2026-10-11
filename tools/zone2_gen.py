@@ -24,7 +24,7 @@ def drift():
     r.surf(10, 16); r.surf(36, 44); r.surf(50, 56); r.fill(28, 15, 30, 15, '^')
     r.plat(26, 32, 12); r.plat(52, 56, 11)
     for x in (4, 22, 30, 48): r.top(x, 'v')
-    r.on('f', 12); r.on('C', 50); r.spawn('q', 30, 8); r.on('t', 40)
+    r.on('f', 12); r.on('C', 50); r.spawn('q', 30, 8); r.spawn('N', 38, 8); r.spawn('q', 38, 8); r.on('t', 40)
     r.wall(14, 2, 40, 14)
     return r
 drift()
@@ -47,7 +47,7 @@ def gallery():
     r.plat(8, 12, 12); r.plat(24, 28, 12)
     r.plat(44, 48, 12); r.plat(49, 53, 9); r.fill(54, 6, 58, 6, '#')
     add_shrine(Z, r, 'd4', 52, 6, -1, 3, 'mtank4', 'missileTank', 'Arsenal Shrine')
-    r.spawn('t', 19, 12); r.spawn('t', 39, 12); r.on('f', 10); r.on('f', 31); r.spawn('N', 26, 7); r.spawn('q', 45, 8)
+    r.spawn('t', 19, 12); r.spawn('t', 39, 12); r.on('C', 10); r.on('f', 31); r.spawn('q', 26, 7); r.spawn('N', 35, 8); r.spawn('q', 45, 8)
     for x in (12, 26, 44): r.top(x, 'v')
     r.hang(30, 3, 2); r.hang(16, 2, 1)
     r.wall(10, 2, 50, 14)
@@ -72,7 +72,7 @@ def chasm():
     r.fill(9, 15, 49, 15, '^')
     r.plat(10, 15, 12); r.plat(18, 23, 11); r.plat(26, 31, 13); r.plat(34, 39, 12); r.plat(42, 49, 13)    # gaps of two tiles; the last platform runs down to the floor at the east end
     r.fill(30, 8, 33, 8, '#'); add_shrine(Z, r, 'd3', 32, 5, -1, 3, 'tank3', 'energyTank', 'Vigor Shrine')     # high ledge: freeze a wisp to reach it
-    r.spawn('N', 28, 11); r.spawn('q', 22, 8); r.on('t', 52); r.on('C', 4)
+    r.spawn('q', 28, 11); r.spawn('N', 33, 10); r.spawn('q', 22, 8); r.on('t', 52); r.on('C', 4)
     for x in (16, 28, 40): r.top(x, 'v')
     r.hang(8, 3, 2); r.hang(19, 2, 1); r.hang(38, 3, 2)
     return r
@@ -86,7 +86,7 @@ def bridge():
     r.ramp(12, 15, 2, True); r.fill(14, 13, 16, 14, '#'); r.ramp(17, 15, 2, False)
     r.fill(30, 12, 33, 14, '#')
     r.ramp(44, 15, 2, True); r.fill(46, 13, 48, 14, '#'); r.ramp(49, 15, 2, False)
-    r.spawn('t', 15, 12); r.spawn('t', 31, 11); r.spawn('t', 47, 12); r.on('f', 20); r.on('f', 35)
+    r.spawn('t', 15, 12); r.spawn('t', 31, 11); r.spawn('t', 47, 12); r.on('f', 20); r.on('C', 35)
     r.g[14][30] = 'B'; r.g[14][31] = '.'; r.g[14][32] = '.'; add_shrine(Z, r, 'd5', 32, 14, -1, 1, 'mtank5', 'missileTank', 'Arsenal Shrine')      # a ball nook in the middle pillar, sealed by a bomb block
     r.wall(1, 2, 58, 16, ragged=False)
     # gorge: the deck has two gaps (x 22..24 and 38..40); the cavern below is lined with ice, and ledges climb back out through either gap
@@ -107,7 +107,7 @@ def shaft2():
     for (x0, x1, y) in [(4, 8, 29), (10, 14, 26), (16, 20, 23), (22, 26, 20), (16, 20, 17), (10, 14, 14), (14, 18, 9), (20, 27, 6)]: r.plat(x0, x1, y)
     r.fill(20, 6, 28, 6, '#')
     r.fill(1, 12, 2, 18, '#'); r.fill(1, 22, 3, 27, '#'); r.fill(25, 22, 28, 26, '#'); r.fill(26, 10, 28, 14, '#'); r.fill(1, 6, 8, 7, '#')
-    r.spawn('N', 12, 12)          # the gap between the 14 and 9 ledges: freeze this wisp and use it as a step
+    r.spawn('q', 12, 12)          # the gap between the 14 and 9 ledges: freeze this wisp and use it as a step
     r.spawn('t', 25, 31); r.spawn('C', 8, 31); r.spawn('q', 8, 18)
     for x in (12, 16): r.spawn('v', x, 2)
     r.hang(6, 3, 1); r.hang(12, 2, 1)
@@ -150,7 +150,7 @@ def grotto():
     r.fill(7, 15, 10, 15, '^'); r.fill(15, 15, 18, 15, '^')                      # slippery ice between two spike pits: hop the ledges
     r.plat(7, 10, 12); r.plat(15, 18, 12)
     r.fill(22, 12, 27, 14, '#'); r.statue(25, 'small', 12, 'mtankF', 'missileTank')
-    r.on('f', 13); r.on('f', 20); r.spawn('t', 27, 11); r.top(5, 'v'); r.top(20, 'v')
+    r.on('C', 13); r.on('f', 20); r.spawn('t', 27, 11); r.top(5, 'v'); r.top(20, 'v')
     return r
 grotto()
 
@@ -161,7 +161,7 @@ def shelf():
     r.door('w', 'L', 12, 'blue', 'icecache', 'e')
     r.surf(1, 58)
     r.plat(40, 45, 13); r.fill(44, 8, 47, 8, '#'); r.statue(46, 'small', 8, 'tankS', 'energyTank')       # high ledge: freeze the wisp to climb
-    r.spawn('q', 42, 11); r.on('f', 10); r.on('f', 30); r.on('t', 54)
+    r.spawn('q', 42, 11); r.on('f', 10); r.on('C', 30); r.on('t', 54)
     for x in (14, 28, 36): r.top(x, 'v')
     r.hang(20, 3, 2); r.hang(50, 2, 1)
     return r

@@ -53,6 +53,7 @@ class Room:
         rows = [''.join(r) for r in s.g]
         d = {'id': s.id, 'name': s.name, 'zone': s.zone, 'mx': s.mx, 'my': s.my, 'map': rows, 'doors': s.doors, 'items': s.items, 'stations': s.stations, 'decor': s.decor, 'movers': s.movers, 'pressure': s.pressure}
         if getattr(s, 'style', None): d['style'] = s.style
+        if getattr(s, 'sky', False): d['sky'] = True
         if getattr(s, 'parent', None): d['parent'] = s.parent
         if getattr(s, 'tone', None) is not None: d['tone'] = s.tone
         return d

@@ -15,16 +15,17 @@
     if (!room.wallLayer) {                                                  /* the back wall (tiles plus this room's own dressing) is built once per room entry */
       const wl = document.createElement('canvas'); wl.width = room.pw; wl.height = room.ph;
       const wx = wl.getContext('2d'); wx.imageSmoothingEnabled = false;
-      for (let ty = 0; ty < room.h; ty++) for (let tx = 0; tx < room.w; tx++) if (room.wall[ty * room.w + tx] || room.t[ty * room.w + tx] !== 1) {      /* layering: black space, then the room's back wall in EVERY non-rock cell (no gaps), then everything else on top */
+      if (!room.def.sky) for (let ty = 0; ty < room.h; ty++) for (let tx = 0; tx < room.w; tx++) if (room.wall[ty * room.w + tx] || room.t[ty * room.w + tx] !== 1) {      /* layering: black space, then the room's back wall in EVERY non-rock cell (no gaps), then everything else on top */
         const h = hash(tx, ty), v = h % 11 === 0 ? 3 : (tx + ty * 2) % 3;
         wx.drawImage(tile.wall[v], tx * T, ty * T);
       }
-      if (G.walldeco) G.walldeco.apply(wx, room, TS);
+      if (G.walldeco && !room.def.sky) G.walldeco.apply(wx, room, TS);
       room.wallLayer = wl;
     }
     x.drawImage(room.wallLayer, 0, 0);
     for (let ty = 0; ty < room.h; ty++) for (let tx = 0; tx < room.w; tx++) {
       const k = RM.at(room, tx, ty), h = hash(tx, ty), px = tx * T, py = ty * T;
+      if (room.def.sky && ty === 0) continue;                                 /* the hidden ceiling of an open-sky room */
       if (k === 1) {
         const m = (!solidish(room, tx, ty - 1) ? 1 : 0) | (!solidish(room, tx + 1, ty) && tx + 1 < room.w ? 2 : 0) | (!solidish(room, tx, ty + 1) && ty + 1 < room.h ? 4 : 0) | (!solidish(room, tx - 1, ty) && tx > 0 ? 8 : 0);
         let img;
@@ -104,6 +105,33 @@
     cam.x = room.pw <= W ? (room.pw - W) / 2 : U.clamp(cam.x, 0, room.pw - W);
     cam.y = room.ph <= H ? (room.ph - H) / 2 : U.clamp(cam.y, 0, room.ph - H);
   };
+  /* the open sky of the landing site: stepped night gradient, drifting stars, a ringed planet and two ridges of distant mountains (parallax by camera x) */
+  const skyHash = (i, s) => { let h = (Math.imul(i + 1, 374761393) + Math.imul(s, 668265263)) | 0; h = Math.imul(h ^ (h >>> 13), 1274126177); return ((h ^ (h >>> 16)) >>> 0) / 4294967296; };
+  let skyBG = null;
+  R.sky = function (ctx, cam, time) {
+    if (!skyBG) {
+      skyBG = document.createElement('canvas'); skyBG.width = 480; skyBG.height = 270; const c = skyBG.getContext('2d'); c.imageSmoothingEnabled = false;
+      const bands = ['#04051a', '#060822', '#080b2a', '#0b1034', '#0e163f', '#131e4e', '#19285e', '#20336e', '#2a417c', '#365288', '#456593', '#5a7a9c'];
+      bands.forEach((col, i) => { c.fillStyle = col; c.fillRect(0, Math.round(i * 270 / bands.length * 0.86), 480, 270); });
+      skyBG.ready = true;
+    }
+    ctx.drawImage(skyBG, 0, 0);
+    const cx = cam.x;
+    for (let i = 0; i < 110; i++) {                                          /* stars: far ones barely move */
+      const sx = Math.floor(skyHash(i, 1) * 640 - cx * (0.04 + skyHash(i, 4) * 0.06) + 960) % 480, sy = Math.floor(skyHash(i, 2) * 175), tw = Math.sin(time * (1 + skyHash(i, 3) * 2) + i) > 0.55;
+      ctx.fillStyle = tw ? '#ffffff' : skyHash(i, 5) > 0.7 ? '#9fc4ff' : '#6e82b8'; ctx.fillRect(sx < 0 ? sx + 480 : sx, sy, skyHash(i, 6) > 0.93 ? 2 : 1, skyHash(i, 6) > 0.93 ? 2 : 1);
+    }
+    const px = 352 - cx * 0.07, py = 70;                                      /* a ringed planet */
+    ctx.fillStyle = '#2a3260'; for (let dy = -30; dy <= 30; dy++) { const w = Math.floor(Math.sqrt(900 - dy * dy)); ctx.fillRect(Math.round(px - w), py + dy, w * 2, 1); }
+    ctx.fillStyle = '#4a5a96'; for (let dy = -28; dy <= 16; dy++) { const w = Math.floor(Math.sqrt(784 - dy * dy)) - 3; ctx.fillRect(Math.round(px - w - 3), py + dy, w * 2 - 6, 1); }
+    ctx.fillStyle = '#8fa4de'; for (let dy = -24; dy <= -6; dy++) { const w = Math.floor(Math.sqrt(580 - dy * dy)) - 8; ctx.fillRect(Math.round(px - w - 8), py + dy, Math.max(0, w * 1.3), 1); }
+    ctx.fillStyle = '#c0a8e8'; for (let a = 0; a < 6.2832; a += 0.02) { const rx = Math.cos(a) * 52, ry = Math.sin(a) * 9; if (ry > 0 || Math.abs(rx) > 31) ctx.fillRect(Math.round(px + rx), Math.round(py + 4 + ry - rx * 0.12), 1, 1); }
+    for (const [par, base, amp, col, seed] of [[0.18, 168, 46, '#101a44', 1], [0.34, 190, 30, '#0b1236', 2]]) {   /* two ridges */
+      ctx.fillStyle = col; const off = cx * par;
+      for (let x = 0; x < 480; x++) { const wx = x + off, h = base - amp * (0.55 * Math.sin(wx * 0.013 + seed) + 0.3 * Math.sin(wx * 0.037 + seed * 2.1) + 0.15 * Math.sin(wx * 0.09 + seed * 4)) - amp * 0.4; ctx.fillRect(x, Math.round(h), 1, 270); }
+    }
+    ctx.fillStyle = 'rgba(120,150,210,0.10)'; ctx.fillRect(0, 150, 480, 40);      /* horizon haze */
+  };
   R.draw = function (ctx, g, time) {
     const room = g.room, cam = g.cam, p = g.P;
     if (!room.baked || room.dirty) R.bake(room);
@@ -112,10 +140,16 @@
     let ox = Math.round(cam.x), oy = Math.round(cam.y);
     if (sh > 0.3) { ox += Math.round((Math.random() - 0.5) * sh); oy += Math.round((Math.random() - 0.5) * sh); }
     /* parallax (horizontal only) */
-    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, 480, 270);                     /* the black universe behind everything */
+    if (room.def.sky) R.sky(ctx, cam, time); else { ctx.fillStyle = '#000'; ctx.fillRect(0, 0, 480, 270); }                     /* the black universe behind everything (or the open sky of the landing site) */
     ctx.translate(-ox, -oy);
     ctx.drawImage(room.baked, 0, 0);
-    for (const d of room.decor || []) { if (d.statue) R.shaft(ctx, d, room, time); ctx.drawImage(d.img, d.x, d.y); }
+    for (const d of room.decor || []) {
+      if (d.ship) {                                                          /* the landed ship: engine lights pulse through its 8 frames, a warm glow washes the pad */
+        ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = '#ff9a4a'; ctx.globalAlpha = 0.07 + 0.03 * Math.sin(time * 3); for (let i = 0; i < 4; i++) ctx.fillRect(d.cx - 66 + i * 6, d.fy - 3 - i, 132 - i * 12, 3 + i); ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1;
+        ctx.drawImage(S.ship[Math.floor(time * 5) % S.ship.length].c, d.x, d.y); continue;
+      }
+      if (d.statue) R.shaft(ctx, d, room, time); ctx.drawImage(d.img, d.x, d.y);
+    }
     if (G.atmos) G.atmos.draw(ctx, g, 0, time);
     G.world.drawBack(ctx, g, time);
     G.enemies.draw(ctx, g, time);

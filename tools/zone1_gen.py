@@ -9,14 +9,16 @@ ROOMS = []
 
 
 def crash():
+    """the landing site: open sky, a flat pad for the ship, then rocky ground rising to the east door"""
     r = Room('crash', 'Crash Site', 60, 17, 0, 1, solid=True)
-    r.cave([(0, 12), (14, 15), (34, 12), (38, 10), (50, 12)], [(0, 2), (36, 4), (47, 2)])
-    r.decor.append({'kind': 'wreck', 'x': 40, 'y': 138})
-    r.spawn('P', 10, 11)
-    r.hang(14, 2, 3); r.hang(15, 1, 1); r.hang(24, 2, 2); r.hang(40, 2, 3); r.hang(44, 1, 2)
-    r.plat(19, 23, 11); r.plat(26, 30, 8); r.plat(44, 48, 6)
-    r.on('c', 19); r.on('T', 28); r.on('c', 42); r.spawn('m', 40, 5)
-    r.wall(1, 2, 12, 11)
+    r.cave([(0, 13), (30, 13), (34, 12), (38, 10), (50, 12)], [(0, 1)])
+    for y in range(1, 13): r.g[y][0] = '.'                                   # no cave walls: the sky is open above the ground (row 0 stays a hidden ceiling)
+    for y in range(1, 12): r.g[y][59] = '.'
+    r.sky = True
+    r.decor.append({'kind': 'ship', 'x': 150, 'y': 208})
+    r.spawn('P', 3, 12)
+    r.block(44, 47, 9)
+    r.on('T', 28); r.on('c', 42); r.spawn('m', 40, 5)
     r.door('e', 'R', 9, 'blue', 'hall', 'w')
     return r
 ROOMS.append(crash())
