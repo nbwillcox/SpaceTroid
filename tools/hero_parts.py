@@ -9,6 +9,8 @@ import hero_img as H
 AIMS = ['90', '70', '45', '20', '0', 'm20', 'm45', 'm90']
 GD = 20                                  # hip height above the ground when standing
 
+BELT = {'m20': 22}                          # the belt colour is too faint to find in this frame (the detector landed on the thigh plates, 5 rows low): measured by eye
+
 def _belt(a, al):
     Hh, W = al.shape
     r, g, b = a[..., 0].astype(int), a[..., 1].astype(int), a[..., 2].astype(int)
@@ -24,10 +26,19 @@ def _gun(a, al):
 def torso(img, name):
     """img = the standing aim frame at game scale (RGBA, quantised). Returns the torso image, the hip point inside it and the muzzle relative to the hip."""
     a = np.asarray(img); Hh, W = a.shape[:2]; al = a[..., 3] > 0
-    belt = _belt(a, al); cut = belt + 2
-    cols = np.nonzero(al[belt - 1:belt + 2].any(axis=0))[0]; hipx = float(cols.mean()) if len(cols) else W / 2.0
+    belt = BELT.get(name) or _belt(a, al); cut = belt + 2
     keep = np.zeros_like(al); keep[:cut] = al[:cut]
     gm = _gun(a, al); gd = gm.copy(); gd[1:, :] |= gm[:-1, :]; gd[:-1, :] |= gm[1:, :]; gd[:, 1:] |= gm[:, :-1]; gd[:, :-1] |= gm[:, 1:]; gd &= al
+    cols = np.nonzero(al[belt - 1:belt + 2].any(axis=0))[0]; hipx = float(cols.mean()) if len(cols) else W / 2.0
+    if name in ('m20', 'm45', 'm90'):                                                  # downward aims: the cannon crosses the belt row, so centre on the belt band itself (its longest warm run)
+        r_, g_, b_ = a[..., 0].astype(int), a[..., 1].astype(int), a[..., 2].astype(int); warm = al & ~gd & (r_ > b_ + 12); best = (0, hipx)
+        for yy in (belt - 1, belt, belt + 1):
+            xs = np.nonzero(warm[yy])[0]
+            if not len(xs): continue
+            runs = np.split(xs, np.nonzero(np.diff(xs) > 1)[0] + 1)
+            for rr in runs:
+                if len(rr) > best[0]: best = (len(rr), (rr[0] + rr[-1]) / 2.0)
+        if best[0] >= 4: hipx = float(best[1])
     th = H.theta('aim_' + name); dx_, dy_ = math.cos(math.radians(th)), -math.sin(math.radians(th))
     cs = [c for c in H.components(gd & (np.arange(Hh)[:, None] < Hh)) if c['n'] >= 6]
     tip = None
