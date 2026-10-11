@@ -36,7 +36,7 @@
     g.doors = (def.doors || []).map((d) => {
       const o = Object.assign({ h: 3, state: 'closed', t: 0, idle: 0, tx: d.side === 'L' ? 0 : room.w - 1 }, d);
       if (o.color === 'open') o.state = 'open';
-      if (o.side === 'I' && W.shrineDone(g, o)) { o.state = 'closed'; o.shut = true; }                   /* a shrine whose items are all taken is sealed for good: solid, and no transition */
+      if (o.side === 'I' && W.shrineDone(g, o)) { o.state = 'closed'; o.shut = true; }                   /* a shrine whose items are all taken is sealed for good: the slab is only a picture (you can walk through it) and there is no transition */
       if (o.color === 'boss' && W.bossBeaten(g, room.id)) o.color = 'blue';
       if (g.prog.doors[dkey(room, d)] || (d.to && g.prog.doors[d.to + ':' + d.door])) o.unlocked = true;      /* a door opened from either side is a plain blue door from then on */
       W.applyDoor(room, o);
@@ -51,7 +51,7 @@
     });
     g.prog.visited[room.id] = true;
   };
-  W.applyDoor = function (room, d) { for (let i = 0; i < d.h; i++) RM.set(room, d.tx, d.ty + i, d.state !== 'open' ? 9 : room.doorWet && room.doorWet.has((d.ty + i) * room.w + d.tx) ? 14 : 0); };      /* an open doorway in a flooded room is water, not a hole in it */
+  W.applyDoor = function (room, d) { for (let i = 0; i < d.h; i++) RM.set(room, d.tx, d.ty + i, d.shut ? (room.doorWet && room.doorWet.has((d.ty + i) * room.w + d.tx) ? 14 : 0) : d.state !== 'open' ? 9 : room.doorWet && room.doorWet.has((d.ty + i) * room.w + d.tx) ? 14 : 0); };      /* an open doorway in a flooded room is water, not a hole in it */
   const canOpen = (g, d, kind) => d.unlocked || d.color === 'blue' || (d.color === 'red' && (kind === 'missile' || kind === 'super')) || (d.color === 'green' && kind === 'super');
   W.shotDoor = function (g, tx, ty, kind) {
     const d = g.doors.find((q) => q.tx === tx && ty >= q.ty && ty < q.ty + q.h);
@@ -150,7 +150,7 @@
     for (const d of g.doors) {                                              /* doorways inside the room (they lead to item shrines): a dark arch with pulsing runes */
       if (d.side !== 'I') continue;
       const x = d.tx * T, y = d.ty * T, h = d.h * T, pulse = 0.5 + 0.5 * Math.sin(time * 3 + d.tx);
-      if (d.shut) {                                                      /* sealed: a plain stone slab in a riveted frame with a dead red lamp */
+      if (d.shut) {                                                      /* sealed: a plain stone slab in a riveted frame with a dead red lamp (scenery only: no collision) */
         const lamp = (Math.floor(time * 1.5 + d.tx) & 3) === 0 ? '#ff6a4a' : '#8a2a2a';
         ctx.fillStyle = '#3a4260'; ctx.fillRect(x, y, 16, h); ctx.fillStyle = '#566486'; ctx.fillRect(x, y, 16, 1); ctx.fillRect(x, y, 1, h); ctx.fillStyle = '#242a44'; ctx.fillRect(x + 15, y, 1, h); ctx.fillRect(x, y + h - 1, 16, 1);
         ctx.fillStyle = '#2c3350'; for (let k = 1; k < d.h * 2; k++) ctx.fillRect(x + 1, y + k * 8, 14, 1);
