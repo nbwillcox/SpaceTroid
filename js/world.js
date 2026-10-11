@@ -114,9 +114,14 @@
   W.saveAnimStep = function (g) {
     const a = g.saveAnim, p = g.P; a.t++;
     p.x += (a.x - p.x) * 0.3; p.vx = 0; p.vy = 0; p.dash = 0;
-    if (a.t === 1) G.audio.sfx('chargeStart');
-    if (a.t === 40) W.saveDo(g, a.s);
-    if (a.t >= 84) g.saveAnim = null;
+    const C = G.sprites.capsule, lift = C.h - C.glass[3];                                       /* how far above the floor the glass floor is */
+    if (a.t < 18) { const u = a.t / 18; a.yoff = lift * (1 - (1 - u) * (1 - u)) + 9 * Math.sin(Math.PI * u); }          /* the hero hops up into the capsule */
+    else if (a.t < 94) a.yoff = lift;                                                                             /* ...stands in the glass while it scans and saves... */
+    else { const u = Math.min(1, (a.t - 94) / 15); a.yoff = lift * (1 - u * u); }                                    /* ...and drops back down */
+    if (a.t === 1) { G.audio.sfx('jump'); G.audio.sfx('chargeStart'); }
+    if (a.t === 44) W.saveDo(g, a.s);
+    if (a.t === 109) { G.audio.sfx('land'); G.fx.puff(a.x, a.y, 5); }
+    if (a.t >= 110) g.saveAnim = null;
   };
   /* picking up an item: the world holds still, the hero raises an arm, a fanfare plays and the item floats up in a burst of light; then the text panel opens */
   W.collect = function (g, it) {
@@ -149,7 +154,7 @@
   /* the save capsule: the painted pod standing on the floor line, its lights breathing; while saving the glow swells */
   W.drawCapsule = function (ctx, g, s, time) {
     const C = G.sprites.capsule, x0 = Math.round(s.x - C.w / 2), y0 = Math.round(s.y - C.h), a = g.saveAnim && g.saveAnim.s === s ? g.saveAnim : null;
-    const boost = a ? Math.min(1, a.t / 28) * (a.t > 58 ? Math.max(0, 1 - (a.t - 58) / 26) : 1) : 0, pulse = 0.5 + 0.5 * Math.sin(time * 2.2 + s.x * 0.1), fast = 0.5 + 0.5 * Math.sin(time * 9);
+    const boost = a ? Math.min(1, a.t / 28) * (a.t > 74 ? Math.max(0, 1 - (a.t - 74) / 20) : 1) : 0, pulse = 0.5 + 0.5 * Math.sin(time * 2.2 + s.x * 0.1), fast = 0.5 + 0.5 * Math.sin(time * 9);
     const gx = x0 + (C.glass[0] + C.glass[2]) / 2, gy = y0 + (C.glass[1] + C.glass[3]) / 2;
     ctx.globalCompositeOperation = 'lighter';
     W.glow(ctx, Math.round(gx), Math.round(gy), 40, '70,200,255', (0.035 + 0.02 * pulse + 0.06 * boost).toFixed(3)); W.glow(ctx, Math.round(gx), Math.round(gy), 27, '90,230,255', (0.05 + 0.03 * pulse + 0.09 * boost).toFixed(3));
@@ -191,7 +196,7 @@
       ctx.drawImage(set[f], d.tx * T, d.ty * T + (d.h - 3) * T);
     }
     for (const it of g.pickups) W.drawItem(ctx, it.type, Math.round(it.x), Math.round(it.y), it.t, Math.round(Math.sin(it.t * 0.08) * 2));
-    if (g.near && !g.saveAnim) G.px.text(ctx, { save: 'UP: SAVE', map: 'UP: MAP', lift: 'UP: DESCEND' }[g.near.type], Math.round(g.near.x), Math.round(g.near.y - (g.near.type === 'save' ? G.sprites.capsule.h + 16 : 62)), { s: 1, c: '#f2ffff', o: '#0a0e2c', a: 'c' });
-    if (g.near && !g.saveAnim && W.canWarp(g)) G.px.text(ctx, 'M: WARP', Math.round(g.near.x), Math.round(g.near.y - (g.near.type === 'save' ? G.sprites.capsule.h + 6 : 52)), { s: 1, c: '#86f0f2', o: '#0a0e2c', a: 'c' });
+    if (g.near && !g.saveAnim) G.px.text(ctx, { save: 'UP: SAVE', map: 'UP: MAP', lift: 'UP: DESCEND' }[g.near.type], Math.round(g.near.x + (g.near.type === 'save' ? G.sprites.capsule.w / 2 + 4 : 0)), Math.round(g.near.y - (g.near.type === 'save' ? 22 : 62)), { s: 1, c: '#f2ffff', o: '#0a0e2c', a: g.near.type === 'save' ? 'l' : 'c' });
+    if (g.near && !g.saveAnim && W.canWarp(g)) G.px.text(ctx, 'M: WARP', Math.round(g.near.x + (g.near.type === 'save' ? G.sprites.capsule.w / 2 + 4 : 0)), Math.round(g.near.y - (g.near.type === 'save' ? 12 : 52)), { s: 1, c: '#86f0f2', o: '#0a0e2c', a: g.near.type === 'save' ? 'l' : 'c' });
   };
 })((window.SGS = window.SGS || {}));

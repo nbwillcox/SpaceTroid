@@ -55,7 +55,7 @@
   };
   /* the light that rises from a save pad: stepped bands that grow upward, rising sparkles and a bright base; front = the thin inner beam drawn over the hero */
   R.saveLight = function (ctx, a, front) {
-    const t = a.t, fade = t > 58 ? Math.max(0, 1 - (t - 58) / 26) : 1; if (fade <= 0) return;
+    const t = a.t, fade = Math.min(1, t / 14) * (t > 74 ? Math.max(0, 1 - (t - 74) / 20) : 1), yo = a.yoff || 0; if (fade <= 0) return;
     const C = S.capsule, gl = C.glass, gx = Math.round(a.x - C.w / 2) + gl[0], gy = Math.round(a.y - C.h) + gl[1], gw = gl[2] - gl[0] + 1, gh = gl[3] - gl[1] + 1, reach = 46;
     ctx.save(); ctx.globalCompositeOperation = 'lighter';
     if (!front) {                                                           /* behind the hero: scan lines sweep the glass up and down, flashing; sparks rise inside */
@@ -65,12 +65,12 @@
         ctx.globalAlpha = fade * flash * 0.2; ctx.fillRect(gx - 2, Math.round(gy + gh - 2 - y), gw + 4, 3);
       }
       for (let i = 0; i < 12; i++) { const ph = (t * 1.3 + i * 17) % gh; ctx.fillStyle = '#f2ffff'; ctx.globalAlpha = fade * (0.9 - ph / gh * 0.7); ctx.fillRect(gx + 2 + ((i * 37) % (gw - 4)), Math.round(gy + gh - 1 - ph), 1, 1); }
-      if (t > 36 && t < 52) { ctx.fillStyle = '#ffffff'; ctx.globalAlpha = 0.5 * (1 - Math.abs(t - 42) / 8) * fade; ctx.fillRect(gx, gy, gw, gh); }       /* the save itself: the whole window flashes */
+      if (t > 38 && t < 54) { ctx.fillStyle = '#ffffff'; ctx.globalAlpha = 0.5 * (1 - Math.abs(t - 46) / 8) * fade; ctx.fillRect(gx, gy, gw, gh); }       /* the save itself: the whole window flashes */
     } else {                                                                /* over the hero: two thin bands scan the body, up then down */
       for (let k = 0; k < 2; k++) {
         const ph = (t * (2.2 + 0.5 * k) + k * 31) % (reach * 2), y = ph < reach ? ph : reach * 2 - ph, flash = ((t + k * 2) >> 1) & 1 ? 1 : 0.5;
-        ctx.fillStyle = '#d8fcff'; ctx.globalAlpha = fade * flash * 0.5; ctx.fillRect(Math.round(a.x - 13), Math.round(a.y - 2 - y), 26, 1);
-        ctx.fillStyle = '#7cefff'; ctx.globalAlpha = fade * flash * 0.18; ctx.fillRect(Math.round(a.x - 13), Math.round(a.y - 3 - y), 26, 3);
+        ctx.fillStyle = '#d8fcff'; ctx.globalAlpha = fade * flash * 0.5; ctx.fillRect(Math.round(a.x - 13), Math.round(a.y - yo - 2 - y), 26, 1);
+        ctx.fillStyle = '#7cefff'; ctx.globalAlpha = fade * flash * 0.18; ctx.fillRect(Math.round(a.x - 13), Math.round(a.y - yo - 3 - y), 26, 3);
       }
     }
     ctx.restore();
@@ -217,11 +217,11 @@
     const dying = p.dead > 0 && p.dead < 16;                                 /* a short white-flash collapse before the explosion */
     if (dying || (!p.dead && !(p.inv > 0 && Math.floor(time * 20) % 2 && p.hurt === 0))) {
       const fr = G.player.frame(p), ball = p.mode === 'ball' && !g.getAnim, right = p.face >= 0 || ball, c0 = right ? fr.r : fr.l, c = dying && (p.dead & 2) ? S.whiteOf(c0) : c0;
-      const spin = p.spinning && !p.ground && !g.getAnim, hx = Math.round(p.x - (right ? fr.ax : fr.axl)), hy = Math.round(p.y - (spin ? 22 : 0) - fr.ay);
+      const spin = p.spinning && !p.ground && !g.getAnim, hx = Math.round(p.x - (right ? fr.ax : fr.axl)), hy = Math.round(p.y - (spin ? 22 : 0) - fr.ay - (g.saveAnim ? g.saveAnim.yoff || 0 : 0));
       if (p.spinAtk) R.spinAura(ctx, g, p, time, false);
       ctx.drawImage(c, hx, hy);
       if (p.spinAtk) R.spinAura(ctx, g, p, time, true);
-      if (g.saveAnim && g.saveAnim.t > 30 && g.saveAnim.t < 56) { ctx.globalAlpha = 0.75 * (1 - Math.abs(g.saveAnim.t - 42) / 12); ctx.drawImage(S.whiteOf(c0), hx, hy); ctx.globalAlpha = 1; }
+      if (g.saveAnim && g.saveAnim.t > 34 && g.saveAnim.t < 58) { ctx.globalAlpha = 0.75 * (1 - Math.abs(g.saveAnim.t - 46) / 12); ctx.drawImage(S.whiteOf(c0), hx, hy); ctx.globalAlpha = 1; }
       R.chargeFx(ctx, g, p, time);
     }
     if (g.saveAnim) R.saveLight(ctx, g.saveAnim, true);

@@ -6,7 +6,7 @@ from PIL import Image
 from collections import deque
 HERE = os.path.dirname(os.path.abspath(__file__))
 SRC = os.path.join(HERE, '..', '_monsterart', 'capsule_src.webp')
-HEIGHT = 96
+GLASS_H = 50                                                             # the glass window is sized to house the hero (about 46 px tall)
 def png64(img):
     buf = io.BytesIO(); img.save(buf, 'PNG', optimize=True); return 'data:image/png;base64,' + base64.b64encode(buf.getvalue()).decode()
 im = Image.open(SRC).convert('RGB'); a = np.asarray(im).astype(int); H, W = a.shape[:2]
@@ -26,7 +26,7 @@ while q:
 alpha = ~bg
 ys, xs = np.nonzero(alpha); x0, x1, y0, y1 = xs.min(), xs.max(), ys.min(), ys.max()
 rgba = np.dstack([a.astype(np.uint8), (alpha * 255).astype(np.uint8)])[y0:y1 + 1, x0:x1 + 1]
-src = Image.fromarray(rgba, 'RGBA'); s = HEIGHT / float(src.height); w, h = round(src.width * s), HEIGHT
+src = Image.fromarray(rgba, 'RGBA'); s = GLASS_H / 515.0; w, h = round(src.width * s), round(src.height * s)
 sc = src.convert('RGBa').resize((w, h), Image.LANCZOS).convert('RGBA'); b = np.asarray(sc).copy(); b[..., 3] = np.where(b[..., 3] > 110, 255, 0)
 rr, gg, bb = b[..., 0].astype(int), b[..., 1].astype(int), b[..., 2].astype(int); al = b[..., 3] > 0
 cyan = al & (bb > 150) & (gg > 130) & (rr < 120) & (bb - rr > 70)           # lights, glass edge lines
