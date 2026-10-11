@@ -135,10 +135,9 @@
       const c = f.face >= 0 ? fr.r : fr.l;
       const ax = f.face >= 0 ? d.ax : fr.w - 1 - d.ax;
       const ice = f.frozen > 0 && !(f.frozen < 45 && (f.frozen >> 2) & 1) ? N.iceOf(c) : null;               /* frozen: the creature itself turns to frosted glass (it flickers back to colour just before it thaws) */
-      if (f.flash > 0) { ctx.globalAlpha = 0.5; }
       if (ice) ctx.drawImage(ice, Math.round(f.x - ax), Math.round(f.y - d.ay) - 3); else ctx.drawImage(c, Math.round(f.x - ax), Math.round(f.y - d.ay));
       ctx.globalAlpha = 1;
-      if (f.flash > 0) { ctx.fillStyle = '#fff'; ctx.globalAlpha = 0.55; ctx.fillRect(Math.round(f.x - f.w / 2), Math.round(f.y - f.h), f.w, f.h); ctx.globalAlpha = 1; }
+      if (f.flash > 0) { ctx.globalAlpha = 0.45 + 0.1 * f.flash; if (ice) ctx.drawImage(G.sprites.whiteOf(ice), Math.round(f.x - ax), Math.round(f.y - d.ay) - 3); else ctx.drawImage(G.sprites.whiteOf(c), Math.round(f.x - ax), Math.round(f.y - d.ay)); ctx.globalAlpha = 1; }      /* a hit flashes the creature's own silhouette, not a box */
       if (f.frozen > 0) {                                                  /* a few twinkles on the frost, and a slow cold mist drifting off it */
         const bx = Math.round(f.x - f.w / 2), by = Math.round(f.y - f.h), k = f.frozen >> 3;
         for (let n = 0; n < 3; n++) { const ph = (f.frozen + n * 7) & 15; if (ph > 3) continue; const sx = bx + ((k * 7 + n * 11) % Math.max(4, f.w - 2)) + 1, sy = by + ((k * 5 + n * 13) % Math.max(4, f.h - 2)) + 1; ctx.fillStyle = ph < 2 ? '#ffffff' : '#bdeeff'; ctx.fillRect(sx, sy, 1, 1); if (ph < 2) { ctx.fillRect(sx - 1, sy, 3, 1); ctx.fillRect(sx, sy - 1, 1, 3); } }
