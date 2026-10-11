@@ -91,9 +91,9 @@ def leg_poses():
 
 def make(raw, s):
     out = {}
-    for n in AIMS:
-        t, hx, hy, tip = torso(H.quant(H.scale(raw['aim_' + n], s)), n)
-        t = H.quant(t); out['tor_' + n] = {'u': H.png64(t), 'w': t.width, 'h': t.height, 'hx': round(hx, 1), 'hy': round(hy, 1), 'tx': round(tip[0], 1), 'ty': round(tip[1], 1)}
+    import hero_rig
+    for n, (t, hx, hy, tx, ty) in hero_rig.build(raw, s).items():                      # one painted body + the cannon arm turned to 25 angles (tools/hero_rig.py)
+        out['tor_' + n] = {'u': H.png64(t), 'w': t.width, 'h': t.height, 'hx': round(hx, 1), 'hy': round(hy, 1), 'tx': round(tx, 1), 'ty': round(ty, 1)}
     for name, (near, far, G) in leg_poses().items():
         im, hx, hy = legs_img(near, far, G); im = H.quant(im)
         out['leg_' + name] = {'u': H.png64(im), 'w': im.width, 'h': im.height, 'hx': round(hx, 1), 'hy': round(hy, 1), 'g': G}

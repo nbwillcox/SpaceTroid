@@ -25,7 +25,7 @@
   };
   /* pose: a painted torso (chosen by the aim angle) on a leg pose (chosen by what the legs are doing), plus a small torso offset (lean, breathing).
      Shared by drawing and the muzzle, so the shot always leaves the cannon tip. e = aim elevation in degrees (up positive) */
-  const AIM = [['90', 90], ['70', 70], ['45', 45], ['20', 20], ['0', 0], ['m20', -20], ['m45', -45], ['m90', -90]];
+  const AIM = []; for (let i = 0; i < 25; i++) AIM.push(['r' + i, 90 - 7.5 * i]);                  /* the cannon arm at 25 angles, 90 down to -90 */
   const nearest = (list, e) => { let n = list[0][0], bd = 1e9; for (const [k, a] of list) { const d = Math.abs(a - e); if (d < bd) { bd = d; n = k; } } return n; };
   P.elev = function (p) {
     let e = p.aim === 'up' ? 90 : p.aim === 'diagUp' ? 45 : p.aim === 'diagDown' ? -45 : 0;
@@ -33,7 +33,7 @@
     return e;
   };
   P.pose = function (p) {
-    if (G.game && G.game.getAnim) return { tor: '90', leg: 'idle', ox: 0, oy: 0 };                      /* victory stance: cannon arm raised */
+    if (G.game && G.game.getAnim) return { tor: 'r0', leg: 'idle', ox: 0, oy: 0 };                      /* victory stance: cannon arm raised */
     const e = P.elev(p), sp = Math.abs(p.vx), t = G.game ? G.game.time : 0, tor = nearest(AIM, e);
     if (p.mode === 'crouch') return { tor, leg: 'crouch', ox: 2, oy: 0 };
     if (p.hurt > 0 && !p.dead) return p.ground ? { tor, leg: 'skid', ox: -2, oy: 0 } : { tor, leg: 'fall', ox: -1, oy: 0 };       /* knocked back */
@@ -72,7 +72,7 @@
   /* which sprite frame to draw */
   P.frame = function (p) {
     const H = G.sprites.hero[p.suit || 'cobalt'];
-    if (G.game && G.game.getAnim) return G.sprites.heroPose(p.suit || 'cobalt', '90', 'idle', 0, 0);
+    if (G.game && G.game.getAnim) return G.sprites.heroPose(p.suit || 'cobalt', 'r0', 'idle', 0, 0);
     if (p.mode === 'ball') return H['ball' + ((Math.floor(p.ballRot || 0) % 8 + 8) % 8)];          /* spins the way it rolls (the sprite is never mirrored) */
     if (p.spinning && !p.ground) return H['spin' + (Math.floor(p.spinT / 2.4) & 7)];
     if (G.game && G.game.saveAnim) return H.front;

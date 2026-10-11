@@ -153,6 +153,7 @@ def build():
         g = g | keep
         rgb = a[y0 + by0:y0 + by1 + 1, x0 + bx0:x0 + bx1 + 1].astype(np.uint8)
         raw[name] = Image.fromarray(np.dstack([rgb, (g * 255).astype(np.uint8)]), 'RGBA')
+    global RAW; RAW = raw
     ref = raw['aim_0']; s = HERO_H / ref.height
     frames = {}
     for name, img in raw.items():
