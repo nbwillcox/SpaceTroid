@@ -102,6 +102,29 @@
     }
     g.items = g.items.filter((i) => !i.dead);
   };
+  /* the frozen look: the sprite re-coloured with an icy ramp (shading kept), a pale rim on lit edges, hoar-frost tufts on top and a few drips below. Cached per sprite. */
+  const ICE = new Map(), hs = (a, b) => ((a * 73856093) ^ (b * 19349663)) >>> 0;
+  N.iceOf = function (c) {
+    let r = ICE.get(c); if (r) return r;
+    const w = c.width, h = c.height, src = c.getContext('2d').getImageData(0, 0, w, h).data, out = document.createElement('canvas'); out.width = w; out.height = h + 6;
+    const x = out.getContext('2d'), im = x.createImageData(w, h + 6), o = im.data, op = (px, py) => px >= 0 && py >= 0 && px < w && py < h && src[(py * w + px) * 4 + 3] > 0;
+    const put = (px, py, r_, g_, b_) => { if (px < 0 || px >= w || py < 0 || py >= h + 6) return; const i = (py * w + px) * 4; o[i] = r_; o[i + 1] = g_; o[i + 2] = b_; o[i + 3] = 255; };
+    const lerp = (a, b, t) => a + (b - a) * t;
+    for (let py = 0; py < h; py++) for (let px = 0; px < w; px++) {
+      if (!op(px, py)) continue;
+      const i = (py * w + px) * 4, lum = Math.pow((0.3 * src[i] + 0.59 * src[i + 1] + 0.11 * src[i + 2]) / 255, 0.8);
+      let R, Gc, B; if (lum < 0.55) { const t = lum / 0.55; R = lerp(18, 64, t); Gc = lerp(58, 150, t); B = lerp(112, 214, t); } else { const t = (lum - 0.55) / 0.45; R = lerp(64, 176, t); Gc = lerp(150, 232, t); B = lerp(214, 252, t); }
+      if (!op(px, py - 1) || !op(px - 1, py)) { R = 230; Gc = 251; B = 255; } else if (!op(px + 1, py) || !op(px, py + 1)) { R = 47; Gc = 110; B = 160; }
+      put(px, py + 3, R, Gc, B);
+    }
+    for (let px = 0; px < w; px++) {
+      let top = -1; for (let py = 0; py < h; py++) if (op(px, py)) { top = py; break; }
+      if (top >= 0) { const q = hs(px, 3) % 6; if (q === 0) { put(px, top + 2, 214, 246, 255); if (hs(px, 5) & 1) put(px, top + 1, 170, 226, 252); } }
+      let bot = -1; for (let py = h - 1; py >= 0; py--) if (op(px, py)) { bot = py; break; }
+      if (bot >= 0 && bot < h - 1 && hs(px, 9) % 6 === 0) { put(px, bot + 4, 122, 216, 245); put(px, bot + 5, 230, 251, 255); }
+    }
+    x.putImageData(im, 0, 0); ICE.set(c, out); return out;
+  };
   N.draw = function (ctx, g, time) {
     const SP = G.sprites.foe;
     for (const f of g.foes) {
@@ -111,11 +134,16 @@
       const fr = N.frame[f.type] ? N.frame[f.type](f, set) : f.type === 'crawler' ? set[Math.floor(f.anim * 2.4) & 3] : f.type === 'moth' ? set[Math.floor(f.anim) & 3] : set[f.open > 0.6 ? 1 : 0];
       const c = f.face >= 0 ? fr.r : fr.l;
       const ax = f.face >= 0 ? d.ax : fr.w - 1 - d.ax;
+      const ice = f.frozen > 0 && !(f.frozen < 45 && (f.frozen >> 2) & 1) ? N.iceOf(c) : null;               /* frozen: the creature itself turns to frosted glass (it flickers back to colour just before it thaws) */
       if (f.flash > 0) { ctx.globalAlpha = 0.5; }
-      ctx.drawImage(c, Math.round(f.x - ax), Math.round(f.y - d.ay));
+      if (ice) ctx.drawImage(ice, Math.round(f.x - ax), Math.round(f.y - d.ay) - 3); else ctx.drawImage(c, Math.round(f.x - ax), Math.round(f.y - d.ay));
       ctx.globalAlpha = 1;
       if (f.flash > 0) { ctx.fillStyle = '#fff'; ctx.globalAlpha = 0.55; ctx.fillRect(Math.round(f.x - f.w / 2), Math.round(f.y - f.h), f.w, f.h); ctx.globalAlpha = 1; }
-      if (f.frozen > 0) { ctx.fillStyle = '#7ad8ff'; ctx.globalAlpha = 0.5; ctx.fillRect(Math.round(f.x - f.w / 2), Math.round(f.y - f.h), f.w, f.h); ctx.globalAlpha = 1; ctx.fillStyle = '#f2ffff'; ctx.fillRect(Math.round(f.x - f.w / 2), Math.round(f.y - f.h), f.w, 1); }
+      if (f.frozen > 0) {                                                  /* a few twinkles on the frost, and a slow cold mist drifting off it */
+        const bx = Math.round(f.x - f.w / 2), by = Math.round(f.y - f.h), k = f.frozen >> 3;
+        for (let n = 0; n < 3; n++) { const ph = (f.frozen + n * 7) & 15; if (ph > 3) continue; const sx = bx + ((k * 7 + n * 11) % Math.max(4, f.w - 2)) + 1, sy = by + ((k * 5 + n * 13) % Math.max(4, f.h - 2)) + 1; ctx.fillStyle = ph < 2 ? '#ffffff' : '#bdeeff'; ctx.fillRect(sx, sy, 1, 1); if (ph < 2) { ctx.fillRect(sx - 1, sy, 3, 1); ctx.fillRect(sx, sy - 1, 1, 3); } }
+        if (f.frozen % 11 === 0) { const mx = bx + ((f.frozen * 3) % Math.max(4, f.w)), my = by + f.h - 2; ctx.fillStyle = '#9fe4ff'; ctx.globalAlpha = 0.6; ctx.fillRect(mx, my, 1, 2); ctx.globalAlpha = 1; }
+      }
     }
     for (const s of g.spores) { if (s.kind === 'bolt') { const x = Math.round(s.x), y = Math.round(s.y); ctx.fillStyle = '#38c0b0'; ctx.fillRect(x - 4, y - 1, 9, 3); ctx.fillStyle = '#f2ffff'; ctx.fillRect(x - 3, y, 7, 1); continue; } if (s.kind === 'fire') { const x = Math.round(s.x), y = Math.round(s.y); ctx.fillStyle = '#c04418'; ctx.fillRect(x - 3, y - 3, 7, 7); ctx.fillRect(x - 4, y - 1, 9, 3); ctx.fillStyle = '#ee8428'; ctx.fillRect(x - 2, y - 2, 5, 5); ctx.fillStyle = '#ffc450'; ctx.fillRect(x - 1, y - 1, 3, 3); ctx.fillStyle = '#fff2b0'; ctx.fillRect(x, y - 1, 1, 1); continue; } if (s.kind === 'shard') { const x = Math.round(s.x), y = Math.round(s.y); ctx.fillStyle = '#146e94'; ctx.fillRect(x - 3, y - 1, 7, 3); ctx.fillRect(x - 1, y - 3, 3, 7); ctx.fillStyle = '#86f0f2'; ctx.fillRect(x - 2, y - 1, 5, 1); ctx.fillStyle = '#f2ffff'; ctx.fillRect(x - 1, y - 1, 2, 1); continue; } ctx.fillStyle = '#ec5c4a'; ctx.fillRect(Math.round(s.x) - 2, Math.round(s.y) - 1, 4, 3); ctx.fillRect(Math.round(s.x) - 1, Math.round(s.y) - 2, 2, 5); ctx.fillStyle = '#ffb89c'; ctx.fillRect(Math.round(s.x) - 1, Math.round(s.y) - 1, 1, 1); }
     for (const it of g.items) {
