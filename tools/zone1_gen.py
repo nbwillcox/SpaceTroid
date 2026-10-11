@@ -212,7 +212,7 @@ ROOMS.append(hold())
 
 def outlet():
     r = Room('outlet', 'Sump Outlet', 30, 17, 12, 2, solid=True, wall_all=True)
-    r.cave([(0, 15)], [(0, 2), (14, 4), (22, 2)])
+    r.cave([(0, 15)], [(0, 1)])                                                                   # a flat ceiling: the old bulge over the top ledge left only 2 tiles of headroom, too low to stand
     r.door('w', 'L', 12, 'blue', 'cavern', 'eb')
     r.fill(7, 15, 22, 15, '^')                                                                 # a spiked floor under a staircase of ledges
     r.plat(3, 6, 12); r.plat(8, 11, 9); r.plat(13, 16, 6)
