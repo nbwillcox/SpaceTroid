@@ -46,7 +46,12 @@
     p.aim = ball ? 'fwd' : aimFrom(g, p, I);
     p.aimAng = null;                                         /* exact aim angle (mouse / stick); the sprite snaps to the nearest pose */
     if (!ball && p.aimTarget) { const m = P.muzzle(p), t = p.aimTarget; const dx = t.wx !== undefined ? t.wx - m.x : t.dx, dy = t.wy !== undefined ? t.wy - m.y : t.dy; if (Math.hypot(dx, dy) > 6) p.aimAng = Math.atan2(dy, dx); }
-    if (dir && !(I.aim && !ball)) p.face = dir; else if (I.aim && !ball && (I.l || I.r)) p.face = I.r ? 1 : -1;
+    /* facing: with a mouse or stick aim the body faces the aim side (the cannon arm always points where the shot goes) and may walk the other way, legs backpedalling;
+       with the keyboard alone it faces the way it moves, like Super Metroid */
+    const aimed = !ball && p.aimAng !== null;
+    if (aimed) { if (Math.abs(Math.cos(p.aimAng)) > 0.05) p.face = Math.cos(p.aimAng) > 0 ? 1 : -1; }
+    else if (dir && !(I.aim && !ball)) p.face = dir; else if (I.aim && !ball && (I.l || I.r)) p.face = I.r ? 1 : -1;
+    p.back = !!(aimed && dir && dir !== p.face && !(I.aim && !ball));
     /* ---- horizontal ---- */
     const moving = dir && !(I.aim && !ball);
     const sprint = I.dash && p.ground && p.mode === 'stand';   /* holding Shift always sprints; the tap-dash burst is the gated upgrade */
@@ -55,16 +60,16 @@
     if (wet && room.def.pressure && !aqua) { p.pt = (p.pt || 0) + 1; if (p.pt === 1 && !g.toast) g.toast = { txt: 'CRUSHING PRESSURE: AQUA SUIT NEEDED', t: 0 }; if (p.pt % 30 === 0) { p.en -= 4; G.audio.sfx('hurt'); if (p.en <= 0) { p.en = 0; p.dead = 1; } } } else p.pt = 0;
     let top = ball ? K.ball : sprint ? K.run : K.walk; if (wet) top *= aqua ? 0.92 : 0.55;
     const slick = p.ground && G.room.at(room, Math.floor(p.x / 16), Math.floor((p.y + 1) / 16)) === 10;   /* ice floor: slow to start, slow to stop */
-    if (p.dash > 0) { p.dash--; p.vx = p.face * K.dash; p.vy = 0; if (!p.dash) p.dashCd = 22; }
+    if (p.dash > 0) { p.dash--; p.vx = (p.dashDir || p.face) * K.dash; p.vy = 0; if (!p.dash) p.dashCd = 22; }
     else if (moving) p.vx = approach(p.vx, dir * top, p.ground ? (Math.sign(p.vx) === -dir ? K.dec : K.acc) * (slick ? 0.3 : 1) : (Math.abs(p.vx) > top && Math.sign(p.vx) === dir ? 0.02 : K.airAcc));
     else p.vx = approach(p.vx, 0, p.ground ? K.dec * (slick ? 0.12 : 1) : K.airDec);
-    if (A.dash && D.dash && p.dashCd === 0 && p.mode === 'stand' && !lock && p.dash === 0 && !I.d && (p.ground || p.dashAir)) { p.dash = 11; if (!p.ground) p.dashAir = false; G.fx.puff(p.x - p.face * 6, p.y - 4, 4); }
+    if (A.dash && D.dash && p.dashCd === 0 && p.mode === 'stand' && !lock && p.dash === 0 && !I.d && (p.ground || p.dashAir)) { p.dash = 11; p.dashDir = dir || p.face; if (!p.ground) p.dashAir = false; G.fx.puff(p.x - p.dashDir * 6, p.y - 4, 4); }
     /* ---- jump (coyote + buffer), space jump, variable height, drop through ledges ---- */
     if (!lock && p.mode === 'stand' && p.jbuf > 0) {
-      if (p.dash > 0 && (p.coyote > 0 || (p.airJumps > 0 && A.spacejump))) { p.vx = p.face * K.dash; p.dash = 0; p.dashCd = 10; }
+      if (p.dash > 0 && (p.coyote > 0 || (p.airJumps > 0 && A.spacejump))) { p.vx = (p.dashDir || p.face) * K.dash; p.dash = 0; p.dashCd = 10; }
       if (p.ground && I.d && PH.support(room, p, p.y - E, p.y + 1, true) === null) { p.drop = true; p.ground = false; p.y += 1; p.jbuf = 0; p.coyote = 0; }
       else if (p.coyote > 0) {
-        if (p.dash > 0) { p.vx = p.face * K.dash; p.dash = 0; p.dashCd = 10; }
+        if (p.dash > 0) { p.vx = (p.dashDir || p.face) * K.dash; p.dash = 0; p.dashCd = 10; }
         p.vy = -K.jump; p.jbuf = 0; p.coyote = 0; p.ground = false; G.audio.sfx('jump'); p.jumping = true;
         p.spinning = (Math.abs(p.vx) > 0.8 || dir !== 0) && !I.u && (!I.fire || oc); p.spinT = 0; p.noSpin = false;
       }

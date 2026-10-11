@@ -40,9 +40,9 @@
     if (!p.ground) return { tor, leg: p.vy < -3.5 ? 'rise' : p.vy < 1.2 ? 'apex' : 'fall', ox: p.vx ? p.face * Math.sign(p.vx) : 0, oy: p.vy < -3.5 ? -1 : 0 };
     if (p.landT > 0) return { tor, leg: p.landT > 4 ? 'land2' : p.landT > 2 ? 'land1' : 'idle', ox: 1, oy: 0 };
     if (sp > 0.25) {
-      if (Math.sign(p.vx) !== p.face && sp > 1.0) return { tor, leg: 'skid', ox: -2, oy: 0 };          /* skidding round */
-      const i = Math.floor(p.anim * 1.6) % 8;
-      return { tor, leg: (sp < 0.7 ? 'a' : sp < 1.1 ? 'b' : sp < 1.5 ? 'c' : sp < 2.1 ? 'd' : 'e') + i, ox: sp > 2.1 ? 2 : 1, oy: 0 };
+      if (Math.sign(p.vx) !== p.face && sp > 1.0 && !p.back) return { tor, leg: 'skid', ox: -2, oy: 0 };          /* skidding round */
+      const i = p.back ? (8 - Math.floor(p.anim * 1.6) % 8) % 8 : Math.floor(p.anim * 1.6) % 8;                   /* walking backwards (facing the aim, moving the other way): the stride plays in reverse */
+      return { tor, leg: (sp < 0.7 ? 'a' : sp < 1.1 ? 'b' : sp < 1.5 ? 'c' : sp < 2.1 ? 'd' : 'e') + i, ox: p.back ? 0 : sp > 2.1 ? 2 : 1, oy: 0 };
     }
     if (p.anim > 0) return { tor, leg: 's' + (p.settle > 4 ? 3 : p.settle > 2 ? 2 : 1) + '_' + (p.settleI || 0), ox: p.settle > 4 ? 0 : 1, oy: 0 };      /* the feet glide in to the stand */
     return { tor, leg: 'idle', ox: 0, oy: Math.floor(t / 50) & 1 };                                      /* breathing moves the torso only */
