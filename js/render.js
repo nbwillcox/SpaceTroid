@@ -55,20 +55,22 @@
   };
   /* the light that rises from a save pad: stepped bands that grow upward, rising sparkles and a bright base; front = the thin inner beam drawn over the hero */
   R.saveLight = function (ctx, a, front) {
-    const t = a.t, grow = Math.min(1, t / 30), h = Math.round(84 * (1 - (1 - grow) * (1 - grow))), fade = t > 58 ? Math.max(0, 1 - (t - 58) / 26) : 1;
-    if (fade <= 0) return;
+    const t = a.t, fade = t > 58 ? Math.max(0, 1 - (t - 58) / 26) : 1; if (fade <= 0) return;
+    const C = S.capsule, gl = C.glass, gx = Math.round(a.x - C.w / 2) + gl[0], gy = Math.round(a.y - C.h) + gl[1], gw = gl[2] - gl[0] + 1, gh = gl[3] - gl[1] + 1, reach = 46;
     ctx.save(); ctx.globalCompositeOperation = 'lighter';
-    for (let y = 0; y < h; y += 2) {
-      if ((y >> 2) % 3 === 2 && !front) continue;
-      const k = 1 - y / 100, w = Math.round((front ? 10 : 26) * (0.6 + 0.4 * k)) & ~1, al = fade * (front ? 0.34 : 0.5) * k;
-      ctx.fillStyle = 'rgba(150,244,255,' + al.toFixed(3) + ')'; ctx.fillRect(Math.round(a.x - w / 2), a.y - 2 - y, w, 2);
-    }
-    if (!front) {
-      ctx.fillStyle = 'rgba(210,252,255,' + (0.55 * fade).toFixed(3) + ')'; ctx.fillRect(Math.round(a.x - 15), a.y - 3, 30, 2); ctx.fillRect(Math.round(a.x - 9), a.y - 5, 18, 2);
-      for (let i = 0; i < 16; i++) {
-        const ph = (t * 1.5 + i * 11) % 84; if (ph > h) continue;
-        const x = Math.round(a.x + (((i * 37) % 19) - 9) * (1 - ph / 110)), y = Math.round(a.y - 4 - ph), sz = i % 3 === 0 ? 2 : 1;
-        ctx.fillStyle = 'rgba(240,255,255,' + (fade * (0.9 - ph / 120)).toFixed(3) + ')'; ctx.fillRect(x, y, sz, sz);
+    if (!front) {                                                           /* behind the hero: scan lines sweep the glass up and down, flashing; sparks rise inside */
+      for (let k = 0; k < 4; k++) {
+        const ph = (t * (1.7 + 0.35 * k) + k * 23) % (gh * 2), y = ph < gh ? ph : gh * 2 - ph, flash = ((t + k * 3) >> 1) & 1 ? 1 : 0.4;
+        ctx.fillStyle = k & 1 ? '#c8fbff' : '#7cefff'; ctx.globalAlpha = fade * flash * 0.55; ctx.fillRect(gx - 2, Math.round(gy + gh - 1 - y), gw + 4, 1);
+        ctx.globalAlpha = fade * flash * 0.2; ctx.fillRect(gx - 2, Math.round(gy + gh - 2 - y), gw + 4, 3);
+      }
+      for (let i = 0; i < 12; i++) { const ph = (t * 1.3 + i * 17) % gh; ctx.fillStyle = '#f2ffff'; ctx.globalAlpha = fade * (0.9 - ph / gh * 0.7); ctx.fillRect(gx + 2 + ((i * 37) % (gw - 4)), Math.round(gy + gh - 1 - ph), 1, 1); }
+      if (t > 36 && t < 52) { ctx.fillStyle = '#ffffff'; ctx.globalAlpha = 0.5 * (1 - Math.abs(t - 42) / 8) * fade; ctx.fillRect(gx, gy, gw, gh); }       /* the save itself: the whole window flashes */
+    } else {                                                                /* over the hero: two thin bands scan the body, up then down */
+      for (let k = 0; k < 2; k++) {
+        const ph = (t * (2.2 + 0.5 * k) + k * 31) % (reach * 2), y = ph < reach ? ph : reach * 2 - ph, flash = ((t + k * 2) >> 1) & 1 ? 1 : 0.5;
+        ctx.fillStyle = '#d8fcff'; ctx.globalAlpha = fade * flash * 0.5; ctx.fillRect(Math.round(a.x - 13), Math.round(a.y - 2 - y), 26, 1);
+        ctx.fillStyle = '#7cefff'; ctx.globalAlpha = fade * flash * 0.18; ctx.fillRect(Math.round(a.x - 13), Math.round(a.y - 3 - y), 26, 3);
       }
     }
     ctx.restore();

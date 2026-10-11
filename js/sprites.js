@@ -113,6 +113,7 @@
     const BW = BI.wyrm; S.wyrm = { head: BW.head.map(bb), neck: bp(BW.neck), splash: BW.splash.map(bp) };
     S.jellyBoss = BI.jelly.bell.map(bp);
     S.heart = { body: BI.heart.heart.map(bp), node: BI.heart.node.map(bp) };
+    { const CI = A.capsuleimg, cc = document.createElement('canvas'); cc.width = CI.w; cc.height = CI.h; const cim = new Image(); cim.onload = () => cc.getContext('2d').drawImage(cim, 0, 0); cim.src = CI.u; S.capsule = { c: cc, w: CI.w, h: CI.h, glass: CI.glass, lights: CI.lights }; }      /* the save capsule: one painted picture; its cyan lights pulse in world.js */
     S.pad = W1.pad.map((g) => mkc(g, 'cobalt', 'pad')); S.term = W1.terminal.map((g) => mkc(g, 'cobalt', 'term')); S.wreck = mkc(W1.wreck, 'cobalt', 'wreck');
   };
 })((window.SGS = window.SGS || {}));

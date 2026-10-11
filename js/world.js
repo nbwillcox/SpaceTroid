@@ -146,6 +146,19 @@
       if ((t >> 2) % 7 === 0) { ctx.fillStyle = '#fff'; ctx.fillRect(x + 8, y - 24 + bob, 1, 1); ctx.fillRect(x - 9, y - 6 + bob, 1, 1); }
     }
   };
+  /* the save capsule: the painted pod standing on the floor line, its lights breathing; while saving the glow swells */
+  W.drawCapsule = function (ctx, g, s, time) {
+    const C = G.sprites.capsule, x0 = Math.round(s.x - C.w / 2), y0 = Math.round(s.y - C.h), a = g.saveAnim && g.saveAnim.s === s ? g.saveAnim : null;
+    const boost = a ? Math.min(1, a.t / 28) * (a.t > 58 ? Math.max(0, 1 - (a.t - 58) / 26) : 1) : 0, pulse = 0.5 + 0.5 * Math.sin(time * 2.2 + s.x * 0.1), fast = 0.5 + 0.5 * Math.sin(time * 9);
+    const gx = x0 + (C.glass[0] + C.glass[2]) / 2, gy = y0 + (C.glass[1] + C.glass[3]) / 2;
+    ctx.globalCompositeOperation = 'lighter';
+    W.glow(ctx, Math.round(gx), Math.round(gy), 40, '70,200,255', (0.035 + 0.02 * pulse + 0.06 * boost).toFixed(3)); W.glow(ctx, Math.round(gx), Math.round(gy), 27, '90,230,255', (0.05 + 0.03 * pulse + 0.09 * boost).toFixed(3));
+    ctx.globalCompositeOperation = 'source-over'; ctx.drawImage(C.c, x0, y0);
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.fillStyle = '#5ae8ff'; ctx.globalAlpha = 0.07 + 0.07 * pulse + 0.18 * boost; ctx.fillRect(x0 + C.glass[0], y0 + C.glass[1], C.glass[2] - C.glass[0] + 1, C.glass[3] - C.glass[1] + 1);      /* the glass hums */
+    ctx.fillStyle = '#c8fbff'; ctx.globalAlpha = 0.16 + 0.26 * pulse + 0.4 * boost * (0.6 + 0.4 * fast); for (const [px, py] of C.lights) ctx.fillRect(x0 + px, y0 + py, 1, 1);          /* every cyan light brightens together */
+    ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
+  };
   W.drawBack = function (ctx, g, time) {
     for (const d of g.doors) {                                              /* doorways inside the room (they lead to item shrines): a dark arch with pulsing runes */
       if (d.side !== 'I') continue;
@@ -166,7 +179,7 @@
       ctx.fillStyle = 'rgba(134,240,242,' + (0.45 + pulse * 0.5).toFixed(2) + ')'; ctx.fillRect(x + 2, y - 1, 2, 2); ctx.fillRect(x + 7, y - 1, 2, 2); ctx.fillRect(x + 12, y - 1, 2, 2);
       for (let k = 1; k < d.h; k++) { ctx.fillRect(x - 1, y + k * 16 - 4, 1, 3); ctx.fillRect(x + 16, y + k * 16 - 4, 1, 3); }
     }
-    for (const s of g.stations) { const img = s.type === 'map' ? G.sprites.term[Math.floor(time * 2) & 1] : G.sprites.pad[Math.floor(time * 3) & 1]; ctx.drawImage(img, Math.round(s.x - img.width / 2), Math.round(s.y - img.height)); }
+    for (const s of g.stations) { if (s.type === 'save') { W.drawCapsule(ctx, g, s, time); continue; } const img = s.type === 'map' ? G.sprites.term[Math.floor(time * 2) & 1] : G.sprites.pad[Math.floor(time * 3) & 1]; ctx.drawImage(img, Math.round(s.x - img.width / 2), Math.round(s.y - img.height)); }
   };
   W.drawFront = function (ctx, g, time) {
     const S = G.sprites;
@@ -178,7 +191,7 @@
       ctx.drawImage(set[f], d.tx * T, d.ty * T + (d.h - 3) * T);
     }
     for (const it of g.pickups) W.drawItem(ctx, it.type, Math.round(it.x), Math.round(it.y), it.t, Math.round(Math.sin(it.t * 0.08) * 2));
-    if (g.near && !g.saveAnim) G.px.text(ctx, { save: 'UP: SAVE', map: 'UP: MAP', lift: 'UP: DESCEND' }[g.near.type], Math.round(g.near.x), Math.round(g.near.y - 62), { s: 1, c: '#f2ffff', o: '#0a0e2c', a: 'c' });
-    if (g.near && !g.saveAnim && W.canWarp(g)) G.px.text(ctx, 'M: WARP', Math.round(g.near.x), Math.round(g.near.y - 52), { s: 1, c: '#86f0f2', o: '#0a0e2c', a: 'c' });
+    if (g.near && !g.saveAnim) G.px.text(ctx, { save: 'UP: SAVE', map: 'UP: MAP', lift: 'UP: DESCEND' }[g.near.type], Math.round(g.near.x), Math.round(g.near.y - (g.near.type === 'save' ? G.sprites.capsule.h + 16 : 62)), { s: 1, c: '#f2ffff', o: '#0a0e2c', a: 'c' });
+    if (g.near && !g.saveAnim && W.canWarp(g)) G.px.text(ctx, 'M: WARP', Math.round(g.near.x), Math.round(g.near.y - (g.near.type === 'save' ? G.sprites.capsule.h + 6 : 52)), { s: 1, c: '#86f0f2', o: '#0a0e2c', a: 'c' });
   };
 })((window.SGS = window.SGS || {}));
