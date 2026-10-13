@@ -17,9 +17,16 @@
   };
   U.back = function () { if (U.mode === 'options') U.open(U.from === 'pause' ? 'pause' : 'title'); else if (U.mode === 'slots') U.open('title'); };
   U.update = function () {
-    const D = G.input.down, M = G.main, list = U.items[U.mode] ? U.items[U.mode]() : [], go = D.jump || D.fire || D.start;
+    const D = G.input.down, M = G.main, list = U.items[U.mode] ? U.items[U.mode]() : [], raw = D.jump || D.fire || D.start, tap = G.input.takeTap && G.input.takeTap();
+    let go = raw;
     if (U.mode === 'end') { if (go || D.pause) M.toTitle(); return; }
     if (U.mode === 'help') { if (go || D.pause) U.open('pause'); return; }
+    if (tap && D.fire && !D.jump && !D.start) {                          /* a click or tap: it picks the row (or NO / YES) under it and does nothing anywhere else */
+      go = false;
+      const hit = (r) => tap.x >= r.x && tap.x <= r.x + r.w && tap.y >= r.y && tap.y <= r.y + r.h;
+      if (U.confirm) { const r = (U.crects || []).find(hit); if (r) { U.confirm.yes = r.yes; go = true; } }
+      else { const r = (U.rects || []).find(hit); if (r) { U.sel = r.i; go = true; if (U.mode === 'options' && (list[r.i].k === 'sfx' || list[r.i].k === 'music')) { D.l = tap.x < 240; D.r = !D.l; go = false; } } }
+    }
     if (U.confirm) {
       if (D.l || D.r || D.u || D.d) U.confirm.yes = !U.confirm.yes;
       if (go) { if (U.confirm.yes) M.startSlot(U.confirm.n, true); U.confirm = null; } else if (D.pause) U.confirm = null;

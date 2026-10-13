@@ -25,6 +25,10 @@ This is an original game inspired by classic exploration platformers. It uses no
 | Down + Jump on a ledge | drops through | |
 | Beam toggles | 1 / 2 / 3 | |
 
+### On a phone or tablet
+
+Play in landscape. A floating stick on the left moves (down crouches, down again morphs, up stands); on the right **JUMP**, the **FIRE** pad (tap or hold to fire and charge, drag from its centre to aim in any direction) and **MISSILE** / **DASH**, with **SWAP**, **GRAPPLE**, **SCAN** and **MORPH** appearing once you own them. **MAP**, **STATUS** and pause are small buttons at the top. The menus can be tapped, with an on-screen d-pad and A / B as a fallback. The on-screen controls appear on touch devices automatically; Settings has size, opacity and a left-handed layout. Use your browser's *Add to Home Screen* to install it as a full-screen app.
+
 ## More controls
 
 | Action | Keyboard |

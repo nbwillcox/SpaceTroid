@@ -7,7 +7,8 @@
   canvas.width = 480; canvas.height = 270; ctx.imageSmoothingEnabled = false;
   G.debug = { all: params.get('abil') === 'all' };
   function resize() {
-    const w = window.innerWidth, h = window.innerHeight, k = Math.min(w / 480, h / 270), sc = k >= 1 ? Math.floor(k) : k, st = canvas.style;
+    const tk = window.TK && window.TK.on ? window.TK : null, sf = tk ? tk.safe : { t: 0, r: 0, b: 0, l: 0 };                 /* touch: fractional scale (a phone needs every pixel), clear of the notch */
+    const w = window.innerWidth - sf.l - sf.r, h = window.innerHeight - sf.t - sf.b, k = Math.min(w / 480, h / 270), sc = k >= 1 && !tk ? Math.floor(k) : k, st = canvas.style;
     st.width = Math.round(480 * sc) + 'px'; st.height = Math.round(270 * sc) + 'px';
   }
   window.addEventListener('resize', resize); resize();
@@ -68,6 +69,7 @@
   /* test hook: advance n steps with the given held keys, then draw (the pane does not run rAF while hidden) */
   M.run = function (n, held) { for (let i = 0; i < n; i++) { const nk = Object.assign({}, held || {}); for (const a in nk) if (!I.k[a]) I.lt[a] = true; I.k = nk; I.poll(); update(); } M.time += n / 60; M.render(); };
   UI.open('title'); G.music.play('title');
+  { const boot = document.getElementById('boot'); if (boot) boot.remove(); }                                  /* the loading text shown while the scripts and sprites build */
   if (params.get('room')) M.startDebug(params.get('room'));
   requestAnimationFrame(frame);
 })((window.SGS = window.SGS || {}));

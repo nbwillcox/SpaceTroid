@@ -7,6 +7,7 @@
   function menu(ctx, list, y0, gap, big) {
     list.forEach((it, i) => {
       const on = i === U.sel, y = y0 + i * gap, sz = big ? 2 : 1, c = it.off ? '#364488' : on ? '#fff2a8' : '#a6ccff';
+      U.rects.push({ i, x: 70, y: y - Math.round((gap - (big ? 14 : 8)) / 2), w: 340, h: gap });
       txt(ctx, it.t, 240, y, c, 'c', sz);
       if (on && !it.off) { ctx.fillStyle = '#fff2a8'; ctx.fillRect(240 - Math.round(PX.textW(it.t, sz) / 2) - 12, y + (big ? 4 : 1), 5, 5); }
     });
@@ -52,6 +53,7 @@
     txt(ctx, U.slotMode === 'cont' ? 'CONTINUE' : 'CHOOSE A SLOT', 240, 50, '#a6ccff', 'c', 2);
     U.items.slots().forEach((it, i) => {
       const y = 96 + i * 36, on = i === U.sel;
+      U.rects.push(it.k === 'back' ? { i, x: 170, y: y - 4, w: 140, h: 24 } : { i, x: 80, y, w: 320, h: 30 });
       if (it.k === 'back') { txt(ctx, 'BACK', 240, y + 6, on ? '#fff2a8' : '#8ea2d2', 'c'); return; }
       ctx.fillStyle = on ? '#2b4fa4' : '#141a46'; ctx.fillRect(80, y, 320, 30); ctx.fillStyle = on ? '#a6ccff' : '#364488'; ctx.fillRect(80, y, 320, 1); ctx.fillRect(80, y + 29, 320, 1);
       txt(ctx, 'SLOT ' + (it.n + 1), 90, y + 5, '#fff2a8');
@@ -73,7 +75,7 @@
     txt(ctx, 'ITEMS  ' + n + ' / ' + tot + '  (' + pct + '%)', 240, 184, '#fff2a8', 'c'); txt(ctx, 'TIME  ' + fmtTime(g.playTime) + '    SCORE  ' + G.score.total(g), 240, 198, '#dde7fb', 'c');
     txt(ctx, tier === 2 ? 'ENDING: STARBOUND' : tier === 1 ? 'ENDING: HOMEWARD' : 'ENDING: ADRIFT', 240, 218, '#86f0f2', 'c');
     txt(ctx, 'THANKS FOR PLAYING  -  CC BY-NC 4.0  -  GITHUB.COM/NBWILLCOX/SPACETROID', 240, 240, '#8ea2d2', 'c');
-    if (Math.floor(time * 2) % 2) txt(ctx, 'PRESS JUMP', 240, 256, '#8ea2d2', 'c');
+    if (Math.floor(time * 2) % 2) txt(ctx, window.TK && window.TK.on ? 'TAP TO CONTINUE' : 'PRESS JUMP', 240, 256, '#8ea2d2', 'c');
   }
   function ending(ctx, time, g) {
     if (g.room.zone === 5) { finalEnding(ctx, time, g); return; }
@@ -82,25 +84,32 @@
     const n = Object.keys(g.prog.items).length, tot = G.world.itemTotal();
     txt(ctx, 'ITEMS  ' + n + ' / ' + tot + '  (' + Math.round(100 * n / tot) + '%)', 240, 140, '#dde7fb', 'c'); txt(ctx, 'TIME  ' + fmtTime(g.playTime), 240, 156, '#dde7fb', 'c');
     txt(ctx, 'TO BE CONTINUED', 240, 196, '#ec5c4a', 'c', 2);
-    if (Math.floor(time * 2) % 2) txt(ctx, 'PRESS JUMP', 240, 240, '#8ea2d2', 'c');
+    if (Math.floor(time * 2) % 2) txt(ctx, window.TK && window.TK.on ? 'TAP TO CONTINUE' : 'PRESS JUMP', 240, 240, '#8ea2d2', 'c');
   }
   U.draw = function (ctx, time, g) {
-    const m = U.mode;
+    const m = U.mode; U.rects = []; U.crects = [{ yes: false, x: 150, y: 128, w: 80, h: 28 }, { yes: true, x: 250, y: 128, w: 80, h: 28 }];
+    const touch = !!(window.TK && window.TK.on);
     if (m === 'title' || m === 'slots' || (m === 'options' && U.from === 'title')) titleBg(ctx, time);
     else if (m !== 'end') { ctx.fillStyle = 'rgba(6,8,26,0.84)'; ctx.fillRect(0, 0, 480, 270); }
     if (m === 'title') {
       PX.text(ctx, 'SPACETROID', 240, 48, { s: 5, c: '#fff2a8', o: '#2e1a0c', a: 'c' }); txt(ctx, 'A FREE PIXEL EXPLORATION ADVENTURE', 240, 98, '#a6ccff', 'c');
-      if (!G.audio.running() && Math.floor(time * 2) % 2) txt(ctx, 'PRESS ANY KEY OR CLICK FOR SOUND', 240, 232, '#86f0f2', 'c');
+      if (!G.audio.running() && Math.floor(time * 2) % 2) txt(ctx, touch ? 'TAP FOR SOUND' : 'PRESS ANY KEY OR CLICK FOR SOUND', 240, 232, '#86f0f2', 'c');
       menu(ctx, U.items.title(), 128, 26, true); txt(ctx, 'CC BY-NC 4.0  -  GITHUB.COM/NBWILLCOX/SPACETROID', 240, 254, '#8ea2d2', 'c');
     } else if (m === 'slots') slots(ctx);
-    else if (m === 'options') { txt(ctx, 'OPTIONS', 240, 40, '#a6ccff', 'c', 2); menu(ctx, U.items.options(), 80, 20, false); txt(ctx, 'LEFT / RIGHT CHANGES A VALUE', 240, 248, '#8ea2d2', 'c'); }
+    else if (m === 'options') { txt(ctx, 'OPTIONS', 240, 40, '#a6ccff', 'c', 2); menu(ctx, U.items.options(), 80, 20, false); txt(ctx, touch ? 'TAP A ROW  -  TAP LEFT / RIGHT HALF OF A VOLUME ROW' : 'LEFT / RIGHT CHANGES A VALUE', 240, 248, '#8ea2d2', 'c'); }
     else if (m === 'pause') { txt(ctx, 'PAUSED', 240, 30, '#a6ccff', 'c', 3); menu(ctx, U.items.pause(), 76, 26, true); }
     else if (m === 'help') {
       txt(ctx, 'CONTROLS', 240, 20, '#a6ccff', 'c', 2);
       const rows = [['MOVE', 'ARROWS / WASD', 'STICK / D-PAD'], ['JUMP (AGAIN IN AIR = SPACE JUMP)', 'SPACE / Z / K', 'A'], ['FIRE (HOLD = AUTO)', 'LEFT CLICK / X / J', 'X / RT'], ['AIM', 'MOUSE (360)', 'RIGHT STICK'], ['MISSILE / SUPER (R SWAPS)', 'RIGHT CLICK / C / L', 'B (Y SWAPS)'], ['SPRINT (HOLD)  /  SUPER DASH (TAP)', 'SHIFT / V', 'RB'], ['CROUCH, THEN MORPH BALL', 'S / DOWN (TWICE)', 'STICK DOWN'], ['BOMB / SUPER BOMB (BALL)', 'FIRE / MISSILE', ''], ['GRAPPLE (NEAR CEILING ANCHOR)', 'Q', 'R3 (STICK CLICK)'], ['SCAN VISOR (TOGGLE)', 'F', 'L3 (STICK CLICK)'], ['BEAM TOGGLES', '1 2 3', ''], ['AIM LOCK', 'E', 'LB'], ['MAP / PAUSE', 'M, TAB / P, ESC', 'SELECT / START'], ['STATUS (BEAMS, RAPID / CHARGE)', 'I  (OR PAUSE MENU)', 'PAUSE MENU'], ['SAVE, ELEVATOR, MAP TERMINAL', 'STAND ON IT, PRESS UP', '']];
-      txt(ctx, 'ACTION', 14, 42, '#8ea2d2'); txt(ctx, 'KEYBOARD + MOUSE', 236, 42, '#8ea2d2'); txt(ctx, 'GAMEPAD', 372, 42, '#8ea2d2');
-      rows.forEach((r, i) => { const y = 54 + i * 12; txt(ctx, r[0], 14, y, '#dde7fb'); txt(ctx, r[1], 236, y, '#fff2a8'); txt(ctx, r[2], 372, y, '#86f0f2'); });
-      txt(ctx, 'PRESS JUMP OR ESC TO GO BACK', 240, 252, '#8ea2d2', 'c');
+      if (touch) {                                                       /* on a touch screen the keyboard / gamepad columns are no use: show the touch controls instead */
+        const tr = [['MOVE', 'FLOATING STICK ON THE LEFT'], ['JUMP (AGAIN IN AIR = SPACE JUMP)', 'JUMP BUTTON (HOLD = HIGHER)'], ['FIRE (HOLD = CHARGE OR AUTO)', 'FIRE PAD'], ['AIM IN ANY DIRECTION', 'DRAG FROM THE CENTRE OF THE FIRE PAD'], ['MISSILE / SUPER', 'MISSILE BUTTON, SWAP CHANGES TYPE'], ['SPRINT (HOLD)  /  SUPER DASH (TAP)', 'DASH BUTTON'], ['CROUCH, THEN MORPH BALL', 'STICK DOWN (TWICE), OR MORPH'], ['STAND UP FROM THE BALL', 'STICK UP'], ['BOMB / SUPER BOMB (BALL)', 'FIRE PAD / MISSILE BUTTON'], ['GRAPPLE (NEAR CEILING ANCHOR)', 'GRAPPLE BUTTON (HOLD)'], ['SCAN VISOR (TOGGLE)', 'SCAN BUTTON'], ['MAP / STATUS / PAUSE', 'SMALL BUTTONS AT THE TOP'], ['SAVE, ELEVATOR, MAP TERMINAL', 'STAND ON IT, STICK UP'], ['MENUS', 'TAP A ROW, OR THE D-PAD AND A / B']];
+        txt(ctx, 'ACTION', 14, 42, '#8ea2d2'); txt(ctx, 'TOUCH', 236, 42, '#8ea2d2');
+        tr.forEach((r, i) => { const y = 54 + i * 12; txt(ctx, r[0], 14, y, '#dde7fb'); txt(ctx, r[1], 236, y, '#fff2a8'); });
+      } else {
+        txt(ctx, 'ACTION', 14, 42, '#8ea2d2'); txt(ctx, 'KEYBOARD + MOUSE', 236, 42, '#8ea2d2'); txt(ctx, 'GAMEPAD', 372, 42, '#8ea2d2');
+        rows.forEach((r, i) => { const y = 54 + i * 12; txt(ctx, r[0], 14, y, '#dde7fb'); txt(ctx, r[1], 236, y, '#fff2a8'); txt(ctx, r[2], 372, y, '#86f0f2'); });
+      }
+      txt(ctx, touch ? 'TAP TO GO BACK' : 'PRESS JUMP OR ESC TO GO BACK', 240, 252, '#8ea2d2', 'c');
     }
     else if (m === 'end') ending(ctx, time, g);
   };

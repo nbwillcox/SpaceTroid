@@ -20,8 +20,14 @@
   window.addEventListener('pointerdown', (e) => {
     if (e.target !== cv()) return;
     e.preventDefault(); try { cv().setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
-    const c = cv(), r = c.getBoundingClientRect(); I.mouse.on = true; I.mouse.t = performance.now(); I.mouse.x = (e.clientX - r.left) / r.width * 480; I.mouse.y = (e.clientY - r.top) / r.height * 270;
-    if (e.button === 0) { if (!I.k.fire) I.lt.fire = true; I.k.fire = true; I.mouse.fire = true; I.any = true; }
+    const c = cv(), r = c.getBoundingClientRect();
+    if (e.pointerType === 'touch') {                                 /* a touch on the canvas only drives the canvas menus (the touch layer owns play); it is not mouse aim and does not fire */
+      I.tap = { x: (e.clientX - r.left) / r.width * 480, y: (e.clientY - r.top) / r.height * 270, t: performance.now() };
+      const md = G.main && G.main.mode; if (md === 'title' || md === 'pause' || md === 'end') { I.lt.fire = true; I.any = true; }
+      return;
+    }
+    I.mouse.on = true; I.mouse.t = performance.now(); I.mouse.x = (e.clientX - r.left) / r.width * 480; I.mouse.y = (e.clientY - r.top) / r.height * 270;
+    if (e.button === 0) { if (!I.k.fire) I.lt.fire = true; I.k.fire = true; I.mouse.fire = true; I.any = true; I.tap = { x: I.mouse.x, y: I.mouse.y, t: performance.now() }; }
     else if (e.button === 2) { if (!I.k.missile) I.lt.missile = true; I.k.missile = true; I.mouse.missile = true; }
   });
   window.addEventListener('contextmenu', (e) => { if (e.target === cv()) e.preventDefault(); });
@@ -39,7 +45,7 @@
         break;
       }
     }
-    I.stick = pad.stick || null;
+    I.stick = pad.stick || I.touchStick || null;                 /* I.touchStick: the on-screen aim pad (set by the touch layer) */
     for (const a of ACTIONS) {
       const h = !!I.k[a] || !!pad[a];
       I.down[a] = !!I.lt[a] || (!!pad[a] && !I.prev[a]);
@@ -47,6 +53,7 @@
       if (pad[a]) I.any = true;
     }
   };
-  I.clear = () => { I.k = {}; I.lt = {}; I.held = {}; I.down = {}; I.any = false; };
+  I.takeTap = () => { const t = I.tap; I.tap = null; return t && performance.now() - t.t < 400 ? t : null; };            /* a click / tap on the canvas, in canvas pixels (480 x 270) */
+  I.clear = () => { I.k = {}; I.lt = {}; I.held = {}; I.down = {}; I.any = false; I.tap = null; };
   G.input = I;
 })((window.SGS = window.SGS || {}));
