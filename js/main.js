@@ -60,6 +60,7 @@
   let last = 0, acc = 0;
   function frame(now) {
     requestAnimationFrame(frame);
+    if (now - last < 10.5) return;                                  /* cap at about 60 fps on 90 / 120 / 144 Hz screens: the loop is fixed-step, so the extra frames only cost battery and heat */
     let dt = (now - last) / 1000; last = now; if (!(dt > 0)) dt = 1 / 60; if (dt > 0.1) dt = 0.1;
     M.time += dt;
     if (!M.paused) { acc += dt; while (acc >= 1 / 60) { I.poll(); update(); acc -= 1 / 60; } }
